@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/action_reset"
+        android:title="Reset Editor"
+        android:orderInCategory="100"
+        />
+    <item android:id="@+id/action_cancel"
+        android:title="Cancel"
+        android:orderInCategory="100"
+        />
+    <item android:id="@+id/action_save"
+        android:title="Save"
+        android:orderInCategory="100"
+        />
+</menu>

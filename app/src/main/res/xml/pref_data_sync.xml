@@ -1,0 +1,26 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:defaultValue="https://mydokuwiki/lib/exe/xmlrpc.php"
+        android:key="serverurl"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="server URL" />
+    <EditTextPreference
+        android:key="user"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="User" />
+    <EditTextPreference
+        android:inputType="textPassword"
+        android:password="true"
+        android:key="password"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Password"
+        android:hint="Password" />
+
+</PreferenceScreen>

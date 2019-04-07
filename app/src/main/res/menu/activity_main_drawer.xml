@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/startpage"
+            android:icon="@drawable/ic_menu_send"
+            android:title="Start page" />
+        <item
+            android:id="@+id/pagelist"
+            android:icon="@drawable/ic_menu_gallery"
+            android:title="Get Pages List" />
+        <item
+            android:id="@+id/synchro"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Synchro" />
+    </group>
+
+    <item android:title="Communicate">
+        <menu>
+            <item
+                android:id="@+id/logs"
+                android:icon="@drawable/ic_menu_slideshow"
+                android:title="Logs" />
+            <item
+                android:id="@+id/nav_sidebar"
+                android:icon="@drawable/ic_menu_share"
+                android:title="Sidebar page" />
+            <item
+                android:id="@+id/nav_send"
+                android:icon="@drawable/ic_menu_camera"
+                android:title="Wiki Title" />
+        </menu>
+    </item>
+    <item android:title="Pages List">
+        <menu>
+
+        </menu>
+    </item>
+</menu>
