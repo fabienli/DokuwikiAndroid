@@ -1,6 +1,5 @@
 package com.ileauxfraises.dokuwiki;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -38,7 +37,7 @@ public class EditActivity extends AppCompatActivity {
 
         _pagename = getIntent().getStringExtra("pagename");
         Log.d(TAG, "edit page: "+ _pagename);
-        _initial_edit_text = WikiManager.instance().retrievePageEdit(_pagename, true);
+        _initial_edit_text = WikiCacheUiOrchestrator.instance().retrievePageEdit(_pagename, true);
         _EditTextView = (EditText) findViewById(R.id.edit_text);
 
         setTitle("Edit: "+_pagename);
@@ -80,7 +79,7 @@ public class EditActivity extends AppCompatActivity {
     void savePage()
     {
         String new_text = _EditTextView.getText().toString();
-        WikiManager.instance().updateTextPage(_pagename, new_text);
+        WikiCacheUiOrchestrator.instance().updateTextPage(_pagename, new_text);
         Snackbar.make(this.findViewById(android.R.id.content),
                 "Saved !", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();

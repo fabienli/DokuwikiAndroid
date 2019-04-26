@@ -11,6 +11,7 @@ import android.widget.EditText;
 import com.ileauxfraises.dokuwiki.cache.WikiPage;
 import com.ileauxfraises.dokuwiki.cache.WikiPageList;
 import com.ileauxfraises.dokuwiki.db.AppDatabase;
+import com.ileauxfraises.dokuwiki.db.DbAsyncHandler;
 import com.ileauxfraises.dokuwiki.db.Page;
 import com.ileauxfraises.dokuwiki.db.PageAddIfMissing;
 import com.ileauxfraises.dokuwiki.db.PageReadAll;
@@ -21,60 +22,118 @@ import com.ileauxfraises.dokuwiki.sync.PageHtmlDownloader;
 import com.ileauxfraises.dokuwiki.sync.PageListRetriever;
 import com.ileauxfraises.dokuwiki.sync.PageTextDownloader;
 import com.ileauxfraises.dokuwiki.sync.PageTextUploader;
+import com.ileauxfraises.dokuwiki.sync.SyncAsyncHandler;
 import com.ileauxfraises.dokuwiki.sync.XmlRpcDownload;
 
 import java.util.ArrayList;
 
 import androidx.room.Room;
 
-public class WikiManager {
-    static WikiManager _instance = null;
-    static String TAG = "WikiManager";
-    Context context;
+public class WikiCacheUiOrchestrator {
+    // only one instance of this class
+    static WikiCacheUiOrchestrator _instance = null;
+    // used for logs
+    static String TAG = "WikiCacheUiOrchestrator";
+    // handy common object
+    protected Context context;
+    // Cache and db accessor
     public WikiPageList _wikiPageList;
-    AppDatabase _db;
-    ArrayList<String> _logs = new ArrayList<>();
+    protected AppDatabase _db;
+    protected DbAsyncHandler _dbAsyncHandler = null;
+    // Wiki accessor
+    protected SyncAsyncHandler _syncAsyncHandler = null;
+    // ongoing status
     public String _currentPageName = "";
     public Boolean _initDone = false;
+    protected ArrayList<String> _logs = new ArrayList<>();
+    // UI access
+    protected WebView _webView = null;
 
-    public static WikiManager instance(Context ictx){
+
+    // initialisation
+
+    public static WikiCacheUiOrchestrator instance(Context ictx, DbAsyncHandler iDbAsyncHandler, SyncAsyncHandler iSyncAsyncHandler){
         if(_instance == null){
-            _instance = new WikiManager(ictx);
+            _instance = new WikiCacheUiOrchestrator(ictx);
         }
         // always keep current context up to date
         _instance.context = ictx;
+        _instance._dbAsyncHandler = iDbAsyncHandler;
+        _instance._dbAsyncHandler.setWikiManagerCallback(_instance);
+        _instance._syncAsyncHandler = iSyncAsyncHandler;
+        _instance._syncAsyncHandler.setWikiManagerCallback(_instance);
+        if(!_instance._initDone) _instance.initFromDb();
         return _instance;
     }
-    public static WikiManager instance(){
+    public static WikiCacheUiOrchestrator instance(Context ictx){
+        if(_instance == null){
+            _instance = new WikiCacheUiOrchestrator(ictx);
+            Log.d(TAG, "instantiated without Async Handler, we will use default ones!");
+        }
+        // always keep current context up to date
+        _instance.context = ictx;
+        if(_instance._dbAsyncHandler == null) {
+            _instance._dbAsyncHandler = new DbAsyncHandler();
+            _instance._dbAsyncHandler.setWikiManagerCallback(_instance);
+        }
+        if(_instance._syncAsyncHandler == null) {
+            _instance._syncAsyncHandler = new SyncAsyncHandler();
+            _instance._syncAsyncHandler.setWikiManagerCallback(_instance);
+        }
+        if(!_instance._initDone) _instance.initFromDb();
+        return _instance;
+    }
+    public static WikiCacheUiOrchestrator instance(){
         if(_instance == null){
             Log.e(TAG, "instantiated without context, this might fail !!!");
         }
         return _instance;
     }
 
-    private WikiManager(Context ictx) {
+    private WikiCacheUiOrchestrator(Context ictx) {
         context = ictx;
         _wikiPageList = new WikiPageList();
         _db = Room.databaseBuilder(ictx.getApplicationContext(),
                 AppDatabase.class, "localcache").build();
-        initFromDb();
-
-        //updatePageListFromServer();
     }
 
     void initFromDb(){
         _logs.add("Init applicative memory from local db");
-        PageReadAll aExecutor = new PageReadAll(_db, this);
+        PageReadAll aExecutor = _dbAsyncHandler.getPageReadAll(_db); //new PageReadAll(_db, this);
         aExecutor.execute();
     }
 
     void updatePageListFromServer(){
         _logs.add("Retrieve the list of pages from server");
-        XmlRpcDownload aExecutor = new PageListRetriever(context, this);
+        PageListRetriever aExecutor = _syncAsyncHandler.getPageListRetriever(context);
         aExecutor.retrievePageList("");
     }
 
-    public String retrievePageHTML(String pagename, Boolean directDisplay){
+    public void retrievePageHTMLforDisplay(String pagename, WebView webview){
+        this._webView = webview;
+        _currentPageName = pagename;
+        String unencodedHtml = "<html><body>Please wait ...</body></html>";
+        if(_wikiPageList._pages.containsKey(pagename) && _wikiPageList._pages.get(pagename)._html.compareTo("")!=0){
+            _logs.add("using page "+pagename+" from local db" );
+            Log.d(TAG, "Page is there, no need to download it !");
+            unencodedHtml = _wikiPageList._pages.get(pagename)._html;
+            Log.d(TAG, "html content:"+_wikiPageList._pages.get(pagename)._html);
+            this.loadPage(unencodedHtml);
+        }
+        else {
+            _logs.add("page "+pagename+" not in local db, get it from server" );
+            Log.d(TAG, "Page not found here, need to download it !");
+            unencodedHtml = "<html><body>Please wait ...</body></html>";
+
+            //meantime, try to retrieve it
+            PageHtmlDownloader aExecutor = _syncAsyncHandler.getPageHtmlDownloader(context, true);
+            aExecutor.retrievePageHTML(pagename);
+
+            this.loadPage(unencodedHtml);
+        }
+    }
+/*
+    public String retrievePageHTMLdeprecated(String pagename, Boolean directDisplay){
         if(directDisplay) _currentPageName = pagename;
         String unencodedHtml = "<html><body>Please wait ...</body></html>";
         if(_wikiPageList._pages.containsKey(pagename) && _wikiPageList._pages.get(pagename)._html.compareTo("")!=0){
@@ -110,14 +169,45 @@ public class WikiManager {
         _wikiPageList._pages.put(pagename, newpage);
         _logs.add("page "+pagename+" stored in local db" );
 
+    }*/
+
+    public void updatePageInCache(String pagename, String html) {
+        html = html.replaceAll("href=\"/", "href=\"http://dokuwiki/");
+        // save the page in db for caching
+        PageUpdateHtml dbExec = _dbAsyncHandler.getPageUpdateHtml(_db, pagename, html);
+        dbExec.execute();
+        WikiPage newpage;
+        if(_wikiPageList._pages.containsKey(pagename)){
+            newpage = _wikiPageList._pages.get(pagename);
+        }
+        else{
+            newpage = new WikiPage();
+        }
+        newpage._html = html;
+        _wikiPageList._pages.put(pagename, newpage);
+        _logs.add("page "+pagename+" stored in local db" );
+    }
+/*
+    public void updatePageInCache(ArrayList<String> _xmlrpc_results, String pagename) {
+        String html = "";
+        if(_xmlrpc_results.size()==1){
+            _logs.add("page "+pagename+" retrieved from server" );
+            html = _xmlrpc_results.get(0);
+            updatePageInCache(pagename, html);
+        }
+        else
+        {
+            html = "<html><body>Error ...</body></html>";
+            _logs.add("error when downloading page "+pagename+" from server");
+        }
     }
 
-    public void retrievedPageHtml(ArrayList<String> results, String pagename, Boolean directDisplay) {
+    public void retrievedPageHtml(ArrayList<String> _xmlrpc_results, String pagename, Boolean directDisplay) {
         if(directDisplay) _currentPageName = pagename;
         String html = "";
-        if(results.size()==1){
+        if(_xmlrpc_results.size()==1){
             _logs.add("page "+pagename+" retrieved from server" );
-            html = results.get(0);
+            html = _xmlrpc_results.get(0);
             retrievedPageHtml(pagename, html);
         }
         else
@@ -131,7 +221,7 @@ public class WikiManager {
             WebView myWebView = (WebView) ((MainActivity)context).findViewById(R.id.webview);
             myWebView.loadData(encodedHtml, "text/html", "base64");
         }
-    }
+    }*/
 
     public String retrievePageEdit(String pagename, Boolean directDisplay){
         if(directDisplay) _currentPageName = pagename;
@@ -147,7 +237,7 @@ public class WikiManager {
             Log.d(TAG, "Page not found here, need to download it !");
             edit_text = "...";
             //meantime, try to retrieve it
-            PageTextDownloader aExecutor = new PageTextDownloader(context, this, directDisplay);
+            PageTextDownloader aExecutor = _syncAsyncHandler.getPageTextDownloader(context, directDisplay);
             aExecutor.retrievePageText(pagename);
         }
         return edit_text;
@@ -155,7 +245,7 @@ public class WikiManager {
 
     public void retrievedPageText(String pagename, String edit_text) {
         // save the page in db for caching
-        PageUpdateText dbExec = new PageUpdateText(_db, pagename, edit_text);
+        PageUpdateText dbExec = _dbAsyncHandler.getPageUpdateText(_db, pagename, edit_text);
         dbExec.execute();
         WikiPage newpage;
         if(_wikiPageList._pages.containsKey(pagename)){
@@ -193,18 +283,18 @@ public class WikiManager {
         // 1. upload the new text to wiki
         _logs.add("text page "+pagename+" updated, uploading it to server");
         Log.d(TAG, "text page "+pagename+" updated, uploading it to server");
-        PageTextUploader aExecutor = new PageTextUploader(context, this);
+        PageTextUploader aExecutor = _syncAsyncHandler.getPageTextUploader(context);
         aExecutor.uploadPageText(pagename, newtext);
         // 2. save also in local DB
         retrievedPageText(pagename, newtext);
     }
 
     public void uploadedPageText(ArrayList<String> results, String pagename) {
-        // try to display the new html version in MainActivity?
+        // try to display the new html version in _webview
         _logs.add("page "+pagename+" should be updated, get it from server");
         Log.d(TAG, "page "+pagename+" should be updated, get it from server");
-        //meantime, try to retrieve it
-        XmlRpcDownload aExecutor = new PageHtmlDownloader(context, this, true);
+        // try to retrieve it, in case of failure, consider to flag it for future retrieve + try a best effort display
+        PageHtmlDownloader aExecutor = _syncAsyncHandler.getPageHtmlDownloader(context, true);
         aExecutor.retrievePageHTML(pagename);
 
     }
@@ -230,7 +320,8 @@ public class WikiManager {
         return unencodedHtml;
     }
 
-    public void retrievedPageList(ArrayList<String> results) {
+    // store in local cache the list of pages received from server
+    public void updateCacheWithPageListReceived(ArrayList<String> results) {
         _logs.add("Received info for "+results.size()+" pages from server");
         for (int i = 0; i < results.size(); i++) {
             Log.d(TAG, "check: "+results.get(i));
@@ -263,7 +354,7 @@ public class WikiManager {
             page.html = "";
             page.text = "";
             page.rev = aRevision;
-            PageAddIfMissing dbExec = new PageAddIfMissing(_db, page);
+            PageAddIfMissing dbExec = _dbAsyncHandler.getPageAddIfMissing(_db, page);
             dbExec.execute();
             if(!_wikiPageList._pages.containsKey(aPageName))
             {
@@ -279,10 +370,10 @@ public class WikiManager {
 
 
         }
-        listPagesToUpdate();
+        identifyPagesToUpdate();
     }
 
-    public void listPagesToUpdate(){
+    public void identifyPagesToUpdate(){
         ArrayList<String> pagestoupdate = new ArrayList<>();
         for(String pagename : _wikiPageList._pages.keySet()){
             WikiPage pageitem = _wikiPageList._pages.get(pagename);
@@ -291,24 +382,31 @@ public class WikiManager {
                 pagestoupdate.add(pagename);
             }
         }
-        if(false) {
-            MultiPageHtmlDownloader aExecutor = new MultiPageHtmlDownloader(context, this);
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this.context);
+        String typesync = settings.getString("list_type_sync", "a");
+        if(typesync.compareTo("b")==0) {
+            MultiPageHtmlDownloader aExecutor = _syncAsyncHandler.getMultiPageHtmlDownloader(this.context);
             aExecutor.execute(pagestoupdate.toArray(new String[pagestoupdate.size()]));
         }
         Log.d(TAG, "This is all I should update from server");
-
     }
 
-    public void allPagesRetrieved() {
+    public void postInit() {
         _initDone = true;
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         String startpage = settings.getString("startpage", "start");
-        if(_wikiPageList._pages.containsKey(startpage) && _wikiPageList._pages.get(startpage)._html.compareTo("")!=0) {
-            String html = retrievePageHTML(startpage, true);
-            html = html.replaceAll("href=\"/", "href=\"http://dokuwiki/");
+        retrievePageHTMLforDisplay(startpage, _webView);
+    }
+
+    public void loadPage(String iPageData) {
+        if(_webView == null) {
+            // try to guess ourselves where is the webview
+            _webView = (WebView) ((MainActivity)context).findViewById(R.id.webview);
+        }
+        if(_webView != null) {
+            String html = iPageData.replaceAll("href=\"/", "href=\"http://dokuwiki/");
             String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
-            WebView myWebView = (WebView) ((MainActivity)context).findViewById(R.id.webview);
-            myWebView.loadData(encodedHtml, "text/html", "base64");
+            _webView.loadData(encodedHtml, "text/html", "base64");
         }
     }
 }

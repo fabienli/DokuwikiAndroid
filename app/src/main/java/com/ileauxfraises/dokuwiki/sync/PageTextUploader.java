@@ -2,20 +2,20 @@ package com.ileauxfraises.dokuwiki.sync;
 
 import android.content.Context;
 
-import com.ileauxfraises.dokuwiki.WikiManager;
+import com.ileauxfraises.dokuwiki.WikiCacheUiOrchestrator;
 
 public class PageTextUploader  extends XmlRpcDownload {
-    WikiManager _wikiMngr;
+    WikiCacheUiOrchestrator _wikiMngr;
 
-    public PageTextUploader(Context context, WikiManager wikiManager) {
+    public PageTextUploader(Context context, WikiCacheUiOrchestrator wikiCacheUiOrchestrator) {
         super(context);
-        _wikiMngr = wikiManager;
+        _wikiMngr = wikiCacheUiOrchestrator;
     }
 
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
-        _wikiMngr.uploadedPageText(results, _pagename);
+        _wikiMngr.uploadedPageText(_xmlrpc_results, _pagename);
 
     }
 

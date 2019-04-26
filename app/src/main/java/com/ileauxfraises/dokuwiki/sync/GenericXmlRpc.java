@@ -21,27 +21,27 @@ public class GenericXmlRpc extends XmlRpcDownload {
         Log.d("Hi", "Done Downloading.");
 
         String unencodedHtml = "<html><body>" + result + "<ul>";
-        if (isRawResult)
+        if (_isRawResult)
         {
-            unencodedHtml = results.get(0);
+            unencodedHtml = _xmlrpc_results.get(0);
         }
         else {
-            for (int i = 0; i < results.size(); i++) {
-                unencodedHtml += "\n<li>" + results.get(i) + "</li>";
+            for (int i = 0; i < _xmlrpc_results.size(); i++) {
+                unencodedHtml += "\n<li>" + _xmlrpc_results.get(i) + "</li>";
             }
             unencodedHtml += "\n</ul></body></html>";
         }
         unencodedHtml = unencodedHtml.replaceAll("href=\"/", "href=\"http://dokuwiki/");
         Log.d(TAG, "unencodedHtml: "+unencodedHtml);
         String encodedHtml = Base64.encodeToString(unencodedHtml.getBytes(), Base64.NO_PADDING);
-        WebView myWebView = (WebView) ((MainActivity)pContext).findViewById(R.id.webview);
+        WebView myWebView = (WebView) ((MainActivity) _context).findViewById(R.id.webview);
         myWebView.loadData(encodedHtml, "text/html", "base64");
 
         //menu
-        if(results.size()>1){
-            NavigationView myNavView = (NavigationView) ((MainActivity)pContext).findViewById(R.id.nav_view);
-            for (int i = 0; i < results.size(); i++) {
-                String[] parts = results.get(i).split(",");
+        if(_xmlrpc_results.size()>1){
+            NavigationView myNavView = (NavigationView) ((MainActivity) _context).findViewById(R.id.nav_view);
+            for (int i = 0; i < _xmlrpc_results.size(); i++) {
+                String[] parts = _xmlrpc_results.get(i).split(",");
                 for (String a : parts) {
                     if(a.startsWith("id=")){
                         myNavView.getMenu().add(a.substring(3));

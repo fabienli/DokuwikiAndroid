@@ -1,20 +1,26 @@
 package com.ileauxfraises.dokuwiki.sync;
 
 import android.content.Context;
+import android.util.Log;
 
-import com.ileauxfraises.dokuwiki.WikiManager;
+import com.ileauxfraises.dokuwiki.WikiCacheUiOrchestrator;
 
 public class PageListRetriever extends XmlRpcDownload {
-    WikiManager _wikiMngr;
-    public PageListRetriever(Context context, WikiManager wikiManager) {
+    WikiCacheUiOrchestrator _wikiMngr;
+    public PageListRetriever(Context context, WikiCacheUiOrchestrator wikiCacheUiOrchestrator) {
         super(context);
-        _wikiMngr = wikiManager;
+        _wikiMngr = wikiCacheUiOrchestrator;
+    }
+
+    public void retrievePageList(String namespace){
+        Log.d(TAG,"Looking for pages in "+namespace);
+        this.execute("dokuwiki.getPagelist",namespace,"{}");
     }
 
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
-        _wikiMngr.retrievedPageList(results);
+        _wikiMngr.updateCacheWithPageListReceived(_xmlrpc_results);
 
     }
 

@@ -180,7 +180,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("serverurl"));
             bindPreferenceSummaryToValue(findPreference("user"));
-            //bindPreferenceSummaryToValue(findPreference("password"));
+            bindPreferenceSummaryToValue(findPreference("list_delay_sync"));
+            bindPreferenceSummaryToValue(findPreference("list_type_sync"));
         }
 
         @Override

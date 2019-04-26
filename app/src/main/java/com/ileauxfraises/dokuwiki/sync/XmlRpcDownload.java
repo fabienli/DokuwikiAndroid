@@ -33,19 +33,19 @@ import java.util.Vector;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class XmlRpcDownload extends AsyncTask<String, Void, String> {
-    ProgressDialog pDialog;
-    Context pContext;
+public class XmlRpcDownload extends AsyncTask<String, Integer, String> {
+    ProgressDialog _dialog;
+    Context _context;
     static String TAG = "XmlRpcDownload";
-    public ArrayList<String> results = new ArrayList<String>();
-    boolean isRawResult = false;
-    String _pagename = "";
+    public ArrayList<String> _xmlrpc_results = new ArrayList<String>();
+    protected boolean _isRawResult = false;
+    protected String _pagename = "";
     final XmlRpcClient client = new XmlRpcClient();
     final List<String> cookies = new ArrayList<>();
 
 
     public XmlRpcDownload(Context context){
-        pContext = context;
+        _context = context;
     }
 
     @Override
@@ -53,8 +53,8 @@ public class XmlRpcDownload extends AsyncTask<String, Void, String> {
         super.onPreExecute();
         Log.d(TAG, "Download Commencing");
 
-        pDialog = new ProgressDialog(pContext);
-        pDialog.setMessage("Downloading Database...");
+        _dialog = new ProgressDialog(_context);
+        _dialog.setMessage("Downloading Database...");
 
         String message= "Executing Process";
 
@@ -62,10 +62,10 @@ public class XmlRpcDownload extends AsyncTask<String, Void, String> {
         ss2.setSpan(new RelativeSizeSpan(2f), 0, ss2.length(), 0);
         ss2.setSpan(new ForegroundColorSpan(Color.BLACK), 0, ss2.length(), 0);
 
-        pDialog.setMessage(ss2);
+        _dialog.setMessage(ss2);
 
-        pDialog.setCancelable(false);
-        pDialog.show();
+        _dialog.setCancelable(false);
+        _dialog.show();
     }
 
     public void retrieveTitle(){
@@ -83,14 +83,8 @@ public class XmlRpcDownload extends AsyncTask<String, Void, String> {
         execute("wiki.getPageInfo", pagename);
         //execute("dokuwiki.getTime");
     }
-    public void retrievePageHTML(String pagename){
-        isRawResult = true;
-        _pagename = pagename;
-        Log.d(TAG,"GetPage HTML "+pagename);
-        execute("wiki.getPageHTML", pagename);
-    }
     public void retrievePageText(String pagename){
-        isRawResult = true;
+        _isRawResult = true;
         _pagename = pagename;
         Log.d(TAG,"GetPage Text "+pagename);
         execute("wiki.getPage", pagename);
@@ -104,14 +98,10 @@ public class XmlRpcDownload extends AsyncTask<String, Void, String> {
         Log.d(TAG,"Looking for all pages");
         execute("dokuwiki.getPagelist","","{}");
     }
-    public void retrievePageList(String namespace){
-        Log.d(TAG,"Looking for pages in "+namespace);
-        execute("dokuwiki.getPagelist",namespace,"{}");
-    }
 
     @Override
     protected String doInBackground(String... params) {
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(pContext);
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
         String password = settings.getString("password", "");
         String user = settings.getString("user", "");;
         String urlserver = settings.getString("serverurl", "");;
@@ -140,9 +130,9 @@ public class XmlRpcDownload extends AsyncTask<String, Void, String> {
                 Log.d(TAG,"The result login is: "+ result);
                 Log.d(TAG,"The cookies size is: "+ cookies.size());
                 if(! ((Boolean) result)){
-                    View toastView = ((AppCompatActivity)pContext).findViewById(R.id.view_content);
+                    View toastView = ((AppCompatActivity) _context).findViewById(R.id.view_content);
                     if(toastView == null){
-                        toastView = ((AppCompatActivity)pContext).findViewById(R.id.webview);
+                        toastView = ((AppCompatActivity) _context).findViewById(R.id.webview);
                     }
                     Snackbar.make(toastView, "Login error ! please check user/password", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
@@ -172,13 +162,13 @@ public class XmlRpcDownload extends AsyncTask<String, Void, String> {
                 Log.d(TAG,"The result list: "+ aRestIt);
                 for(int i=0; i<aRestIt.length;i++){
                     Log.d(TAG,"The result list#"+i+": "+ aRestIt[i]);
-                    results.add(aRestIt[i].toString());
+                    _xmlrpc_results.add(aRestIt[i].toString());
                 }
-                Log.d(TAG,"The result size: "+ results.size());
+                Log.d(TAG,"The result size: "+ _xmlrpc_results.size());
             }
             else {
                 Log.d(TAG,"The result is: "+ result);
-                results.add(result.toString());
+                _xmlrpc_results.add(result.toString());
             }
 
 
@@ -194,7 +184,7 @@ public class XmlRpcDownload extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
         Log.d("Hi", "Done Downloading.");
-        pDialog.dismiss();
+        _dialog.dismiss();
     }
 
 

@@ -3,22 +3,22 @@ package com.ileauxfraises.dokuwiki.db;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.ileauxfraises.dokuwiki.WikiManager;
+import com.ileauxfraises.dokuwiki.WikiCacheUiOrchestrator;
 import com.ileauxfraises.dokuwiki.cache.WikiPage;
 import com.ileauxfraises.dokuwiki.cache.WikiPageList;
 
 import java.util.List;
 
 public class PageReadAll extends AsyncTask<String, Void, String> {
-    WikiManager _wikiManager = null;
+    WikiCacheUiOrchestrator _wikiCacheUiOrchestrator = null;
     WikiPageList _wikiPageList = null;
     AppDatabase _db = null;
     String TAG = "PageReadAll";
 
-    public PageReadAll(AppDatabase db, WikiManager pagelist) {
+    public PageReadAll(AppDatabase db, WikiCacheUiOrchestrator pagelist) {
         _db = db;
-        _wikiManager = pagelist;
-        _wikiPageList = _wikiManager._wikiPageList;
+        _wikiCacheUiOrchestrator = pagelist;
+        _wikiPageList = _wikiCacheUiOrchestrator._wikiPageList;
     }
 
     @Override
@@ -43,6 +43,10 @@ public class PageReadAll extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
         Log.d(TAG, "DB "+result);
-        _wikiManager.allPagesRetrieved();
+        doPostAction();
+    }
+
+    public void doPostAction(){
+        _wikiCacheUiOrchestrator.postInit();
     }
 }

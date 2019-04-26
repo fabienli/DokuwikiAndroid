@@ -22,5 +22,17 @@
         android:singleLine="true"
         android:title="Password"
         android:hint="Password" />
+    <ListPreference
+        android:defaultValue="a"
+        android:entries="@array/pref_typesync_list_titles"
+        android:entryValues="@array/pref_typesync_list_values"
+        android:key="list_type_sync"
+        android:title="Type of sync" />
+    <ListPreference
+        android:defaultValue="0"
+        android:entries="@array/pref_delay_list_titles"
+        android:entryValues="@array/pref_delay_list_values"
+        android:key="list_delay_sync"
+        android:title="Delay in sync" />
 
 </PreferenceScreen>

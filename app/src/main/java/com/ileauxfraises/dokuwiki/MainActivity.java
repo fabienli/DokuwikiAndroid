@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import com.google.android.material.navigation.NavigationView;
-import com.ileauxfraises.dokuwiki.sync.GenericXmlRpc;
 
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -31,7 +30,7 @@ import android.webkit.WebViewClient;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    private WebView myWebView;
+    private WebView _webView;
     protected Context context;
 
     @Override
@@ -64,17 +63,17 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         // the main web page
-        myWebView = (WebView) findViewById(R.id.webview);
-        myWebView.setWebViewClient(new MyWebViewClient());
-        WebSettings webSettings = myWebView.getSettings();
+        _webView = (WebView) findViewById(R.id.webview);
+        _webView.setWebViewClient(new MyWebViewClient());
+        WebSettings webSettings = _webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setSupportZoom(true);
 
         displayHtml("Loading ...");
 
         //ensure cache is initiated
-        WikiManager.instance(this);
-        if(WikiManager.instance(this)._initDone)
+        WikiCacheUiOrchestrator.instance(this);
+        if(WikiCacheUiOrchestrator.instance(this)._initDone)
         {
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
             String startpage = settings.getString("startpage", "start");
@@ -87,7 +86,7 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
 
         //ensure cache is initiated
-        WikiManager.instance(this);
+        WikiCacheUiOrchestrator.instance(this);
     }
 
     @Override
@@ -95,8 +94,8 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if(myWebView.canGoBack()) {
-            myWebView.goBack();
+        } else if(_webView.canGoBack()) {
+            _webView.goBack();
         } else {
             super.onBackPressed();
         }
@@ -104,8 +103,8 @@ public class MainActivity extends AppCompatActivity
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // Check if the key event was the Back button and if there's history
-        if ((keyCode == KeyEvent.KEYCODE_BACK) && myWebView.canGoBack()) {
-            myWebView.goBack();
+        if ((keyCode == KeyEvent.KEYCODE_BACK) && _webView.canGoBack()) {
+            _webView.goBack();
             return true;
         }
         // If it wasn't the Back key or there's no web page history, bubble up to the default
@@ -137,7 +136,7 @@ public class MainActivity extends AppCompatActivity
         }
         else if (id == R.id.action_edit) {
             Intent intent = new Intent(MainActivity.this,EditActivity.class);
-            intent.putExtra("pagename", WikiManager.instance(this)._currentPageName);
+            intent.putExtra("pagename", WikiCacheUiOrchestrator.instance(this)._currentPageName);
             startActivityForResult(intent, 0);
             return true;
         }
@@ -150,42 +149,35 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        GenericXmlRpc aExecutor = new GenericXmlRpc(this);
-        //aExecutor.setListener(new Listener)
 
         if (id == R.id.startpage) {
-            // Start page
-            String html = WikiManager.instance(this).retrievePageHTML("start", true);
-            String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
-            WebView myWebView = (WebView) findViewById(R.id.webview);
-            myWebView.loadData(encodedHtml, "text/html", "base64");
+            // get start page name from options
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this.context);
+            String startpage = settings.getString("startpage", "start");
+            displayPage(startpage);
         } else if (id == R.id.synchro) {
-            WikiManager.instance(this).updatePageListFromServer();//
-            // aExecutor.getPageInfo("start");
+            WikiCacheUiOrchestrator.instance(this).updatePageListFromServer();
         } else if (id == R.id.logs) {
-            String html = WikiManager.instance(this).getLogsHtml();
+            String html = WikiCacheUiOrchestrator.instance(this).getLogsHtml();
             String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
             WebView myWebView = (WebView) findViewById(R.id.webview);
             myWebView.loadData(encodedHtml, "text/html", "base64");
         } else if (id == R.id.pagelist) {
             //aExecutor.retrievePageList("wiki");
-            String html = WikiManager.instance(this).getPageListHtml();
+            String html = WikiCacheUiOrchestrator.instance(this).getPageListHtml();
             String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
             WebView myWebView = (WebView) findViewById(R.id.webview);
             myWebView.loadData(encodedHtml, "text/html", "base64");
 
         } else if (id == R.id.nav_sidebar) {
             // Start page
-            String html = WikiManager.instance(this).retrievePageHTML("sidebar", true);
-            String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
-            WebView myWebView = (WebView) findViewById(R.id.webview);
-            myWebView.loadData(encodedHtml, "text/html", "base64");
+            displayPage("sidebar");
         } else if (id == R.id.nav_send) {
 
         }
         else { // shortcuts to a page
             Log.d("Menu", String.valueOf(item));
-            aExecutor.retrievePageHTML(String.valueOf(item));
+            displayPage(String.valueOf(item));
         }
 
 
@@ -195,15 +187,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void displayPage(String pagename){
-        String html = WikiManager.instance(this).retrievePageHTML(pagename, true);
-        displayHtml(html);
-
+        WikiCacheUiOrchestrator.instance(this).retrievePageHTMLforDisplay(pagename, _webView);
     }
+
     public void displayHtml(String html){
         String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
-        WebView myWebView = (WebView) findViewById(R.id.webview);
-        myWebView.loadData(encodedHtml, "text/html", "base64");
-
+        _webView.loadData(encodedHtml, "text/html", "base64");
     }
 
     private class MyWebViewClient extends WebViewClient {
@@ -219,13 +208,17 @@ public class MainActivity extends AppCompatActivity
             Log.d("WebView", "link to: "+ Uri.parse(url));
             Log.d("WebView", "link to: "+ Uri.parse(url).getHost());
             if(url.startsWith("http://dokuwiki/doku.php?id=")){
+                WebView myWebView = (WebView) findViewById(R.id.webview);
+                String pagename = url.replace("http://dokuwiki/doku.php?id=", "");
+                WikiCacheUiOrchestrator.instance(view.getContext()).retrievePageHTMLforDisplay(pagename, myWebView);
+                /*
                 //GenericXmlRpc aExecutor = new GenericXmlRpc(context);
-                //aExecutor.retrievePageHTML(url.replace("http://dokuwiki/doku.php?id=", ""));
-                String html = WikiManager.instance(view.getContext()).retrievePageHTML(url.replace("http://dokuwiki/doku.php?id=", ""), true);
+                //aExecutor.retrievePageHTMLdeprecated(url.replace("http://dokuwiki/doku.php?id=", ""));
+                String html = WikiCacheUiOrchestrator.instance(view.getContext()).retrievePageHTMLdeprecated(url.replace("http://dokuwiki/doku.php?id=", ""), true);
                 String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
                 WebView myWebView = (WebView) findViewById(R.id.webview);
                 myWebView.loadData(encodedHtml, "text/html", "base64");
-
+                */
                 return false;
             }
             // Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
