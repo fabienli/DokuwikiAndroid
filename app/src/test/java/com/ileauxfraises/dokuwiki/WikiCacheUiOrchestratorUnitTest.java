@@ -4,19 +4,16 @@ import android.content.Context;
 
 import com.ileauxfraises.dokuwiki.cache.WikiPage;
 import com.ileauxfraises.dokuwiki.db.AppDatabase;
-import com.ileauxfraises.dokuwiki.db.DbAsyncHandler;
-import com.ileauxfraises.dokuwiki.db.PageReadAll;
+import com.ileauxfraises.dokuwiki.db.DbUsecaseHandler;
 import com.ileauxfraises.dokuwiki.db.PageUpdateHtml;
-import com.ileauxfraises.dokuwiki.sync.PageListRetriever;
-import com.ileauxfraises.dokuwiki.sync.SyncAsyncHandler;
+import com.ileauxfraises.dokuwiki.sync.SyncUsecaseHandler;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Example local unit test, which will execute on the development machine (host).
+ * Testing the WikiCacheUiOrchestrator class
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
@@ -26,18 +23,15 @@ public class WikiCacheUiOrchestratorUnitTest {
         // mock initialisation
         Context mockedContext = mock(Context.class);
         when(mockedContext.getApplicationContext()).thenReturn(mockedContext);
-        DbAsyncHandler aDbAsyncHandler = mock(DbAsyncHandler.class);
-        SyncAsyncHandler aSyncAsyncHandler = mock(SyncAsyncHandler.class);
-        PageReadAll aPageReadAll = mock(PageReadAll.class);
-        when(aDbAsyncHandler.getPageReadAll(any(AppDatabase.class))).thenReturn(aPageReadAll);
+        DbUsecaseHandler aDbUsecaseHandler = mock(DbUsecaseHandler.class);
+        SyncUsecaseHandler aSyncUsecaseHandler = mock(SyncUsecaseHandler.class);
 
         // main call to test
-        WikiCacheUiOrchestrator aWikiCacheUiOrchestrator = WikiCacheUiOrchestrator.instance(mockedContext, aDbAsyncHandler, aSyncAsyncHandler);
+        WikiCacheUiOrchestrator aWikiCacheUiOrchestrator = WikiCacheUiOrchestrator.instance(mockedContext, aDbUsecaseHandler, aSyncUsecaseHandler);
 
         // verification
-        verify(aDbAsyncHandler, times(1)).setWikiManagerCallback(aWikiCacheUiOrchestrator);
-        verify(aSyncAsyncHandler, times(1)).setWikiManagerCallback(aWikiCacheUiOrchestrator);
-        verify(aPageReadAll, times(1)).execute();
+        verify(aDbUsecaseHandler, times(1)).setWikiManagerCallback(aWikiCacheUiOrchestrator);
+        verify(aSyncUsecaseHandler, times(1)).setWikiManagerCallback(aWikiCacheUiOrchestrator);
 
     }
 
@@ -46,20 +40,15 @@ public class WikiCacheUiOrchestratorUnitTest {
         // mock initialisation
         Context mockedContext = mock(Context.class);
         when(mockedContext.getApplicationContext()).thenReturn(mockedContext);
-        DbAsyncHandler aDbAsyncHandler = mock(DbAsyncHandler.class);
-        SyncAsyncHandler aSyncAsyncHandler = mock(SyncAsyncHandler.class);
-        PageReadAll aPageReadAll = mock(PageReadAll.class);
-        when(aDbAsyncHandler.getPageReadAll(any(AppDatabase.class))).thenReturn(aPageReadAll);
-        PageListRetriever aPageListRetriever = mock(PageListRetriever.class);
-        when(aSyncAsyncHandler.getPageListRetriever(any(Context.class))).thenReturn(aPageListRetriever);
+        DbUsecaseHandler aDbUsecaseHandler = mock(DbUsecaseHandler.class);
+        SyncUsecaseHandler aSyncUsecaseHandler = mock(SyncUsecaseHandler.class);
 
         // main call to test
-        WikiCacheUiOrchestrator aWikiCacheUiOrchestrator = WikiCacheUiOrchestrator.instance(mockedContext, aDbAsyncHandler, aSyncAsyncHandler);
+        WikiCacheUiOrchestrator aWikiCacheUiOrchestrator = WikiCacheUiOrchestrator.instance(mockedContext, aDbUsecaseHandler, aSyncUsecaseHandler);
         aWikiCacheUiOrchestrator.updatePageListFromServer();
 
         // verification
-        verify(aSyncAsyncHandler, times(1)).getPageListRetriever(any(Context.class));
-        verify(aPageListRetriever, times(1)).retrievePageList("");
+        verify(aSyncUsecaseHandler, times(1)).callPageListRetrieveUsecase(eq(""), any(Context.class));
 
     }
 
@@ -72,21 +61,15 @@ public class WikiCacheUiOrchestratorUnitTest {
         // mock initialisation
         Context mockedContext = mock(Context.class);
         when(mockedContext.getApplicationContext()).thenReturn(mockedContext);
-        DbAsyncHandler aDbAsyncHandler = mock(DbAsyncHandler.class);
-        SyncAsyncHandler aSyncAsyncHandler = mock(SyncAsyncHandler.class);
-        PageReadAll aPageReadAll = mock(PageReadAll.class);
-        when(aDbAsyncHandler.getPageReadAll(any(AppDatabase.class))).thenReturn(aPageReadAll);
-        PageListRetriever aPageListRetriever = mock(PageListRetriever.class);
-        when(aSyncAsyncHandler.getPageListRetriever(any(Context.class))).thenReturn(aPageListRetriever);
-        PageUpdateHtml aPageUpdateHtml = mock(PageUpdateHtml.class);
-        when(aDbAsyncHandler.getPageUpdateHtml(any(AppDatabase.class),eq(PAGENAME),any(String.class))).thenReturn(aPageUpdateHtml);
+        DbUsecaseHandler aDbUsecaseHandler = mock(DbUsecaseHandler.class);
+        SyncUsecaseHandler aSyncUsecaseHandler = mock(SyncUsecaseHandler.class);
 
         // main call to test
-        WikiCacheUiOrchestrator aWikiCacheUiOrchestrator = WikiCacheUiOrchestrator.instance(mockedContext, aDbAsyncHandler, aSyncAsyncHandler);
+        WikiCacheUiOrchestrator aWikiCacheUiOrchestrator = WikiCacheUiOrchestrator.instance(mockedContext, aDbUsecaseHandler, aSyncUsecaseHandler);
         aWikiCacheUiOrchestrator.updatePageInCache(PAGENAME, HTMLCONTENT);
 
         // check the results
-        verify(aPageUpdateHtml, times(1)).execute();
+        verify(aDbUsecaseHandler, times(1)).callPageUpdateHtmlUsecase(any(AppDatabase.class),eq(PAGENAME),any(String.class));
         assert(aWikiCacheUiOrchestrator._wikiPageList._pages.size() == 1);
         assert(aWikiCacheUiOrchestrator._wikiPageList._pages.containsKey(PAGENAME));
         WikiPage newpage = aWikiCacheUiOrchestrator._wikiPageList._pages.get(PAGENAME);
@@ -94,7 +77,7 @@ public class WikiCacheUiOrchestratorUnitTest {
 
         // update the content and check it's updated
         aWikiCacheUiOrchestrator.updatePageInCache(PAGENAME, HTMLCONTENT2);
-        verify(aPageUpdateHtml, times(2)).execute();
+        verify(aDbUsecaseHandler, times(2)).callPageUpdateHtmlUsecase(any(AppDatabase.class),eq(PAGENAME),any(String.class));
         assert(aWikiCacheUiOrchestrator._wikiPageList._pages.size() == 1);
         assert(aWikiCacheUiOrchestrator._wikiPageList._pages.containsKey(PAGENAME));
         newpage = aWikiCacheUiOrchestrator._wikiPageList._pages.get(PAGENAME);

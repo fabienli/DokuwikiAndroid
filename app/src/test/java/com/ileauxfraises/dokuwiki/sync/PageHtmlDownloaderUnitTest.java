@@ -22,7 +22,7 @@ public class PageHtmlDownloaderUnitTest {
         Context mockedContext = mock(Context.class);
         when(mockedContext.getApplicationContext()).thenReturn(mockedContext);
         WikiCacheUiOrchestrator aWikiCacheUiOrchestrator = mock(WikiCacheUiOrchestrator.class);
-        SyncAsyncHandler aSyncAsyncHandler = mock(SyncAsyncHandler.class);
+        SyncUsecaseHandler aSyncUsecaseHandler = mock(SyncUsecaseHandler.class);
 
         // class to be tested
         PageHtmlDownloader aPageHtmlDownloader = new PageHtmlDownloader(mockedContext, aWikiCacheUiOrchestrator, false);
