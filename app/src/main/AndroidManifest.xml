@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.ileauxfraises.dokuwiki">
+    package="com.fabienli.dokuwiki">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -13,14 +13,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".EditActivity"
+            android:name="com.fabienli.dokuwiki.EditActivity"
             android:label="@string/title_activity_edit"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
-            android:name=".SettingsActivity"
+            android:name="com.fabienli.dokuwiki.SettingsActivity"
             android:label="@string/title_activity_settings" />
         <activity
-            android:name=".MainActivity"
+            android:name="com.fabienli.dokuwiki.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>

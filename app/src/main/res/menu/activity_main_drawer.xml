@@ -24,19 +24,17 @@
                 android:id="@+id/logs"
                 android:icon="@drawable/ic_menu_slideshow"
                 android:title="Logs" />
+
+        </menu>
+    </item>
+    <!--
+    <item android:title="Pages List">
+        <menu>
             <item
                 android:id="@+id/nav_sidebar"
                 android:icon="@drawable/ic_menu_share"
                 android:title="Sidebar page" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_camera"
-                android:title="Wiki Title" />
         </menu>
     </item>
-    <item android:title="Pages List">
-        <menu>
-
-        </menu>
-    </item>
+    -->
 </menu>

@@ -2,12 +2,12 @@
 
 
     <header
-        android:fragment="com.ileauxfraises.dokuwiki.SettingsActivity$GeneralPreferenceFragment"
+        android:fragment="com.fabienli.dokuwiki.SettingsActivity$GeneralPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/pref_header_general" />
 
     <header
-        android:fragment="com.ileauxfraises.dokuwiki.SettingsActivity$DataSyncPreferenceFragment"
+        android:fragment="com.fabienli.dokuwiki.SettingsActivity$DataSyncPreferenceFragment"
         android:icon="@drawable/ic_sync_black_24dp"
         android:title="@string/pref_header_data_sync" />
 
