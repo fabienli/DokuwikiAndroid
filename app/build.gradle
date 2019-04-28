@@ -23,40 +23,43 @@ android {
         }
     }
 
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     useLibrary 'org.apache.http.legacy'
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    //implementation 'com.android.support:appcompat-v7:28.0.0'
-    //implementation 'com.android.support:design:28.0.0'
-    //implementation 'com.android.support.constraint:constraint-layout:1.1.3'
 
-    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
 
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.multidex:multidex:2.0.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha2'
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha4'
 
-    // useless: implementation 'org.apache.httpcomponents:httpclient:4.2.6'
-    //implementation 'org.openengsb.wrapped:org.apache.xmlrpc-all:3.1.3.w1'
-    // got it from http://gradleplease.appspot.com/#org.apache.xmlrpc, then simplified to:
-    implementation 'org.apache.xmlrpc:xmlrpc-client:3.1.3'
+    // excluding junit from xmlrpc, as an older version is linked here
+    implementation('org.apache.xmlrpc:xmlrpc-client:3.1.3'){
+        exclude group: 'junit', module: 'junit'
+    }
+
     // room on sqlite
-    def room_version = "2.1.0-alpha04"
+    def room_version = "2.1.0-alpha06"
     implementation "androidx.room:room-runtime:$room_version"
-    implementation 'androidx.vectordrawable:vectordrawable:1.0.0-beta01'
+    implementation 'androidx.vectordrawable:vectordrawable:1.1.0-alpha01'
     annotationProcessor "androidx.room:room-compiler:$room_version"
+
     // Test helpers
     testImplementation "androidx.room:room-testing:$room_version"
-
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    testImplementation "org.mockito:mockito-core:2.+"
+    // https://site.mockito.org/
+    testImplementation "org.mockito:mockito-core:2.27.0"
 }
 
 android {
@@ -77,11 +80,5 @@ android {
 android {
     defaultConfig {
         vectorDrawables.useSupportLibrary = true
-    }
-}
-
-android {
-    testOptions {
-        unitTests.returnDefaultValues = true
     }
 }
