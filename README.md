@@ -1,10 +1,12 @@
+<img src="https://raw.githubusercontent.com/fabienli/DokuwikiAndroid/master/logo.png"/>
+
 # DokuwikiAndroid
-Anroid application to access a dokuwiki
+Android application to access a dokuwiki
 
 # Version:
-The application is currently on version alpha1.
+The application is currently on version alpha.
 
-This means that not all features are delivered for the application to work correctly, and stability is not yet guaranteed.
+This means that not all features are delivered for the application to work correctly, and stability is not guaranteed.
 
 # Prerequisite
 - a dokuwiki instance with api XML-RPC installed (https://www.dokuwiki.org/xmlrpc)
