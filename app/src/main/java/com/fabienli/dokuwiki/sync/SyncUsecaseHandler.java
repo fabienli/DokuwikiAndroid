@@ -36,4 +36,14 @@ public class SyncUsecaseHandler {
         MultiPageHtmlDownloader aMultiPageHtmlDownloader = new MultiPageHtmlDownloader(context, _wikiCacheUiOrchestrator);
         aMultiPageHtmlDownloader.execute(pages);
     }
+
+    public void callMediaListRetrieveUsecase(String namespace, Context context, Boolean directDisplay) {
+        MediaListRetriever aMediaListRetriever = new MediaListRetriever(context, _wikiCacheUiOrchestrator, directDisplay);
+        aMediaListRetriever.retrieveMediaList(namespace);
+    }
+
+    public void callMediaDownloadUsecase(String mediaId, String mediaLocalPath, Context context, Boolean directDisplay) {
+        MediaDownloader aMediaDownloader = new MediaDownloader(context, _wikiCacheUiOrchestrator, directDisplay);
+        aMediaDownloader.downloadMedia(mediaId, mediaLocalPath);
+    }
 }

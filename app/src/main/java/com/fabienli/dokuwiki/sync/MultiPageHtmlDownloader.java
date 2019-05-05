@@ -63,6 +63,7 @@ public class MultiPageHtmlDownloader extends XmlRpcDownload {
 
     @Override
     protected String doInBackground(String... params) {
+        //TODO: factorize part of this method with XmlRpcDownload's one
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
         String password = settings.getString("password", "");
         String user = settings.getString("user", "");;
@@ -74,18 +75,18 @@ public class MultiPageHtmlDownloader extends XmlRpcDownload {
             String methodName = "wiki.getPageHTML";
             XmlRpcClientConfigImpl xmlConfig = new XmlRpcClientConfigImpl();
             xmlConfig.setServerURL(new URL(urlserver));
-            client.setTransportFactory(getXmlRpcSunHttpTransportFactoryInstance());
+            client.setTransportFactory(getXmlRpcSunHttpTransportFactoryInstance(false));
             client.setConfig(xmlConfig);
             Log.d(TAG,"2");
             // login first
-            if(cookies.size() == 0) {
+            if(CookiesHolder.Instance().cookies.size() == 0) {
                 publishProgress(0);
                 Vector parametersLogin = new Vector();
                 parametersLogin.addElement(user);
                 parametersLogin.addElement(password);
                 Object result = client.execute("dokuwiki.login",parametersLogin);
                 Log.d(TAG,"The result login is: "+ result);
-                Log.d(TAG,"The cookies size is: "+ cookies.size());
+                Log.d(TAG,"The cookies size is: "+ CookiesHolder.Instance().cookies.size());
                 if(! ((Boolean) result)){
                     View toastView = ((AppCompatActivity) _context).findViewById(R.id.view_content);
                     if(toastView == null){

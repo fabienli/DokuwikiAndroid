@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.fabienli.dokuwiki.sync.SyncUsecaseHandler;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity
         WebSettings webSettings = _webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setSupportZoom(true);
+        webSettings.setAppCachePath(context.getCacheDir().getAbsolutePath());
 
         displayHtml("Loading ...");
 
@@ -79,6 +81,7 @@ public class MainActivity extends AppCompatActivity
             String startpage = settings.getString("startpage", "start");
             displayPage(startpage);
         }
+
     }
 
     @Override

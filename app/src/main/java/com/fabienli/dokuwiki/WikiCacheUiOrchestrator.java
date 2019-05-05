@@ -2,7 +2,10 @@ package com.fabienli.dokuwiki;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Base64;
 import android.util.Log;
 import android.webkit.WebView;
@@ -12,10 +15,24 @@ import com.fabienli.dokuwiki.cache.WikiPage;
 import com.fabienli.dokuwiki.cache.WikiPageList;
 import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.db.DbUsecaseHandler;
+import com.fabienli.dokuwiki.db.Media;
 import com.fabienli.dokuwiki.db.Page;
 import com.fabienli.dokuwiki.sync.SyncUsecaseHandler;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import androidx.room.Room;
 
@@ -86,7 +103,9 @@ public class WikiCacheUiOrchestrator {
         context = ictx;
         _wikiPageList = new WikiPageList();
         _db = Room.databaseBuilder(ictx.getApplicationContext(),
-                AppDatabase.class, "localcache").build();
+                AppDatabase.class, "localcache")
+                .addMigrations(AppDatabase.MIGRATION_1_2)
+                .build();
     }
 
     void initFromDb(){
@@ -97,6 +116,8 @@ public class WikiCacheUiOrchestrator {
     void updatePageListFromServer(){
         _logs.add("Retrieve the list of pages from server");
         _syncUsecaseHandler.callPageListRetrieveUsecase("", context);
+        _logs.add("Retrieve the list of medias from server");
+        retrieveMediaList("", false);
     }
 
     public void retrievePageHTMLforDisplay(String pagename, WebView webview){
@@ -156,6 +177,10 @@ public class WikiCacheUiOrchestrator {
             _syncUsecaseHandler.callPageTextDownloadUsecase(pagename, context, directDisplay);
         }
         return edit_text;
+    }
+
+    public void retrieveMediaList(String namespace, Boolean directDisplay){
+        _syncUsecaseHandler.callMediaListRetrieveUsecase(namespace, context, directDisplay);
     }
 
     public void savePageTextInCache(String pagename, String edit_text) {
@@ -284,11 +309,96 @@ public class WikiCacheUiOrchestrator {
                 WikiPage aPageItem = _wikiPageList._pages.remove(aPageName);
                 aPageItem._latest_version = aRevision;
                 _wikiPageList._pages.put(aPageName, aPageItem);
+                // TODO: store an action to update the page
             }
 
 
         }
         identifyPagesToUpdate();
+    }
+
+
+    // store in local cache the list of medias received from server
+    public void updateCacheWithMediaListReceived(ArrayList<String> results) {
+        _logs.add("Received info for "+results.size()+" media from server");
+        for (int i = 0; i < results.size(); i++) {
+            Log.d(TAG, "check: "+results.get(i));
+            String pageinfo = results.get(i).replace("{","").replace("}","").replace(", ",",");
+            String[] parts = pageinfo.split(",");
+            String aMediaFile = "";
+            String aMediaId = "";
+            String aMediaSize = "";
+            String aMediaMTime = "";
+            String aMediaLastModified = "";
+            String aMediaIsImg = "";
+            for (String a : parts) {
+                if(a.startsWith("id=")){
+                    aMediaId = a.substring(3);
+                }
+                else if(a.startsWith("file=")){
+                    aMediaFile = a.substring(5);
+                }
+                else if(a.startsWith("size=")){
+                    aMediaSize = a.substring(5);
+                }
+                else if(a.startsWith("isimg=")){
+                    aMediaIsImg = a.substring(6);
+                }
+                else if(a.startsWith("mtime=")){
+                    aMediaMTime = a.substring(6);
+                }
+                else if(a.startsWith("lastModified=")){
+                    aMediaLastModified = a.substring(13);
+                }
+            }
+            if(_wikiPageList._mediaversions.containsKey(aMediaId))
+            {
+                if(_wikiPageList._mediaversions.get(aMediaId).compareTo(aMediaMTime) != 0)
+                {
+                    Log.d(TAG, "Media "+aMediaId+" should be updated");
+                    //TODO: log an action to update the media
+                }
+            }
+            _wikiPageList._mediaversions.put(aMediaId, aMediaMTime);
+            Log.d("updatePageList", "add "+aMediaId+" for rev "+aMediaMTime);
+            _wikiPageList._pagelist.add(results.get(i));
+            Media media = new Media();
+            media.file = aMediaFile;
+            media.id = aMediaId;
+            media.size = aMediaSize;
+            media.isimg = aMediaIsImg;
+            media.mtime = aMediaMTime;
+            media.lastModified = aMediaLastModified;
+            _dbUsecaseHandler.callMediaAddOrUpdateUsecase(_db, media);
+        }
+    }
+
+    public void ensureMediaIsDownloaded(String iMediaId, String iMediaLocalPath, Boolean iDirectDisplay) {
+        File file = new File(context.getCacheDir(), iMediaLocalPath);
+        if(!file.exists())
+        {
+            Log.d(TAG, "file "+iMediaId+" needs to be downloaded");
+            _syncUsecaseHandler.callMediaDownloadUsecase(iMediaId, iMediaLocalPath, context, iDirectDisplay);
+        }
+        else {
+            Log.d(TAG, "Media "+iMediaId+" is there, no need to download it !");
+        }
+    }
+
+    public void createLocalFile(byte[] fcontent, String localPath){
+        File file = new File(context.getCacheDir(), localPath);
+        File parent = file.getParentFile();
+        if (!parent.exists())
+            parent.mkdirs();
+        try {
+            FileOutputStream fw = new FileOutputStream(file.getAbsoluteFile());
+            fw.write(fcontent);
+            fw.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void identifyPagesToUpdate(){
@@ -322,9 +432,32 @@ public class WikiCacheUiOrchestrator {
             _webView = (WebView) ((MainActivity)context).findViewById(R.id.webview);
         }
         if(_webView != null) {
-            String html = iPageData.replaceAll("href=\"/", "href=\"http://dokuwiki/");
-            String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
-            _webView.loadData(encodedHtml, "text/html", "base64");
+            String html = iPageData
+                    .replaceAll("href=\"/", "href=\"http://dokuwiki/")
+                    .replaceAll("src=\"/lib/exe/fetch.php\\S*media=([^\\s^&]*)\"","src=\"$1\"");
+            // find the list of media, to ensure they're here
+            Map<String, String> aMediaList = new TreeMap<>();
+            Pattern mediaPattern = Pattern.compile("src=\"/lib/exe/fetch.php\\S*media=([^\\s^&]*)\"");
+            Matcher m = mediaPattern.matcher(iPageData);
+            while (m.find()) {
+                String s = m.group(1);
+                // s now contains <namespace:file.ext>
+                String p = s.replaceAll(":","/");
+                aMediaList.put(s, p);
+            }
+            for (String mediaId:aMediaList.keySet()) {
+                ensureMediaIsDownloaded(mediaId, aMediaList.get(mediaId), true);
+                html = html.replaceAll("src=\""+mediaId+"\"", "src=\""+context.getCacheDir().getAbsolutePath()+"/"+aMediaList.get(mediaId)+"\"");
+            }
+            Log.d(TAG, "Display page: "+html);
+            String aBaseUrl = "file://"+context.getCacheDir().getAbsolutePath();
+            Log.d(TAG, "Base Url: "+aBaseUrl);
+            _webView.loadDataWithBaseURL(aBaseUrl, html, "text/html", "UTF-8", null);
         }
+    }
+
+    public void refreshPage() {
+        Log.d(TAG, "refreshing the page");
+        _webView.reload();
     }
 }
