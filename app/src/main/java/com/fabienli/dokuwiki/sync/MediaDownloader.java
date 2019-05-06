@@ -16,11 +16,15 @@ public class MediaDownloader extends XmlRpcDownload {
     WikiCacheUiOrchestrator _wikiMngr;
     Boolean _directDisplay = false;
     String _localPath;
+    int _width;
+    int _height;
 
-    public MediaDownloader(Context context, WikiCacheUiOrchestrator wikiCacheUiOrchestrator, Boolean directDisplay) {
+    public MediaDownloader(Context context, WikiCacheUiOrchestrator wikiCacheUiOrchestrator, int width, int height, Boolean directDisplay) {
         super(context);
         _wikiMngr = wikiCacheUiOrchestrator;
         _directDisplay = directDisplay;
+        _width = width;
+        _height = height;
     }
     @Override
     protected void onPreExecute() {
@@ -50,7 +54,8 @@ public class MediaDownloader extends XmlRpcDownload {
 
     protected void processXmlRpcResult(byte[] results) {
         _wikiMngr.createLocalFile(results, _localPath);
-
+        if(_width != 0 || _height !=0)
+            _wikiMngr.createLocalFileResized(_localPath, _width, _height);
         if(_directDisplay) {
             // refresh the page
             _wikiMngr.refreshPage();

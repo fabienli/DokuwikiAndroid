@@ -2,6 +2,8 @@ package com.fabienli.dokuwiki;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.ArrayMap;
@@ -373,12 +375,19 @@ public class WikiCacheUiOrchestrator {
         }
     }
 
-    public void ensureMediaIsDownloaded(String iMediaId, String iMediaLocalPath, Boolean iDirectDisplay) {
-        File file = new File(context.getCacheDir(), iMediaLocalPath);
-        if(!file.exists())
+    public void ensureMediaIsDownloaded(String iMediaId, String iMediaLocalPath, int width, int height, Boolean iDirectDisplay) {
+        String newlocalFilename = getLocalFileName(iMediaLocalPath, width, height);
+        File originalfile = new File(context.getCacheDir(), iMediaLocalPath);
+        File file = new File(context.getCacheDir(), newlocalFilename);
+        if(!originalfile.exists())
         {
             Log.d(TAG, "file "+iMediaId+" needs to be downloaded");
-            _syncUsecaseHandler.callMediaDownloadUsecase(iMediaId, iMediaLocalPath, context, iDirectDisplay);
+            _syncUsecaseHandler.callMediaDownloadUsecase(iMediaId, iMediaLocalPath, context, width, height, iDirectDisplay);
+        }
+        else if(!file.exists())
+        {
+            Log.d(TAG, "file "+iMediaId+" is there but local size needs to be adapted");
+            createLocalFileResized(iMediaLocalPath, width, height);
         }
         else {
             Log.d(TAG, "Media "+iMediaId+" is there, no need to download it !");
@@ -399,6 +408,63 @@ public class WikiCacheUiOrchestrator {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void createLocalFileResized(String localPath, int targetW, int targetH){
+        String newlocalFilename = getLocalFileName(localPath, targetW, targetH);
+        Log.d(TAG, "Resizing "+localPath+" to "+newlocalFilename);
+
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(context.getCacheDir()+"/"+localPath, bmOptions);
+        int photoW = bmOptions.outWidth;
+        int photoH = bmOptions.outHeight;
+
+        int scaleFactor = 1;
+        if ((targetW > 0) || (targetH > 0)) {
+            scaleFactor = Math.min(photoW/targetW, photoH/targetH);
+        }
+
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = scaleFactor;
+        bmOptions.inPurgeable = true; //Deprecated API 21
+
+        Bitmap newBitmap = BitmapFactory.decodeFile(context.getCacheDir()+"/"+localPath, bmOptions);
+        if(newBitmap == null) // invalid source file
+        {
+            Log.e(TAG, "Invalid file ! " + localPath);
+            File invalidFile = new File(context.getCacheDir(), localPath);
+            invalidFile.delete();
+            return;
+        }
+
+        if (targetW>0 && targetH>0) {
+            Log.d(TAG, "targetW:"+targetW+" targetH:"+targetH+" to w:"+newBitmap.getWidth()+ " h:"+newBitmap.getHeight());
+            // should be cropped to ensure width and height
+            int startX = (newBitmap.getWidth() - targetW) / 2;
+            int startY = (newBitmap.getHeight() - targetH) / 2;
+            newBitmap = Bitmap.createBitmap(newBitmap, startX, startY , targetW , targetH);
+        }
+        try {
+            File file = new File(context.getCacheDir(), newlocalFilename);
+            file.createNewFile();
+            FileOutputStream ostream = new FileOutputStream(file);
+            newBitmap.compress(Bitmap.CompressFormat.PNG, 100, ostream);
+            ostream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public String getLocalFileName(String localPath, int width, int height){
+        if(width == 0 && height == 0)
+            return localPath;
+        else if(width == 0)
+            return localPath + "__" +Integer.toString(height);
+        else if(height == 0)
+            return localPath + "_" +Integer.toString(width)+"_";
+        return localPath + "_" + Integer.toString(width)+"_" + Integer.toString(height);
     }
 
     public void identifyPagesToUpdate(){
@@ -433,20 +499,39 @@ public class WikiCacheUiOrchestrator {
         }
         if(_webView != null) {
             String html = iPageData
-                    .replaceAll("href=\"/", "href=\"http://dokuwiki/")
-                    .replaceAll("src=\"/lib/exe/fetch.php\\S*media=([^\\s^&]*)\"","src=\"$1\"");
+                    .replaceAll("href=\"/", "href=\"http://dokuwiki/");
+                    //.replaceAll("src=\"/lib/exe/fetch.php\\S*media=([^\\s^&]*)\"","src=\"$1\"");
+                    //.replaceAll("src=\"/lib/exe/fetch.php\\S*media=([^\\s^&]*)\"","src=\"$1\"");
             // find the list of media, to ensure they're here
             Map<String, String> aMediaList = new TreeMap<>();
-            Pattern mediaPattern = Pattern.compile("src=\"/lib/exe/fetch.php\\S*media=([^\\s^&]*)\"");
+            Pattern mediaPattern = Pattern.compile("src=\"/lib/exe/fetch.php\\?(\\S+)\"");
             Matcher m = mediaPattern.matcher(iPageData);
             while (m.find()) {
-                String s = m.group(1);
-                // s now contains <namespace:file.ext>
-                String p = s.replaceAll(":","/");
-                aMediaList.put(s, p);
+                int width = 0;
+                int height = 0;
+                String id="";
+                String[] args = m.group(1).split("&amp;");
+                for (String v:args) {
+                    String[] opt = v.split("=");
+                    if(opt.length == 2){
+                        if(opt[0].compareTo("w") == 0)
+                            width = Integer.parseInt(opt[1]);
+                        else if(opt[0].compareTo("h") == 0)
+                            height = Integer.parseInt(opt[1]);
+                        else if(opt[0].compareTo("media") == 0)
+                            id = opt[1];
+                    }
+                }
+                Log.d(TAG, "Found image: "+id+ " width="+width+" height="+height);
+                // id now contains <namespace:file.ext>
+                String imageFilePath = id.replaceAll(":","/");
+                ensureMediaIsDownloaded(id, imageFilePath, width, height,true);
+                String localFilename = getLocalFileName(imageFilePath, width, height);
+                html = html.replaceAll("src=\"/lib/exe/fetch.php\\?"+m.group(1)+"\"", "src=\""+context.getCacheDir().getAbsolutePath()+"/"+localFilename+"\"");
+                //aMediaList.put(id, imageFilePath);
             }
             for (String mediaId:aMediaList.keySet()) {
-                ensureMediaIsDownloaded(mediaId, aMediaList.get(mediaId), true);
+                ensureMediaIsDownloaded(mediaId, aMediaList.get(mediaId), 0, 0,true);
                 html = html.replaceAll("src=\""+mediaId+"\"", "src=\""+context.getCacheDir().getAbsolutePath()+"/"+aMediaList.get(mediaId)+"\"");
             }
             Log.d(TAG, "Display page: "+html);

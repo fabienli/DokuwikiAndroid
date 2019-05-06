@@ -42,8 +42,8 @@ public class SyncUsecaseHandler {
         aMediaListRetriever.retrieveMediaList(namespace);
     }
 
-    public void callMediaDownloadUsecase(String mediaId, String mediaLocalPath, Context context, Boolean directDisplay) {
-        MediaDownloader aMediaDownloader = new MediaDownloader(context, _wikiCacheUiOrchestrator, directDisplay);
+    public void callMediaDownloadUsecase(String mediaId, String mediaLocalPath, Context context, int width, int height, Boolean directDisplay) {
+        MediaDownloader aMediaDownloader = new MediaDownloader(context, _wikiCacheUiOrchestrator, width, height, directDisplay);
         aMediaDownloader.downloadMedia(mediaId, mediaLocalPath);
     }
 }
