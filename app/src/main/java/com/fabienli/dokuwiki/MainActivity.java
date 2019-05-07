@@ -68,8 +68,10 @@ public class MainActivity extends AppCompatActivity
         _webView.setWebViewClient(new MyWebViewClient());
         WebSettings webSettings = _webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webSettings.setSupportZoom(true);
         webSettings.setAppCachePath(context.getCacheDir().getAbsolutePath());
+        webSettings.setSupportZoom(true);
+        webSettings.setBuiltInZoomControls(true);
+        webSettings.setDisplayZoomControls(false);
 
         displayHtml("Loading ...");
 

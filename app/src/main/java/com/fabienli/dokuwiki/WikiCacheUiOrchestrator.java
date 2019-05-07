@@ -395,6 +395,8 @@ public class WikiCacheUiOrchestrator {
     }
 
     public void createLocalFile(byte[] fcontent, String localPath){
+        if(fcontent == null)
+            return;
         File file = new File(context.getCacheDir(), localPath);
         File parent = file.getParentFile();
         if (!parent.exists())
@@ -421,8 +423,14 @@ public class WikiCacheUiOrchestrator {
         int photoH = bmOptions.outHeight;
 
         int scaleFactor = 1;
-        if ((targetW > 0) || (targetH > 0)) {
+        if ((targetW > 0) && (targetH > 0)) {
             scaleFactor = Math.min(photoW/targetW, photoH/targetH);
+        }
+        else if(targetW > 0) {
+            scaleFactor = photoW/targetW;
+        }
+        else if(targetH > 0) {
+            scaleFactor = photoH/targetH;
         }
 
         bmOptions.inJustDecodeBounds = false;

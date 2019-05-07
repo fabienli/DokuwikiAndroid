@@ -36,6 +36,7 @@ public class MediaDownloader extends XmlRpcDownload {
         ss2.setSpan(new ForegroundColorSpan(Color.BLACK), 0, ss2.length(), 0);
 
         _dialog.setMessage(ss2);
+        _dialog.cancel();
     }
 
     public void downloadMedia(String mediaId, String mediaLocalPath){
