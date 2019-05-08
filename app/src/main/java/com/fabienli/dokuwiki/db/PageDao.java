@@ -29,6 +29,9 @@ public interface PageDao {
     @Query("UPDATE page SET text=:text WHERE pagename IN (:pagename)")
     void updateText(String pagename, String text);
 
+    @Query("UPDATE page SET rev=:version WHERE pagename IN (:pagename)")
+    void updateVersion(String pagename, String version);
+
     @Insert
     void insertAll(Page... pages);
 

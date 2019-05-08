@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 
-import com.fabienli.dokuwiki.sync.SyncUsecaseHandler;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -144,6 +143,14 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(intent, 0);
             return true;
         }
+        else if (id == R.id.action_force_sync) {
+            WikiCacheUiOrchestrator.instance(this).forceDownloadPageHTMLforDisplay(_webView);
+            return true;
+        }
+        else if (id == R.id.action_web_link) {
+            //TODO
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -172,6 +179,10 @@ public class MainActivity extends AppCompatActivity
             String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
             WebView myWebView = (WebView) findViewById(R.id.webview);
             myWebView.loadData(encodedHtml, "text/html", "base64");
+        } else if (id == R.id.actionList) {
+            //aExecutor.retrievePageList("wiki");
+            WikiCacheUiOrchestrator.instance(this).displayActionListPage(_webView);
+
         }
         else { // shortcuts to a page
             Log.d("Menu", String.valueOf(item));

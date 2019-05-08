@@ -15,8 +15,8 @@ public class DbUsecaseHandler {
         aPageReadAll.execute();
     }
 
-    public void callPageUpdateHtmlUsecase(AppDatabase db, String pagename, String html){
-        PageUpdateHtml aPageUpdateHtml = new PageUpdateHtml(db, pagename, html);
+    public void callPageUpdateHtmlUsecase(AppDatabase db, String pagename, String html, String version){
+        PageUpdateHtml aPageUpdateHtml = new PageUpdateHtml(db, pagename, html, version);
         aPageUpdateHtml.execute();
     }
 
@@ -33,5 +33,20 @@ public class DbUsecaseHandler {
     public void callMediaAddOrUpdateUsecase(AppDatabase db, Media media) {
         MediaAddOrUpdate aMediaAddOrUpdate = new MediaAddOrUpdate(db, media);
         aMediaAddOrUpdate.execute();
+    }
+
+    public void callSyncActionRetrieveUsecase(AppDatabase db, SyncActionListInterface syncActionListInterface){
+        SyncActionRetriever aSyncActionRetriever = new SyncActionRetriever(db, syncActionListInterface);
+        aSyncActionRetriever.execute();
+    }
+
+    public void callSyncActionInsertUsecase(AppDatabase db, SyncAction syncAction){
+        SyncActionHandler aSyncActionHandler = new SyncActionHandler(db);
+        aSyncActionHandler.insert(syncAction);
+    }
+
+    public void callSyncActionDeleteUsecase(AppDatabase db, SyncAction syncAction){
+        SyncActionHandler aSyncActionHandler = new SyncActionHandler(db);
+        aSyncActionHandler.delete(syncAction);
     }
 }

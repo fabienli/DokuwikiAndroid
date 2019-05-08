@@ -8,11 +8,13 @@ public class PageUpdateHtml extends AsyncTask<String, Void, String> {
     String TAG = "PageUpdateHtml";
     String _pagename;
     String _html;
+    String _version;
 
-    public PageUpdateHtml(AppDatabase db, String pagename, String html) {
+    public PageUpdateHtml(AppDatabase db, String pagename, String html, String version) {
         _db = db;
         _pagename = pagename;
         _html = html;
+        _version = version;
     }
 
     @Override
@@ -30,7 +32,7 @@ public class PageUpdateHtml extends AsyncTask<String, Void, String> {
             Page page = new Page();
             page.pagename = _pagename;
             page.html = _html;
-            page.rev = "0";
+            page.rev = _version;
             page.text = "";
             _db.pageDao().insertAll(page);
             return "insert done";
@@ -39,6 +41,7 @@ public class PageUpdateHtml extends AsyncTask<String, Void, String> {
         {
             Log.d(TAG, " existing item found "+existing_item.pagename);
             _db.pageDao().updateHtml(_pagename, _html);
+            _db.pageDao().updateVersion(_pagename, _version);
             return "update done";
         }
         //return "done";

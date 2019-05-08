@@ -31,7 +31,7 @@ public class PageReadAll extends AsyncTask<String, Void, String> {
         List<Page> plist = _db.pageDao().selectAll();
         for(Page p:plist)
         {
-            Log.d(TAG, "found "+p.pagename);
+            //Log.d(TAG, "found "+p.pagename);
             _wikiPageList._pageversions.put(p.pagename, p.rev);
             _wikiPageList._pages.put(p.pagename, new WikiPage(p));
         }

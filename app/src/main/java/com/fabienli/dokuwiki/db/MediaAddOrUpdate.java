@@ -24,22 +24,21 @@ public class MediaAddOrUpdate extends AsyncTask<String, Void, String> {
 
         if(existing_item == null)
         {
-            Log.d(TAG, "no existing item found ");
+            //Log.d(TAG, "no existing item found ");
             _db.mediaDao().insertAll(_item);
-            return "insert done";
+            return "insert done: "+_item.id;
         }
         else
         {
-            Log.d(TAG, " existing item found "+existing_item.id);
+            //Log.d(TAG, " existing item found "+existing_item.id);
             _db.mediaDao().updateAll(_item);
-            return "update done";
+            return "update done: "+_item.id;
         }
     }
 
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
-        Log.d(TAG, "DB "+result);
-
+        //Log.d(TAG, "DB "+result);
     }
 }

@@ -34,9 +34,6 @@ public class MediaListRetriever extends XmlRpcDownload {
 
     protected void processXmlRpcResult(ArrayList<String> results) {
         Log.d(TAG,"received "+results.size() + " media(s)");
-        for(String result : results){
-            Log.d(TAG,"media: "+result );
-        }
         _wikiMngr.updateCacheWithMediaListReceived(results);
         if(_directDisplay)
             // refresh the page

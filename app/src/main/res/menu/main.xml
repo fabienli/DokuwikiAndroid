@@ -6,6 +6,14 @@
         android:title="Edit Page"
         android:orderInCategory="100"
         app:showAsAction="never" />
+    <item android:id="@+id/action_force_sync"
+        android:title="Force Sync Page"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+    <item android:id="@+id/action_web_link"
+        android:title="Display online page"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"

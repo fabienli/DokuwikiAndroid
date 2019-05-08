@@ -18,8 +18,12 @@
             android:title="Synchro" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="Debug">
         <menu>
+            <item
+                android:id="@+id/actionList"
+                android:icon="@drawable/ic_menu_slideshow"
+                android:title="Get Sync Action List" />
             <item
                 android:id="@+id/logs"
                 android:icon="@drawable/ic_menu_slideshow"
