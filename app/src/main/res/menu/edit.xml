@@ -5,6 +5,10 @@
         android:title="Reset Editor"
         android:orderInCategory="100"
         />
+    <item android:id="@+id/action_force_reset"
+        android:title="Force reset content"
+        android:orderInCategory="100"
+        />
     <item android:id="@+id/action_cancel"
         android:title="Cancel"
         android:orderInCategory="100"

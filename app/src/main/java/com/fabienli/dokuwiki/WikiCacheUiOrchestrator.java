@@ -132,6 +132,7 @@ public class WikiCacheUiOrchestrator {
 
     public void forceDownloadPageHTMLforDisplay(WebView webview) {
         this._webView = webview;
+        // in such case, the rev version in DB/cache is not guaranteed to be the last one
         _syncUsecaseHandler.callPageHtmlDownloadUsecase(_currentPageName, context, true);
     }
 
@@ -181,15 +182,24 @@ public class WikiCacheUiOrchestrator {
         _logs.add("page "+pagename+" stored in local db" );
     }
 
-    public String retrievePageEdit(String pagename, EditText iEditTextView, Boolean directDisplay){
+    public String retrievePageEdit(String pagename, EditText iEditTextView, Boolean directDisplay, Boolean forceDownload){
         _editTextView = iEditTextView;
         if(directDisplay) _currentPageName = pagename;
         String edit_text = "...";
-        if(_wikiPageList._pages.containsKey(pagename) && _wikiPageList._pages.get(pagename)._text.compareTo("")!=0){
+        if(_wikiPageList._pages.containsKey(pagename) && _wikiPageList._pages.get(pagename)._text.compareTo("")!=0 && !forceDownload){
             _logs.add("using text page "+pagename+" from local db" );
             Log.d(TAG, "Page is there, no need to download it !");
             edit_text = _wikiPageList._pages.get(pagename)._text;
             Log.d(TAG, "edit_text content:"+edit_text);
+            if(directDisplay) {
+                if(_editTextView == null) {
+                    //try to find it from context
+                    _editTextView = (EditText) ((EditActivity)context).findViewById(R.id.edit_text);
+                }
+                if(_editTextView != null){
+                    _editTextView.setText(edit_text);
+                }
+            }
         }
         else {
             _logs.add("text page "+pagename+" not in local db, get it from server" );
@@ -344,6 +354,10 @@ public class WikiCacheUiOrchestrator {
                 syncAction.data = "";
                 _dbUsecaseHandler.callSyncActionInsertUsecase(_db, syncAction);
                 //Log.d("SyncTest", "Page "+aPageName+" has syncAction needed: "+syncAction.toText());
+                // html page is not up-to-date, so text content to edit is deprecated as well
+                if(_wikiPageList._pages.get(aPageName)._text.length()>0){
+                    savePageTextInCache(aPageName, "");
+                }
             }
         }
         identifyPagesToUpdate();

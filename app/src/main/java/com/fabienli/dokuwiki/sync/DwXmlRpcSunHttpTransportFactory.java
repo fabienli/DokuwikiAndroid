@@ -92,6 +92,7 @@ class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
                 //<dateTime.iso8601>20181016T12:08:21+0000</dateTime.iso8601>
                 line = line.replaceAll("<dateTime.iso8601>(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)", "<dateTime.iso8601>$1$2$3");
                 sb.append(line);
+                sb.append("\n");
                 line = reader.readLine();
             }
         } catch (final IOException e) {

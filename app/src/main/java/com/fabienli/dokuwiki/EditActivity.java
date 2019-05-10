@@ -30,7 +30,7 @@ public class EditActivity extends AppCompatActivity {
         _EditTextView = (EditText) findViewById(R.id.edit_text);
         _pagename = getIntent().getStringExtra("pagename");
         Log.d(TAG, "edit page: "+ _pagename);
-        _EditTextView.setText("Loading page ... please wait.");
+        _EditTextView.setText("");
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -41,7 +41,7 @@ public class EditActivity extends AppCompatActivity {
         });
 
         setTitle("Edit: "+_pagename);
-        resetPage();
+        resetPage(false);
     }
 
     @Override
@@ -65,7 +65,11 @@ public class EditActivity extends AppCompatActivity {
             return true;
         }
         else if (id == R.id.action_reset) {
-            resetPage();
+            resetPage(false);
+            return true;
+        }
+        else if (id == R.id.action_force_reset) {
+            resetPage(true);
             return true;
         }
         else if (id == R.id.action_cancel) {
@@ -86,9 +90,9 @@ public class EditActivity extends AppCompatActivity {
         onBackPressed();
     }
 
-    void resetPage()
+    void resetPage(Boolean force)
     {
-        WikiCacheUiOrchestrator.instance().retrievePageEdit(_pagename, _EditTextView, true);
+        WikiCacheUiOrchestrator.instance().retrievePageEdit(_pagename, _EditTextView, true, force);
     }
 
     void cancelEdit()
