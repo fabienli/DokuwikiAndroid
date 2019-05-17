@@ -19,11 +19,15 @@ public class SyncAction {
     @ColumnInfo(name = "name")
     public String name;
 
+    @NonNull
+    @ColumnInfo(name = "rev")
+    public String rev;
+
 
     @ColumnInfo(name = "data")
     public String data;
 
     public String toText() {
-        return priority+ " - "+ verb + " : " + name;
+        return priority+ " - "+ verb + " : " + name + " (" + rev + ")";
     }
 }

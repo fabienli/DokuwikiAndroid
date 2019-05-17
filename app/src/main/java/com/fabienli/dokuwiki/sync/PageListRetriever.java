@@ -12,6 +12,12 @@ public class PageListRetriever extends XmlRpcDownload {
         _wikiMngr = wikiCacheUiOrchestrator;
     }
 
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        setDialogMsg("Get list of pages");
+    }
+
     public void retrievePageList(String namespace){
         Log.d(TAG,"Looking for pages in "+namespace);
         this.execute("dokuwiki.getPagelist",namespace,"{}");

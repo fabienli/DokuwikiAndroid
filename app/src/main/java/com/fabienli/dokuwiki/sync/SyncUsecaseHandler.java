@@ -22,13 +22,15 @@ public class SyncUsecaseHandler {
         aPageListRetriever.retrievePageList(namespace);
     }
 
-    public void callPageHtmlDownloadUsecase(String pagename, Context context, Boolean directDisplay) {
+    public void callPageHtmlDownloadUsecase(String pagename, Context context, Boolean directDisplay, SyncUsecaseCallbackInterface iCallback) {
         PageHtmlDownloader aPageHtmlDownloader = new PageHtmlDownloader(context, _wikiCacheUiOrchestrator, directDisplay);
+        aPageHtmlDownloader._syncUsecaseCallbackInterface = iCallback;
         aPageHtmlDownloader.retrievePageHTML(pagename);
     }
 
-    public void callPageTextUploadUsecase(String pagename, String newtext, Context context) {
-        PageTextUploader aPageTextUploader = new PageTextUploader(context, _wikiCacheUiOrchestrator);
+    public void callPageTextUploadUsecase(String pagename, String newtext, Context context, SyncUsecaseCallbackInterface iCallback) {
+        PageTextUploader aPageTextUploader = new PageTextUploader(context);
+        aPageTextUploader._syncUsecaseCallbackInterface = iCallback;
         aPageTextUploader.uploadPageText(pagename, newtext);
     }
 
@@ -37,8 +39,8 @@ public class SyncUsecaseHandler {
         aMultiPageHtmlDownloader.execute(pages);
     }
 
-    public void callMediaListRetrieveUsecase(String namespace, Context context, Boolean directDisplay) {
-        MediaListRetriever aMediaListRetriever = new MediaListRetriever(context, _wikiCacheUiOrchestrator, directDisplay);
+    public void callMediaListRetrieveUsecase(String namespace, Context context) {
+        MediaListRetriever aMediaListRetriever = new MediaListRetriever(context, _wikiCacheUiOrchestrator);
         aMediaListRetriever.retrieveMediaList(namespace);
     }
 

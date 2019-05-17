@@ -10,12 +10,16 @@ import java.util.ArrayList;
 public class MediaListRetriever extends XmlRpcDownload {
     static String TAG = "MediaListRetriever";
     WikiCacheUiOrchestrator _wikiMngr;
-    Boolean _directDisplay = false;
 
-    public MediaListRetriever(Context context, WikiCacheUiOrchestrator wikiCacheUiOrchestrator, Boolean directDisplay) {
+    public MediaListRetriever(Context context, WikiCacheUiOrchestrator wikiCacheUiOrchestrator) {
         super(context);
         _wikiMngr = wikiCacheUiOrchestrator;
-        _directDisplay = directDisplay;
+    }
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        setDialogMsg("Get list of medias");
     }
 
     public void retrieveMediaList(String namespace){
@@ -24,7 +28,6 @@ public class MediaListRetriever extends XmlRpcDownload {
         Log.d(TAG,"Get media from <"+namespace+">");
         execute("wiki.getAttachments", namespace);
     }
-
 
     @Override
     protected void onPostExecute(String result) {
@@ -35,8 +38,5 @@ public class MediaListRetriever extends XmlRpcDownload {
     protected void processXmlRpcResult(ArrayList<String> results) {
         Log.d(TAG,"received "+results.size() + " media(s)");
         _wikiMngr.updateCacheWithMediaListReceived(results);
-        if(_directDisplay)
-            // refresh the page
-            Log.d(TAG, "TODO: refresh the page");
     }
 }

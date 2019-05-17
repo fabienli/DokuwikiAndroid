@@ -40,13 +40,13 @@ public class DbUsecaseHandler {
         aSyncActionRetriever.execute();
     }
 
-    public void callSyncActionInsertUsecase(AppDatabase db, SyncAction syncAction){
-        SyncActionHandler aSyncActionHandler = new SyncActionHandler(db);
+    public void callSyncActionInsertUsecase(AppDatabase db, SyncAction syncAction, DbCallbackInterface dbCallbackInterface){
+        SyncActionHandler aSyncActionHandler = new SyncActionHandler(db, dbCallbackInterface);
         aSyncActionHandler.insert(syncAction);
     }
 
-    public void callSyncActionDeleteUsecase(AppDatabase db, SyncAction syncAction){
-        SyncActionHandler aSyncActionHandler = new SyncActionHandler(db);
+    public void callSyncActionDeleteUsecase(AppDatabase db, SyncAction syncAction, DbCallbackInterface dbCallbackInterface){
+        SyncActionHandler aSyncActionHandler = new SyncActionHandler(db, dbCallbackInterface);
         aSyncActionHandler.delete(syncAction);
     }
 }

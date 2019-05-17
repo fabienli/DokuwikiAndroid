@@ -31,13 +31,7 @@ public class PageHtmlDownloader extends XmlRpcDownload {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        String message= "Get page: "+_pagename;
-
-        SpannableString ss2 =  new SpannableString(message);
-        ss2.setSpan(new RelativeSizeSpan(2f), 0, ss2.length(), 0);
-        ss2.setSpan(new ForegroundColorSpan(Color.BLACK), 0, ss2.length(), 0);
-
-        _dialog.setMessage(ss2);
+        setDialogMsg("Get page "+_pagename);
     }
 
     @Override
@@ -60,6 +54,7 @@ public class PageHtmlDownloader extends XmlRpcDownload {
         }
         if(_directDisplay)
             _wikiMngr.loadPage(html);
+
     }
 
 }

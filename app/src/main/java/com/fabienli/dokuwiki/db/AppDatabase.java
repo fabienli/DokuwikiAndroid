@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(entities = {Page.class, Media.class, SyncAction.class}, version = 3)
+@Database(entities = {Page.class, Media.class, SyncAction.class}, version = 4)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract PageDao pageDao();
     public abstract MediaDao mediaDao();
@@ -27,6 +27,15 @@ public abstract class AppDatabase extends RoomDatabase {
             // create the Media table
             database.execSQL(
                     "CREATE TABLE syncAction (verb TEXT not null, name TEXT NOT NULL, priority TEXT NOT NULL, data TEXT, PRIMARY KEY(priority, verb, name))");
+        }
+    };
+
+    public static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // create the Media table
+            database.execSQL(
+                    "ALTER TABLE syncAction ADD COLUMN rev TEXT not null default 0");
         }
     };
 

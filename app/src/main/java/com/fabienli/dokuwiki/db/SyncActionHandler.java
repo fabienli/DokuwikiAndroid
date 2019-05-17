@@ -8,9 +8,11 @@ public class SyncActionHandler extends AsyncTask<String, Void, String> {
     String TAG = "SyncActionHandler";
     SyncAction _syncAction;
     Boolean _insert = true;
+    DbCallbackInterface _dbCallbackInterface;
 
-    public SyncActionHandler(AppDatabase db) {
+    public SyncActionHandler(AppDatabase db, DbCallbackInterface dbCallbackInterface) {
         _db = db;
+        _dbCallbackInterface = dbCallbackInterface;
     }
 
     public void insert(SyncAction syncAction){
@@ -50,6 +52,7 @@ public class SyncActionHandler extends AsyncTask<String, Void, String> {
         else
             Log.d(TAG, "DB Delete Sync Action "+result);
         */
+        _dbCallbackInterface.onceDone();
     }
 }
 

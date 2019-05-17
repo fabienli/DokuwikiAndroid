@@ -15,27 +15,13 @@ import android.view.View;
 import com.google.android.material.snackbar.Snackbar;
 import com.fabienli.dokuwiki.R;
 
-import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.XmlRpcRequest;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-import org.apache.xmlrpc.client.XmlRpcClientException;
-import org.apache.xmlrpc.client.XmlRpcSunHttpTransport;
 import org.apache.xmlrpc.client.XmlRpcSunHttpTransportFactory;
-import org.apache.xmlrpc.client.XmlRpcTransport;
-import org.apache.xmlrpc.common.XmlRpcStreamRequestConfig;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -49,6 +35,7 @@ public class XmlRpcDownload extends AsyncTask<String, Integer, String> {
     protected boolean _isRawResult = false;
     protected String _pagename = "";
     final XmlRpcClient client = new XmlRpcClient();
+    protected SyncUsecaseCallbackInterface _syncUsecaseCallbackInterface= null;
 
     public XmlRpcDownload(Context context){
         _context = context;
@@ -60,18 +47,21 @@ public class XmlRpcDownload extends AsyncTask<String, Integer, String> {
         Log.d(TAG, "Download Commencing");
 
         _dialog = new ProgressDialog(_context);
-        _dialog.setMessage("Downloading Database...");
+        _dialog.setMessage("Executing Process ...");
 
-        String message= "Executing Process";
+        setDialogMsg("Executing Process");
+
+        _dialog.setCancelable(false);
+        _dialog.show();
+    }
+
+    protected void setDialogMsg(String message) {
 
         SpannableString ss2 =  new SpannableString(message);
         ss2.setSpan(new RelativeSizeSpan(2f), 0, ss2.length(), 0);
         ss2.setSpan(new ForegroundColorSpan(Color.BLACK), 0, ss2.length(), 0);
 
         _dialog.setMessage(ss2);
-
-        _dialog.setCancelable(false);
-        _dialog.show();
     }
 
     public void retrieveTitle(){
@@ -87,22 +77,6 @@ public class XmlRpcDownload extends AsyncTask<String, Integer, String> {
         _pagename = pagename;
         Log.d(TAG,"GetPageInfo "+pagename);
         execute("wiki.getPageInfo", pagename);
-        //execute("dokuwiki.getTime");
-    }
-    public void retrievePageText(String pagename){
-        _isRawResult = true;
-        _pagename = pagename;
-        Log.d(TAG,"GetPage Text "+pagename);
-        execute("wiki.getPage", pagename);
-    }
-    public void uploadPageText(String pagename, String textcontent){
-        _pagename = pagename;
-        Log.d(TAG,"Upload Text for: "+pagename);
-        execute("wiki.putPage", pagename, textcontent, "{}");
-    }
-    public void retrievePageList(){
-        Log.d(TAG,"Looking for all pages");
-        execute("dokuwiki.getPagelist","","{}");
     }
 
     @Override
@@ -197,6 +171,10 @@ public class XmlRpcDownload extends AsyncTask<String, Integer, String> {
         super.onPostExecute(result);
         Log.d("Hi", "Done Downloading.");
         _dialog.dismiss();
+        if(_syncUsecaseCallbackInterface != null) {
+            _syncUsecaseCallbackInterface.processResultsList(_xmlrpc_results);
+            _syncUsecaseCallbackInterface.processResultsBinary(_xmlrpc_binary_results);
+        }
     }
 
 
