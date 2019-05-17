@@ -33,6 +33,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -309,7 +310,7 @@ public class WikiCacheUiOrchestrator {
     public String getPageListHtml() {
         _logs.add("Show the list of pages from local db");
         String unencodedHtml = "<html><body><ul>";
-        for (String a : _wikiPageList._pageversions.keySet()) {
+        for (String a : _wikiPageList._pages.keySet()) {
             unencodedHtml += "\n<li><a href=\"http://dokuwiki/doku.php?id="+a+"\">" + a + "</a></li>";
         }
         unencodedHtml += "\n</ul></body></html>";
@@ -330,6 +331,8 @@ public class WikiCacheUiOrchestrator {
     // store in local cache the list of pages received from server
     public void updateCacheWithPageListReceived(ArrayList<String> results) {
         _logs.add("Received info for "+results.size()+" pages from server");
+        HashSet<String> oldPagesToRemove = new HashSet<>();
+        oldPagesToRemove.addAll (_wikiPageList._pages.keySet());
         for (int i = 0; i < results.size(); i++) {
             Log.d(TAG, "check: "+results.get(i));
             String pageinfo = results.get(i).replace("{","").replace("}","").replace(", ",",");
@@ -340,20 +343,11 @@ public class WikiCacheUiOrchestrator {
                 if(a.startsWith("id=")){
                     aPageName = a.substring(3);
                 }
-                else if(a.startsWith(" id=")){//TODO: useless?
-                    aPageName = a.substring(4);
-                }
                 else if(a.startsWith("rev=")){
                     aRevision = a.substring(4);
                 }
-                else if(a.startsWith(" rev=")){//TODO: useless?
-                    aRevision = a.substring(5);
-                }
-                else if(a.startsWith("{rev=")){//TODO: useless?
-                    aRevision = a.substring(5);
-                }
             }
-            _wikiPageList._pageversions.put(aPageName, aRevision);
+            oldPagesToRemove.remove(aPageName);
             Log.d("updatePageList", "add "+aPageName+" for rev "+aRevision);
             Page page = new Page();
             page.pagename = aPageName;
@@ -366,7 +360,8 @@ public class WikiCacheUiOrchestrator {
                 WikiPage aPageItem = new WikiPage(page);
                 _wikiPageList._pages.put(aPageName, aPageItem);
             }
-            else if(_wikiPageList._pages.get(aPageName)._latest_version.compareTo(aRevision) != 0 || _wikiPageList._pages.get(aPageName)._html.length() == 0)
+            else if(_wikiPageList._pages.get(aPageName)._latest_version.compareTo(aRevision) != 0
+                    || _wikiPageList._pages.get(aPageName)._html.length() == 0)
             {
                 WikiPage aPageItem = _wikiPageList._pages.remove(aPageName);
                 aPageItem._latest_version = aRevision;
@@ -382,14 +377,23 @@ public class WikiCacheUiOrchestrator {
                     public void onceDone() {
                     }
                 });
-                //Log.d("SyncTest", "Page "+aPageName+" has syncAction needed: "+syncAction.toText());
                 // html page is not up-to-date, so text content to edit is deprecated as well
                 if(_wikiPageList._pages.get(aPageName)._text.length()>0){
                     savePageTextInCache(aPageName, "");
                 }
             }
         }
-        identifyPagesToUpdate();
+        identifyPagesToUpdate(); // used for immediate sync
+        for(final String oldPage : oldPagesToRemove){
+            Log.d(TAG, "Remove this old page from local DB: "+oldPage);
+            _dbUsecaseHandler.callPageRemoveUsecase(_db, oldPage, new DbCallbackInterface(){
+                @Override
+                public void onceDone() {
+                    _logs.add("Removed the old page from local DB: "+oldPage);
+                    _wikiPageList._pages.remove(oldPage);
+                }
+            });
+        }
     }
 
 
@@ -579,23 +583,14 @@ public class WikiCacheUiOrchestrator {
             if(pageitem._latest_version.compareTo(pageitem._version)!=0){
                 Log.d(TAG, "I should update "+pagename+" from server "+pageitem._version+" -> "+pageitem._latest_version);
                 pagestoupdate.add(pagename);
-
-                SyncAction syncAction = new SyncAction();
-                syncAction.priority = "2";
-                syncAction.verb = "GET";
-                syncAction.name = pagename;
-                syncAction.rev = pageitem._latest_version;
-                _dbUsecaseHandler.callSyncActionInsertUsecase(_db, syncAction, new DbCallbackInterface() {
-                    @Override
-                    public void onceDone() {
-                    }
-                });
+                //TODO: this first loop is useless if well using sync level 2
             }
         }
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this.context);
         String typesync = settings.getString("list_type_sync", "a");
         if(typesync.compareTo("b")==0) {
             _syncUsecaseHandler.callMultiPageHtmlDownloadUsecase(context, pagestoupdate.toArray(new String[pagestoupdate.size()]));
+            //TODO: replace this with a call to sync level 2
 
         }
         Log.d(TAG, "This is all I should update from server");

@@ -29,6 +29,10 @@ public class DbUsecaseHandler {
         PageAddIfMissing aPageAddIfMissing = new PageAddIfMissing(db, page);
         aPageAddIfMissing.execute();
     }
+    public void callPageRemoveUsecase(AppDatabase db, String pagename, DbCallbackInterface dbCallbackInterface) {
+        PageRemove aPageRemove = new PageRemove(db, pagename, dbCallbackInterface);
+        aPageRemove.execute();
+    }
 
     public void callMediaAddOrUpdateUsecase(AppDatabase db, Media media) {
         MediaAddOrUpdate aMediaAddOrUpdate = new MediaAddOrUpdate(db, media);

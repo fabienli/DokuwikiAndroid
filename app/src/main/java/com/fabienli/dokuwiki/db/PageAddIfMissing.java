@@ -14,11 +14,6 @@ public class PageAddIfMissing extends AsyncTask<String, Void, String> {
     }
 
     @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
-
-    @Override
     protected String doInBackground(String... params) {
         Page existing_item = _db.pageDao().findByName(_item.pagename);
 
