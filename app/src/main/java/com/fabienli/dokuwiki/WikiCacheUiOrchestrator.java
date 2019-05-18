@@ -210,7 +210,7 @@ public class WikiCacheUiOrchestrator {
         _logs.add("page "+pagename+" stored in local db" );
     }
 
-    public String retrievePageEdit(String pagename, EditText iEditTextView, Boolean directDisplay, Boolean forceDownload){
+    public String retrievePageEdit(final String pagename, EditText iEditTextView, final Boolean directDisplay, Boolean forceDownload){
         _editTextView = iEditTextView;
         if(directDisplay) _currentPageName = pagename;
         String edit_text = "...";
@@ -234,7 +234,14 @@ public class WikiCacheUiOrchestrator {
             Log.d(TAG, "Page not found here, need to download it !");
             edit_text = "...";
             //meantime, try to retrieve it
-            _syncUsecaseHandler.callPageTextDownloadUsecase(pagename, context, directDisplay);
+            _syncUsecaseHandler.callPageTextDownloadUsecase(pagename, context, directDisplay, new SyncUsecaseCallbackInterface() {
+                @Override
+                public void processResultsList(ArrayList<String> iXmlrpcResults) {
+                    savePageTextInCache(iXmlrpcResults, pagename, directDisplay);
+                }
+                @Override
+                public void processResultsBinary(byte[] iXmlrpcResults) {}
+            });
         }
         return edit_text;
     }

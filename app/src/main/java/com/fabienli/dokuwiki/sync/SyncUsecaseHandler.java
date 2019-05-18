@@ -12,8 +12,9 @@ public class SyncUsecaseHandler {
         _wikiCacheUiOrchestrator = wikiCacheUiOrchestrator;
     }
 
-    public void callPageTextDownloadUsecase(String pagename, Context context, Boolean directDisplay) {
+    public void callPageTextDownloadUsecase(String pagename, Context context, Boolean directDisplay, SyncUsecaseCallbackInterface iCallback) {
         PageTextDownloader aPageTextDownloader = new PageTextDownloader(context, _wikiCacheUiOrchestrator, directDisplay);
+        aPageTextDownloader._syncUsecaseCallbackInterface = iCallback;
         aPageTextDownloader.retrievePageText(pagename);
     }
 
@@ -32,6 +33,11 @@ public class SyncUsecaseHandler {
         PageTextUploader aPageTextUploader = new PageTextUploader(context);
         aPageTextUploader._syncUsecaseCallbackInterface = iCallback;
         aPageTextUploader.uploadPageText(pagename, newtext);
+    }
+    public void callPageGetInfoUsecase(String pagename, Context context, SyncUsecaseCallbackInterface iCallback) {
+        XmlRpcDownload aPageInfoGetter = new XmlRpcDownload(context);
+        aPageInfoGetter._syncUsecaseCallbackInterface = iCallback;
+        aPageInfoGetter.getPageInfo(pagename);
     }
 
     public void callMultiPageHtmlDownloadUsecase(Context context, String... pages) {

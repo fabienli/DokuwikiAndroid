@@ -49,7 +49,7 @@ public class PageHtmlDownloader extends XmlRpcDownload {
         }
         else
         {
-            html = "<html><body>Error ...</body></html>";
+            html = "<html><body>Error can't display "+_pagename+", please check: settings, network access, ...</body></html>";
             Log.d(TAG,"error when downloading page "+_pagename+" from server");
         }
         if(_directDisplay)

@@ -12,6 +12,7 @@ public class WikiPage {
         _html = "";
         _text = "";
         _version = "0";
+        _latest_version = "0";
     }
 
     public WikiPage(Page p) {

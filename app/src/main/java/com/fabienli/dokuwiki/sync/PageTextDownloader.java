@@ -21,12 +21,4 @@ public class PageTextDownloader extends XmlRpcDownload {
         Log.d(TAG,"GetPage Text "+pagename);
         execute("wiki.getPage", pagename);
     }
-
-    @Override
-    protected void onPostExecute(String result) {
-        super.onPostExecute(result);
-        _wikiMngr.savePageTextInCache(_xmlrpc_results, _pagename, _directDisplay);
-
-    }
-
 }
