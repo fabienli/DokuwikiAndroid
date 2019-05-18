@@ -391,6 +391,14 @@ public class WikiCacheUiOrchestrator {
             }
         }
         identifyPagesToUpdate(); // used for immediate sync
+
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this.context);
+        String typesync = settings.getString("list_type_sync", "a");
+        if(typesync.compareTo("b")==0) {
+            SynchroHandler aSynchroHandler = new SynchroHandler(context, _dbUsecaseHandler, _syncUsecaseHandler);
+            aSynchroHandler.syncPrioN(2);
+        }
+
         for(final String oldPage : oldPagesToRemove){
             Log.d(TAG, "Remove this old page from local DB: "+oldPage);
             _dbUsecaseHandler.callPageRemoveUsecase(_db, oldPage, new DbCallbackInterface(){

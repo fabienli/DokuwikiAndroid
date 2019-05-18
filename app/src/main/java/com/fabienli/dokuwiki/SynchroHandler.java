@@ -1,6 +1,8 @@
 package com.fabienli.dokuwiki;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.fabienli.dokuwiki.cache.WikiPage;
@@ -14,6 +16,7 @@ import com.fabienli.dokuwiki.sync.SyncUsecaseHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import androidx.room.Room;
 
@@ -52,6 +55,38 @@ public class SynchroHandler {
                         }
                     }
                     removeOneSyncOngoing();
+                }
+
+            });
+        }
+        else
+        {
+            _syncToBePlanned = true;
+        }
+    }
+
+    public void syncPrioN(final int level){
+        if(_syncOngoing == 0) {
+            addOneSyncOngoing();
+            final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
+            final Integer urldelay = Integer.parseInt(settings.getString("list_delay_sync", "0"));
+            _dbUsecaseHandler.callSyncActionRetrieveUsecase(_db, new SyncActionListInterface() {
+                @Override
+                public void handle(List<SyncAction> syncActions) {
+                    try {
+                        for (SyncAction sa : syncActions) {
+                            if (sa.priority.compareTo(""+level) == 0) {
+                                executeAction(sa);
+                            }
+                                TimeUnit.SECONDS.sleep(urldelay);
+                        }
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    finally {
+                        removeOneSyncOngoing();
+                    }
                 }
 
             });
@@ -141,7 +176,7 @@ public class SynchroHandler {
         else if(sa.verb.compareTo("GET")==0){
             WikiCacheUiOrchestrator.instance()._logs.add("Get page "+sa.name+" from server");
             addOneSyncOngoing();
-            
+
             _syncUsecaseHandler.callPageGetInfoUsecase(sa.name, _context, new SyncUsecaseCallbackInterface() {
                 @Override
                 public void processResultsList(ArrayList<String> iXmlrpcResults) {
