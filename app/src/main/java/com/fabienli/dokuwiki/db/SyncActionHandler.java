@@ -7,6 +7,7 @@ public class SyncActionHandler extends AsyncTask<String, Void, String> {
     AppDatabase _db = null;
     String TAG = "SyncActionHandler";
     SyncAction _syncAction;
+    String _level;
     Boolean _insert = true;
     DbCallbackInterface _dbCallbackInterface;
 
@@ -27,6 +28,13 @@ public class SyncActionHandler extends AsyncTask<String, Void, String> {
         execute();
     }
 
+    public void deleteLevel(String level){
+        _syncAction = null;
+        _insert = false;
+        _level = level;
+        execute();
+    }
+
     @Override
     protected String doInBackground(String... strings) {
         if(_insert) {
@@ -37,8 +45,12 @@ public class SyncActionHandler extends AsyncTask<String, Void, String> {
             }
             _db.syncActionDao().insertAll(_syncAction);
         }
-        else
+        else if (_syncAction != null) {
             _db.syncActionDao().deleteAll(_syncAction);
+        }
+        else {
+            _db.syncActionDao().deleteLevel(_level);
+        }
         return "OK";
     }
 
@@ -52,7 +64,8 @@ public class SyncActionHandler extends AsyncTask<String, Void, String> {
         else
             Log.d(TAG, "DB Delete Sync Action "+result);
         */
-        _dbCallbackInterface.onceDone();
+        if(_dbCallbackInterface!=null)
+            _dbCallbackInterface.onceDone();
     }
 }
 

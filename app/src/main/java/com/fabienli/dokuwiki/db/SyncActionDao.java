@@ -21,4 +21,7 @@ public interface SyncActionDao {
 
     @Delete
     void deleteAll(SyncAction... syncActions);
+
+    @Query("DELETE FROM syncaction WHERE priority = :prio")
+    void deleteLevel(String prio);
 }

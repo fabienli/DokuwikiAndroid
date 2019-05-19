@@ -173,13 +173,11 @@ public class MainActivity extends AppCompatActivity
             WebView myWebView = (WebView) findViewById(R.id.webview);
             myWebView.loadData(encodedHtml, "text/html", "base64");
         } else if (id == R.id.pagelist) {
-            //aExecutor.retrievePageList("wiki");
             String html = WikiCacheUiOrchestrator.instance(this).getPageListHtml();
             String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
             WebView myWebView = (WebView) findViewById(R.id.webview);
             myWebView.loadData(encodedHtml, "text/html", "base64");
         } else if (id == R.id.actionList) {
-            //aExecutor.retrievePageList("wiki");
             WikiCacheUiOrchestrator.instance(this).displayActionListPage(_webView);
 
         }

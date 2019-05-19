@@ -29,6 +29,8 @@ public class SynchroHandler {
     protected Boolean _syncToBePlanned = false;
     protected int _syncOngoing = 0;
     protected Boolean _nextGetIsForDisplay = false;
+    protected int _level2ongoing = 0;
+    protected int _level3ongoing = 0;
 
     SynchroHandler(Context ictx, DbUsecaseHandler iDbUsecaseHandler, SyncUsecaseHandler iSyncUsecaseHandler){
         _dbUsecaseHandler = iDbUsecaseHandler;
@@ -69,7 +71,20 @@ public class SynchroHandler {
         if(_syncOngoing == 0) {
             addOneSyncOngoing();
             final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
-            final Integer urldelay = Integer.parseInt(settings.getString("list_delay_sync", "0"));
+            final int maxpages = Integer.parseInt(settings.getString("max_page_sync", "2"));;
+            final int maxmedia = Integer.parseInt(settings.getString("max_media_sync", "2"));;
+
+            // init the sync for requested level
+            if(level == 2 && _level2ongoing == 0)
+                _level2ongoing = maxpages;
+            if(level == 3 && _level3ongoing == 0)
+                _level3ongoing = maxmedia;
+
+            if(level == 2)
+                _level2ongoing--;
+            if(level == 3)
+                _level3ongoing--;
+
             _dbUsecaseHandler.callSyncActionRetrieveUsecase(_db, new SyncActionListInterface() {
                 @Override
                 public void handle(List<SyncAction> syncActions) {
@@ -77,14 +92,10 @@ public class SynchroHandler {
                         for (SyncAction sa : syncActions) {
                             if (sa.priority.compareTo(""+level) == 0) {
                                 executeAction(sa);
+                                break;
                             }
-                                TimeUnit.SECONDS.sleep(urldelay);
                         }
-
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    finally {
+                    } finally {
                         removeOneSyncOngoing();
                     }
                 }
@@ -99,8 +110,8 @@ public class SynchroHandler {
 
     private void executeAction(final SyncAction sa) {
         if(sa.verb.compareTo("PUT")==0){
-            WikiCacheUiOrchestrator.instance()._logs.add("Put page "+sa.name+" to server");
             addOneSyncOngoing();
+            WikiCacheUiOrchestrator.instance()._logs.add("Put page "+sa.name+" to server");
             _syncUsecaseHandler.callPageGetInfoUsecase(sa.name, _context, new SyncUsecaseCallbackInterface() {
                 @Override
                 public void processResultsList(ArrayList<String> iXmlrpcResults) {
@@ -174,8 +185,8 @@ public class SynchroHandler {
 
         }
         else if(sa.verb.compareTo("GET")==0){
-            WikiCacheUiOrchestrator.instance()._logs.add("Get page "+sa.name+" from server");
             addOneSyncOngoing();
+            WikiCacheUiOrchestrator.instance()._logs.add("Get page "+sa.name+" from server");
 
             _syncUsecaseHandler.callPageGetInfoUsecase(sa.name, _context, new SyncUsecaseCallbackInterface() {
                 @Override
@@ -203,7 +214,7 @@ public class SynchroHandler {
                             _dbUsecaseHandler.callSyncActionDeleteUsecase(_db, sa, new DbCallbackInterface() {
                                 @Override
                                 public void onceDone() {
-                                    removeOneSyncOngoing(); // remove the synchro from PUT page
+                                    removeOneSyncOngoing(); // remove the synchro from GET page
                                 }
                             });
                         }
@@ -226,5 +237,18 @@ public class SynchroHandler {
             _syncToBePlanned = false;
             syncPrioZero();
         }
+        if(_syncOngoing == 0 && _level2ongoing>0) { //some more items to be synced
+            final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
+            final Integer urldelay = Integer.parseInt(settings.getString("list_delay_sync", "0"));
+            try {
+                TimeUnit.SECONDS.sleep(urldelay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if(_syncOngoing == 0 && _level2ongoing>0) { //check again if some more items to be synced
+                syncPrioN(2);
+            }
+        }
+        //TODO: handle level 3 as well
     }
 }

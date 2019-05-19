@@ -129,12 +129,21 @@ public class WikiCacheUiOrchestrator {
 
     void updatePageListFromServer(){
         _logs.add("Retrieve the list of pages from server");
-        _syncUsecaseHandler.callPageListRetrieveUsecase("", context);
-        _logs.add("Retrieve the list of medias from server");
-        retrieveMediaList("");
-        _logs.add("Retry the urgent items to be synced");
-        SynchroHandler aSynchroHandler = new SynchroHandler(context, _dbUsecaseHandler, _syncUsecaseHandler);
-        aSynchroHandler.syncPrioZero();
+        _syncUsecaseHandler.callPageListRetrieveUsecase("", context, new SyncUsecaseCallbackInterface() {
+            @Override
+            public void processResultsList(ArrayList<String> iXmlrpcResults) {
+                updateCacheWithPageListReceived(iXmlrpcResults);
+
+                _logs.add("Retrieve the list of medias from server");
+                retrieveMediaList("");
+
+                _logs.add("Retry the urgent items to be synced");
+                SynchroHandler aSynchroHandler = new SynchroHandler(context, _dbUsecaseHandler, _syncUsecaseHandler);
+                aSynchroHandler.syncPrioZero();
+            }
+            @Override
+            public void processResultsBinary(byte[] iXmlrpcResults) {}
+        });
     }
 
     public void forceDownloadPageHTMLforDisplay(WebView webview) {
@@ -315,10 +324,19 @@ public class WikiCacheUiOrchestrator {
     }
 
     public String getPageListHtml() {
+        boolean debug = false;
         _logs.add("Show the list of pages from local db");
         String unencodedHtml = "<html><body><ul>";
         for (String a : _wikiPageList._pages.keySet()) {
-            unencodedHtml += "\n<li><a href=\"http://dokuwiki/doku.php?id="+a+"\">" + a + "</a></li>";
+            if (debug) {
+
+                unencodedHtml += "\n<li><a href=\"http://dokuwiki/doku.php?id=" + a + "\">" + a + "</a> " +
+                        _wikiPageList._pages.get(a)._version + " - " +
+                        _wikiPageList._pages.get(a)._latest_version + " - " +
+                        _wikiPageList._pages.get(a)._html.length() + "</li>";
+            } else {
+                unencodedHtml += "\n<li><a href=\"http://dokuwiki/doku.php?id=" + a + "\">" + a + "</a></li>";
+            }
         }
         unencodedHtml += "\n</ul></body></html>";
         Log.d("getPageListHtml", unencodedHtml);
@@ -336,79 +354,85 @@ public class WikiCacheUiOrchestrator {
     }
 
     // store in local cache the list of pages received from server
-    public void updateCacheWithPageListReceived(ArrayList<String> results) {
+    public void updateCacheWithPageListReceived(final ArrayList<String> results) {
         _logs.add("Received info for "+results.size()+" pages from server");
-        HashSet<String> oldPagesToRemove = new HashSet<>();
-        oldPagesToRemove.addAll (_wikiPageList._pages.keySet());
-        for (int i = 0; i < results.size(); i++) {
-            Log.d(TAG, "check: "+results.get(i));
-            String pageinfo = results.get(i).replace("{","").replace("}","").replace(", ",",");
-            String[] parts = pageinfo.split(",");
-            String aPageName = "";
-            String aRevision = "";
-            for (String a : parts) {
-                if(a.startsWith("id=")){
-                    aPageName = a.substring(3);
-                }
-                else if(a.startsWith("rev=")){
-                    aRevision = a.substring(4);
-                }
-            }
-            oldPagesToRemove.remove(aPageName);
-            Log.d("updatePageList", "add "+aPageName+" for rev "+aRevision);
-            Page page = new Page();
-            page.pagename = aPageName;
-            page.html = "";
-            page.text = "";
-            page.rev = aRevision;
-            _dbUsecaseHandler.callPageAddIfMissingUsecase(_db, page);
-            if(!_wikiPageList._pages.containsKey(aPageName))
-            {
-                WikiPage aPageItem = new WikiPage(page);
-                _wikiPageList._pages.put(aPageName, aPageItem);
-            }
-            else if(_wikiPageList._pages.get(aPageName)._latest_version.compareTo(aRevision) != 0
-                    || _wikiPageList._pages.get(aPageName)._html.length() == 0)
-            {
-                WikiPage aPageItem = _wikiPageList._pages.remove(aPageName);
-                aPageItem._latest_version = aRevision;
-                _wikiPageList._pages.put(aPageName, aPageItem);
-                SyncAction syncAction = new SyncAction();
-                syncAction.priority = "2";
-                syncAction.verb = "GET";
-                syncAction.name = aPageName;
-                syncAction.rev = aRevision;
-                syncAction.data = "";
-                _dbUsecaseHandler.callSyncActionInsertUsecase(_db, syncAction, new DbCallbackInterface() {
-                    @Override
-                    public void onceDone() {
+        _dbUsecaseHandler.callSyncActionDeleteLevelUsecase(_db, "2", new DbCallbackInterface() {
+            @Override
+            public void onceDone() {
+                HashSet<String> oldPagesToRemove = new HashSet<>();
+                oldPagesToRemove.addAll (_wikiPageList._pages.keySet());
+                for (int i = 0; i < results.size(); i++) {
+                    Log.d(TAG, "check: "+results.get(i));
+                    String pageinfo = results.get(i).replace("{","").replace("}","").replace(", ",",");
+                    String[] parts = pageinfo.split(",");
+                    String aPageName = "";
+                    String aRevision = "";
+                    for (String a : parts) {
+                        if(a.startsWith("id=")){
+                            aPageName = a.substring(3);
+                        }
+                        else if(a.startsWith("rev=")){
+                            aRevision = a.substring(4);
+                        }
                     }
-                });
-                // html page is not up-to-date, so text content to edit is deprecated as well
-                if(_wikiPageList._pages.get(aPageName)._text.length()>0){
-                    savePageTextInCache(aPageName, "");
+                    oldPagesToRemove.remove(aPageName);
+                    Log.d("updatePageList", "add "+aPageName+" for rev "+aRevision);
+                    Page page = new Page();
+                    page.pagename = aPageName;
+                    page.html = "";
+                    page.text = "";
+                    page.rev = aRevision;
+                    _dbUsecaseHandler.callPageAddIfMissingUsecase(_db, page);
+                    if(!_wikiPageList._pages.containsKey(aPageName))
+                    {
+                        WikiPage aPageItem = new WikiPage(page);
+                        _wikiPageList._pages.put(aPageName, aPageItem);
+                    }
+                    else if(_wikiPageList._pages.get(aPageName)._latest_version.compareTo(aRevision) != 0
+                            || _wikiPageList._pages.get(aPageName)._html.length() == 0)
+                    {
+                        WikiPage aPageItem = _wikiPageList._pages.remove(aPageName);
+                        aPageItem._latest_version = aRevision;
+                        _wikiPageList._pages.put(aPageName, aPageItem);
+                        SyncAction syncAction = new SyncAction();
+                        syncAction.priority = "2";
+                        syncAction.verb = "GET";
+                        syncAction.name = aPageName;
+                        syncAction.rev = aRevision;
+                        syncAction.data = "";
+                        _dbUsecaseHandler.callSyncActionInsertUsecase(_db, syncAction, new DbCallbackInterface() {
+                            @Override
+                            public void onceDone() {
+                            }
+                        });
+                        // html page is not up-to-date, so text content to edit is deprecated as well
+                        if(_wikiPageList._pages.get(aPageName)._text.length()>0){
+                            savePageTextInCache(aPageName, "");
+                        }
+                    }
                 }
+                //identifyPagesToUpdate(); // used for immediate sync
+
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                String typesync = settings.getString("list_type_sync", "a");
+                if(typesync.compareTo("b")==0) {
+                    SynchroHandler aSynchroHandler = new SynchroHandler(context, _dbUsecaseHandler, _syncUsecaseHandler);
+                    aSynchroHandler.syncPrioN(2);
+                }
+
+                for(final String oldPage : oldPagesToRemove){
+                    Log.d(TAG, "Remove this old page from local DB: "+oldPage);
+                    _dbUsecaseHandler.callPageRemoveUsecase(_db, oldPage, new DbCallbackInterface(){
+                        @Override
+                        public void onceDone() {
+                            _logs.add("Removed the old page from local DB: "+oldPage);
+                            _wikiPageList._pages.remove(oldPage);
+                        }
+                    });
+                }
+
             }
-        }
-        identifyPagesToUpdate(); // used for immediate sync
-
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this.context);
-        String typesync = settings.getString("list_type_sync", "a");
-        if(typesync.compareTo("b")==0) {
-            SynchroHandler aSynchroHandler = new SynchroHandler(context, _dbUsecaseHandler, _syncUsecaseHandler);
-            aSynchroHandler.syncPrioN(2);
-        }
-
-        for(final String oldPage : oldPagesToRemove){
-            Log.d(TAG, "Remove this old page from local DB: "+oldPage);
-            _dbUsecaseHandler.callPageRemoveUsecase(_db, oldPage, new DbCallbackInterface(){
-                @Override
-                public void onceDone() {
-                    _logs.add("Removed the old page from local DB: "+oldPage);
-                    _wikiPageList._pages.remove(oldPage);
-                }
-            });
-        }
+        });
     }
 
 
@@ -591,6 +615,7 @@ public class WikiCacheUiOrchestrator {
         return localPath + "_" + Integer.toString(width)+"_" + Integer.toString(height);
     }
 
+    //TODO: deprecated ?
     public void identifyPagesToUpdate(){
         ArrayList<String> pagestoupdate = new ArrayList<>();
         for(String pagename : _wikiPageList._pages.keySet()){
@@ -679,11 +704,20 @@ public class WikiCacheUiOrchestrator {
         _dbUsecaseHandler.callSyncActionRetrieveUsecase(_db, new SyncActionListInterface() {
             @Override
             public void handle(List<SyncAction> syncActions) {
-                String unencodedHtml = "<html><body><ul>";
+                String itemsList = "<ul>";
+                int[] counter = {0,0,0,0};
+                int priority = 0;
                 for (SyncAction sa : syncActions) {
-                    unencodedHtml += "\n<li>" + sa.toText() + "</li>";
+                    itemsList += "\n<li>" + sa.toText() + "</li>";
+                    priority = Integer.parseInt(sa.priority);
+                    counter[priority]++;
                 }
-                unencodedHtml += "\n</ul></body></html>";
+                itemsList += "\n</ul>";
+                String unencodedHtml = "<html><body>\n<table>"+
+                        "\n<tr><td>Prio 0: </td><td>"+counter[0]+
+                        "\n<tr><td>Prio 1: </td><td>"+counter[1]+
+                        "\n<tr><td>Prio 2: </td><td>"+counter[2]+
+                        "\n<tr><td>Prio 3: </td><td>"+counter[3]+"</td></tr>\n</table>\n"+itemsList+"\n</body></html>";
                 loadPage(unencodedHtml);
             }
         });

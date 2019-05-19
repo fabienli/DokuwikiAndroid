@@ -28,11 +28,33 @@
         <item>10s</item>
         <item>30s</item>
     </string-array>
+
     <string-array name="pref_delay_list_values">
         <item>0</item>
         <item>1</item>
         <item>10</item>
         <item>30</item>
+    </string-array>
+
+    <string-array name="pref_max_pages_list_titles">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>10</item>
+        <item>20</item>
+        <item>50</item>
+        <item>100</item>
+        <item>9999</item>
+    </string-array>
+    <string-array name="pref_max_pages_list_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>10</item>
+        <item>20</item>
+        <item>50</item>
+        <item>100</item>
+        <item>9999</item>
     </string-array>
     <string-array name="pref_typesync_list_titles">
         <item>only pages list</item>

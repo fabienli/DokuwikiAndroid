@@ -182,6 +182,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("user"));
             bindPreferenceSummaryToValue(findPreference("list_delay_sync"));
             bindPreferenceSummaryToValue(findPreference("list_type_sync"));
+            bindPreferenceSummaryToValue(findPreference("max_page_sync"));
+            bindPreferenceSummaryToValue(findPreference("max_media_sync"));
         }
 
         @Override

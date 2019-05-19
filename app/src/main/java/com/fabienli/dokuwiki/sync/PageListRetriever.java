@@ -23,11 +23,4 @@ public class PageListRetriever extends XmlRpcDownload {
         this.execute("dokuwiki.getPagelist",namespace,"{}");
     }
 
-    @Override
-    protected void onPostExecute(String result) {
-        super.onPostExecute(result);
-        _wikiMngr.updateCacheWithPageListReceived(_xmlrpc_results);
-
-    }
-
 }

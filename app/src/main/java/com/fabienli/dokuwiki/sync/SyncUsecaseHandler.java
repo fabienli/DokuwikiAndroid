@@ -18,8 +18,9 @@ public class SyncUsecaseHandler {
         aPageTextDownloader.retrievePageText(pagename);
     }
 
-    public void callPageListRetrieveUsecase(String namespace, Context context) {
+    public void callPageListRetrieveUsecase(String namespace, Context context, SyncUsecaseCallbackInterface iCallback) {
         PageListRetriever aPageListRetriever = new PageListRetriever(context, _wikiCacheUiOrchestrator);
+        aPageListRetriever._syncUsecaseCallbackInterface = iCallback;
         aPageListRetriever.retrievePageList(namespace);
     }
 

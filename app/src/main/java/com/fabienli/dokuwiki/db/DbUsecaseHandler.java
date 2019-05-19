@@ -53,4 +53,9 @@ public class DbUsecaseHandler {
         SyncActionHandler aSyncActionHandler = new SyncActionHandler(db, dbCallbackInterface);
         aSyncActionHandler.delete(syncAction);
     }
+
+    public void callSyncActionDeleteLevelUsecase(AppDatabase db, String level, DbCallbackInterface dbCallbackInterface){
+        SyncActionHandler aSyncActionHandler = new SyncActionHandler(db, dbCallbackInterface);
+        aSyncActionHandler.deleteLevel(level);
+    }
 }

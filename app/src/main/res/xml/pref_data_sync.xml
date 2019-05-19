@@ -34,5 +34,17 @@
         android:entryValues="@array/pref_delay_list_values"
         android:key="list_delay_sync"
         android:title="Delay in sync" />
+    <ListPreference
+        android:defaultValue="0"
+        android:entries="@array/pref_max_pages_list_titles"
+        android:entryValues="@array/pref_max_pages_list_values"
+        android:key="max_page_sync"
+        android:title="Max pages retrieved per sync" />
+    <ListPreference
+        android:defaultValue="0"
+        android:entries="@array/pref_max_pages_list_titles"
+        android:entryValues="@array/pref_max_pages_list_values"
+        android:key="max_media_sync"
+        android:title="Max medias retrieved per sync" />
 
 </PreferenceScreen>
