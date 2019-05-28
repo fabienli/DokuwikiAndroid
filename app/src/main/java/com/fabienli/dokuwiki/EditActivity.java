@@ -92,7 +92,7 @@ public class EditActivity extends AppCompatActivity {
 
     void resetPage(Boolean force)
     {
-        WikiCacheUiOrchestrator.instance().retrievePageEdit(_pagename, _EditTextView, true, force);
+        WikiCacheUiOrchestrator.instance().retrievePageEdit(_pagename, _EditTextView, force);
     }
 
     void cancelEdit()

@@ -74,15 +74,10 @@ public class MainActivity extends AppCompatActivity
 
         displayHtml("Loading ...");
 
-        //ensure cache is initiated
-        WikiCacheUiOrchestrator.instance(this);
-        if(WikiCacheUiOrchestrator.instance(this)._initDone)
-        {
-            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-            String startpage = settings.getString("startpage", "start");
-            displayPage(startpage);
-        }
-
+        // first page initiate
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        String startpage = settings.getString("startpage", "start");
+        displayPage(startpage);
     }
 
     @Override
@@ -148,7 +143,13 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         else if (id == R.id.action_web_link) {
-            //TODO
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+            String baseurl = settings.getString("serverurl", "");
+            String url = baseurl.replace("lib/exe/xmlrpc.php", "doku.php?id=")
+                    + WikiCacheUiOrchestrator.instance(this)._currentPageName;
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
+
             return true;
         }
 
@@ -173,10 +174,7 @@ public class MainActivity extends AppCompatActivity
             WebView myWebView = (WebView) findViewById(R.id.webview);
             myWebView.loadData(encodedHtml, "text/html", "base64");
         } else if (id == R.id.pagelist) {
-            String html = WikiCacheUiOrchestrator.instance(this).getPageListHtml();
-            String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
-            WebView myWebView = (WebView) findViewById(R.id.webview);
-            myWebView.loadData(encodedHtml, "text/html", "base64");
+            WikiCacheUiOrchestrator.instance(this).displayPageListHtml(_webView);
         } else if (id == R.id.actionList) {
             WikiCacheUiOrchestrator.instance(this).displayActionListPage(_webView);
 
@@ -213,6 +211,9 @@ public class MainActivity extends AppCompatActivity
 
                 return false;
             }
+            String aBaseUrl = "file://"+context.getCacheDir().getAbsolutePath();
+            if(url.startsWith(aBaseUrl)) // local cache folder, means invalid link
+                return true;
             // Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);

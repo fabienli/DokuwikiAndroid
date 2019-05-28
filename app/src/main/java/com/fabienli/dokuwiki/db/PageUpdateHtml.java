@@ -22,8 +22,8 @@ public class PageUpdateHtml extends AsyncTask<String, Void, String> {
         super.onPreExecute();
     }
 
-    @Override
-    protected String doInBackground(String... params) {
+    public String doSync()
+    {
         Page existing_item = _db.pageDao().findByName(_pagename);
 
         if(existing_item == null)
@@ -44,7 +44,11 @@ public class PageUpdateHtml extends AsyncTask<String, Void, String> {
             _db.pageDao().updateVersion(_pagename, _version);
             return "update done";
         }
-        //return "done";
+    }
+
+    @Override
+    protected String doInBackground(String... params) {
+        return doSync();
     }
 
     @Override

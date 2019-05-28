@@ -6,8 +6,8 @@ android {
         applicationId "com.fabienli.dokuwiki"
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 9
-        versionName "alpha1.7"
+        versionCode 11
+        versionName "alpha1.9"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {
@@ -21,6 +21,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     testOptions {
@@ -48,8 +53,8 @@ dependencies {
     }
 
     // room on sqlite
-    def room_version = "2.1.0-alpha06"
-    implementation "androidx.room:room-runtime:$room_version"
+    def room_version = "2.1.0-beta01"
+    api "androidx.room:room-runtime:$room_version"
     implementation 'androidx.vectordrawable:vectordrawable:1.1.0-alpha01'
     annotationProcessor "androidx.room:room-compiler:$room_version"
 

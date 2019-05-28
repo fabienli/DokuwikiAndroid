@@ -1,0 +1,74 @@
+package com.fabienli.dokuwiki.usecase;
+
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.util.Log;
+
+import com.fabienli.dokuwiki.WikiCacheUiOrchestrator;
+import com.fabienli.dokuwiki.db.AppDatabase;
+import com.fabienli.dokuwiki.db.Page;
+import com.fabienli.dokuwiki.db.SyncAction;
+import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
+import com.fabienli.dokuwiki.usecase.callback.WikiSynchroCallback;
+
+public class PageTextSave extends AsyncTask<String, Integer, String> {
+    String TAG = "PageTextSave";
+    protected AppDatabase _db;
+    WikiSynchroCallback _wikiSynchroCallback = null;
+    SharedPreferences _settings;
+    XmlRpcAdapter _xmlRpcAdapter;
+
+    public PageTextSave(AppDatabase db, SharedPreferences settings, XmlRpcAdapter xmlRpcAdapter) {
+        _db = db;
+        _settings = settings;
+        _xmlRpcAdapter = xmlRpcAdapter;
+    }
+
+    public void savePageText(String pagename, String newtext) {
+
+        // 1. upload the new text to wiki
+        WikiCacheUiOrchestrator.instance()._logs.add("text page "+pagename+" updated, uploading it to server");
+        Log.d(TAG, "text page "+pagename+" updated, uploading it to server");
+        String pageCurrentVersion = "0";
+        Page page = _db.pageDao().findByName(pagename);
+        if(page != null) {
+            pageCurrentVersion = page.rev;
+        }
+
+        SyncAction syncAction = new SyncAction();
+        syncAction.priority = "0";
+        syncAction.verb = "PUT";
+        syncAction.name = pagename;
+        syncAction.rev = pageCurrentVersion;
+        syncAction.data = newtext;
+        _db.syncActionDao().insertAll(syncAction);
+
+        // 2. save also in local DB
+        _db.pageDao().updateText(pagename, newtext);
+
+        // 3. call sync to uploac
+        SynchroDownloadHandler synchroDownloadHandler = new SynchroDownloadHandler(_settings, _db, _xmlRpcAdapter, "", null);
+        WikiCacheUiOrchestrator.instance()._logs.add("Retry the urgent items to be synced");
+        synchroDownloadHandler.syncPrioZero();
+    }
+
+    public void savePageTextAsync(String pagename, String newtext, WikiSynchroCallback wikiSynchroCallback) {
+        _wikiSynchroCallback = wikiSynchroCallback;
+        execute(pagename, newtext);
+    }
+
+
+    @Override
+    protected String doInBackground(String... params) {
+        savePageText(params[0], params[1]);
+        return "ok";
+    }
+
+    @Override
+    protected void onPostExecute(String result) {
+        super.onPostExecute(result);
+        if(_wikiSynchroCallback!=null)
+            _wikiSynchroCallback.onceDone();
+    }
+
+}

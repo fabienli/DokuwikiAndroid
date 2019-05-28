@@ -22,4 +22,8 @@ public class Page {
 
     @ColumnInfo(name = "rev")
     public String rev;
+
+    public boolean isHtmlEmpty() {
+        return ((html == null) || (html.length() == 0));
+    }
 }

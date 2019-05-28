@@ -13,6 +13,10 @@ public interface SyncActionDao {
     @Query("SELECT * FROM syncaction ORDER BY priority")
     List<SyncAction> getAll();
 
+
+    @Query("SELECT * FROM syncaction WHERE priority = :prio")
+    List<SyncAction> getAllPriority(String prio);
+
     @Query("SELECT * FROM syncaction WHERE priority = :prio AND verb = :verb AND name= :name LIMIT 1")
     SyncAction findUnique(String prio, String verb, String name);
 
