@@ -30,12 +30,7 @@ public class NotificationHandler {
                 .setContentTitle("Dokuwiki Synchro")
                 .setContentText(contentText)
                 .setContentInfo("more info")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                // Set the intent that will fire when the user taps the notification
-                //.setContentIntent(pendingIntent)
-                //.setAutoCancel(true)
-                ;
-        _notificationBuilder.setDefaults(Notification.DEFAULT_ALL);
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         _notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
         _notificationManager.notify(0, _notificationBuilder.build());
@@ -65,9 +60,11 @@ public class NotificationHandler {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Dokuwiki Android";
             String description = "Ongoing Dokuwiki synchronisation";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_LOW;
             NotificationChannel channel = new NotificationChannel("CHANNEL1", name, importance);
             channel.setDescription(description);
+            channel.enableVibration(false);
+            channel.enableLights(false);
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);

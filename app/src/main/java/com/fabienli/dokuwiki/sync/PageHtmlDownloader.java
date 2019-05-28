@@ -15,7 +15,7 @@ public class PageHtmlDownloader {
     public String retrievePageHTML(String pagename){
         Log.d(TAG,"GetPage HTML "+pagename);
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("wiki.getPageHTML", pagename);
-        if(resultList.size() == 1)
+        if(resultList!=null && resultList.size() == 1)
             return resultList.get(0);
         return "";
     }
