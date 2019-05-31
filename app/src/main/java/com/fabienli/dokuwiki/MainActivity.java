@@ -177,7 +177,10 @@ public class MainActivity extends AppCompatActivity
             WikiCacheUiOrchestrator.instance(this).displayPageListHtml(_webView);
         } else if (id == R.id.actionList) {
             WikiCacheUiOrchestrator.instance(this).displayActionListPage(_webView);
-
+        } else if (id == R.id.create) {
+            //TODO
+        } else if (id == R.id.upload) {
+            //TODO
         }
         else { // shortcuts to a page
             Log.d("Menu", String.valueOf(item));

@@ -16,6 +16,14 @@
             android:id="@+id/synchro"
             android:icon="@drawable/ic_menu_manage"
             android:title="Synchro" />
+        <item
+            android:id="@+id/create"
+            android:icon="@drawable/ic_menu_share"
+            android:title="Create page" />
+        <item
+            android:id="@+id/upload"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="Upload new media" />
     </group>
 
     <item android:title="Debug">

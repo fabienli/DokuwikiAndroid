@@ -186,7 +186,7 @@ public class SynchroDownloadHandler {
 
             // 3. the end
             _db.syncActionDao().deleteAll(sa);
-            removeOneSyncOngoing(); // remove the synchro from GET page
+            removeOneSyncOngoing(); // remove the synchro from GET media
         }
     }
 

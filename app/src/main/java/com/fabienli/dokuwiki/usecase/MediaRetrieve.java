@@ -35,6 +35,7 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
     }
 
     public String getMedia(String mediaId, String mediaRelativePathname, int targetW, int targetH, boolean forceDownload) {
+        Log.d(TAG, "downloading file to: "+_mediaLocalDir+"/"+mediaRelativePathname);
         // check if media is in DB
         Media media = _db.mediaDao().findByName(mediaId);
         if(media == null) {
@@ -53,7 +54,7 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
             return newlocalFilename;
 
         // 1. retrieve file from server if not there
-        if(!originalfile.exists() && !forceDownload) {
+        if(!originalfile.exists() || forceDownload) {
             MediaDownloader mediaDownloader = new MediaDownloader(_xmlRpcAdapter);
             byte[] fcontent = mediaDownloader.retrieveMedia(mediaId);
 
@@ -64,6 +65,7 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
             if (!parent.exists())
                 parent.mkdirs();
             try {
+                Log.d(TAG, "saving file to: "+originalfile.getAbsolutePath());
                 FileOutputStream fw = new FileOutputStream(originalfile.getAbsoluteFile());
                 fw.write(fcontent);
                 fw.close();
