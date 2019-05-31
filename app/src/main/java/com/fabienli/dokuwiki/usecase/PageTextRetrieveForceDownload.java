@@ -9,6 +9,7 @@ import com.fabienli.dokuwiki.db.PageUpdateText;
 import com.fabienli.dokuwiki.db.SyncAction;
 import com.fabienli.dokuwiki.sync.PageTextDownUpLoader;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
+import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class PageTextRetrieveForceDownload extends PageTextRetrieve {
     public String retrievePage(String pagename) {
         String pageContent = "";
 
-        WikiCacheUiOrchestrator.instance()._logs.add("page "+pagename+" forced retrieved from server" );
+        Logs.getInstance().add("page "+pagename+" forced retrieved from server" );
         PageTextDownUpLoader pageTextDownUpLoader = new PageTextDownUpLoader(_xmlRpcAdapter);
         pageContent = pageTextDownUpLoader.retrievePageText(pagename);
 

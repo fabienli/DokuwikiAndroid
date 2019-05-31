@@ -11,6 +11,7 @@ import com.fabienli.dokuwiki.db.Page;
 import com.fabienli.dokuwiki.db.SyncAction;
 import com.fabienli.dokuwiki.sync.FileListRetriever;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
+import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.callback.WikiSynchroCallback;
 
 import java.io.File;
@@ -49,11 +50,11 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
 
     public void retrievePagesDataFromServer() {
         // 1. get up-to-date list of pages
-        WikiCacheUiOrchestrator.instance()._logs.add("Retrieve the list of pages from server");
+        Logs.getInstance().add("Retrieve the list of pages from server");
         FileListRetriever fileListRetriever = new FileListRetriever(_xmlRpcAdapter);
         ArrayList<String> pagesList = fileListRetriever.retrievePagesList("");
         if(pagesList == null){
-            WikiCacheUiOrchestrator.instance()._logs.add("error received from server");
+            Logs.getInstance().add("error received from server");
             return;
         }
 
@@ -120,11 +121,11 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
 
     public void retrieveMediasDataFromServer() {
         // 1. get up-to-date list of media
-        WikiCacheUiOrchestrator.instance()._logs.add("Retrieve the list of medias from server");
+        Logs.getInstance().add("Retrieve the list of medias from server");
         FileListRetriever fileListRetriever = new FileListRetriever(_xmlRpcAdapter);
         ArrayList<String> mediasList = fileListRetriever.retrieveMediasList("");
         if(mediasList == null){
-            WikiCacheUiOrchestrator.instance()._logs.add("error received from server");
+            Logs.getInstance().add("error received from server");
             return;
         }
 
@@ -220,16 +221,16 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
 
     public void runDownloadSynchro() {
         SynchroDownloadHandler synchroDownloadHandler = new SynchroDownloadHandler(_settings, _db, _xmlRpcAdapter, _mediaLocalPath, _wikiSynchroCallback);
-        WikiCacheUiOrchestrator.instance()._logs.add("Retry the urgent items to be synced");
+        Logs.getInstance().add("Retry the urgent items to be synced");
         synchroDownloadHandler.syncPrioZero();
 
-        WikiCacheUiOrchestrator.instance()._logs.add("Download items level 2");
+        Logs.getInstance().add("Download items level 2");
         String typesync = _settings.getString("list_type_sync", "a");
         if(typesync.compareTo("b")==0) {
             synchroDownloadHandler.syncPage2();
         }
 
-        WikiCacheUiOrchestrator.instance()._logs.add("Download items level 3");
+        Logs.getInstance().add("Download items level 3");
         if(typesync.compareTo("b")==0) {
             synchroDownloadHandler.syncMedia3();
         }

@@ -5,16 +5,15 @@ import android.util.Log;
 
 import com.fabienli.dokuwiki.WikiCacheUiOrchestrator;
 import com.fabienli.dokuwiki.db.AppDatabase;
-import com.fabienli.dokuwiki.db.Media;
 import com.fabienli.dokuwiki.db.PageUpdateText;
 import com.fabienli.dokuwiki.db.SyncAction;
 import com.fabienli.dokuwiki.sync.PageInfoRetriever;
 import com.fabienli.dokuwiki.sync.PageTextDownUpLoader;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
+import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.callback.WikiSynchroCallback;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -116,29 +115,29 @@ public class SynchroDownloadHandler {
             PageTextDownUpLoader pageTextDownUpLoader = new PageTextDownUpLoader(_xmlRpcAdapter);
 
             // 1. get the current server's version
-            WikiCacheUiOrchestrator.instance()._logs.add("Put page "+sa.name+" to server");
+            Logs.getInstance().add("Put page "+sa.name+" to server");
             PageInfoRetriever pageInfoRetriever = new PageInfoRetriever(_xmlRpcAdapter);
-            String server_rev = pageInfoRetriever.retrievePageInfo(sa.name);
+            String server_rev = pageInfoRetriever.retrievePageVersion(sa.name);
 
             // 2. ensure we are based on same version, or it's a conflict
             String textContent = sa.data;
             if(sa.rev.compareTo(server_rev) != 0) {
                 Log.d("DEBUG", "need a conflict handling: " + sa.rev + " - " + server_rev);
-                WikiCacheUiOrchestrator.instance()._logs.add("conflict page " + sa.name + ": retrieve text from server to merge conflict");
+                Logs.getInstance().add("conflict page " + sa.name + ": retrieve text from server to merge conflict");
 
                 textContent += "\n\n----\n\nconflict between versions "+sa.rev+" and "+server_rev+"\n\n----\n\n";
                 textContent += pageTextDownUpLoader.retrievePageText(sa.name);
 
                 PageUpdateText pageUpdateText = new PageUpdateText(_db, sa.name, textContent);
                 pageUpdateText.doSync();
-                WikiCacheUiOrchestrator.instance()._logs.add("page "+sa.name+" stored in local db" );
+                Logs.getInstance().add("page "+sa.name+" stored in local db" );
             }
 
             // 3. push the content to server
             pageTextDownUpLoader.sendPageText(sa.name, textContent);
 
             // 4. update the local HTML version
-            WikiCacheUiOrchestrator.instance()._logs.add("page "+sa.name+" should be updated, get its HTML from server");
+            Logs.getInstance().add("page "+sa.name+" should be updated, get its HTML from server");
             _syncToBePlanned = true;
             SyncAction syncAction = new SyncAction();
             syncAction.priority = "0";
@@ -154,7 +153,7 @@ public class SynchroDownloadHandler {
         }
         else if(sa.verb.compareTo("GET")==0){
             addOneSyncOngoing();
-            WikiCacheUiOrchestrator.instance()._logs.add("Get page "+sa.name+" from server");
+            Logs.getInstance().add("Get page "+sa.name+" from server");
 
             // 1. force the download of current's server version
             PageHtmlRetrieveForceDownload pageHtmlRetrieveForceDownload = new PageHtmlRetrieveForceDownload(_db, _xmlRpcAdapter);
@@ -169,7 +168,7 @@ public class SynchroDownloadHandler {
     private void executeMediaAction(final SyncAction sa) {
         if(sa.verb.compareTo("GET")==0){
             addOneSyncOngoing();
-            WikiCacheUiOrchestrator.instance()._logs.add("Get media "+sa.name+" from server");
+            Logs.getInstance().add("Get media "+sa.name+" from server");
             String mediaFilePath = sa.name.replaceAll(":","/");
 
             // 1. force the download of current's server version

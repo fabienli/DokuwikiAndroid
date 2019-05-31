@@ -9,6 +9,7 @@ import android.widget.EditText;
 
 import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
+import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.ActionListRetrieve;
 import com.fabienli.dokuwiki.usecase.MediaRetrieve;
 import com.fabienli.dokuwiki.usecase.NotificationHandler;
@@ -48,7 +49,6 @@ public class WikiCacheUiOrchestrator {
     protected AppDatabase _db;
     // ongoing status
     public String _currentPageName = "";
-    public ArrayList<String> _logs = new ArrayList<>();
     // UI access
     protected WebView _webView = null;
     protected EditText _editTextView = null;
@@ -85,7 +85,6 @@ public class WikiCacheUiOrchestrator {
     }
 
     void updatePageListFromServer(){
-
         final NotificationHandler notificationHandler = new NotificationHandler(context);
         notificationHandler.createNotification("Synchronisation starting");
 
@@ -174,7 +173,7 @@ public class WikiCacheUiOrchestrator {
 
     public String getLogsHtml() {
         String unencodedHtml = "<html><body><ul>";
-        for (String a : _logs) {
+        for (String a : Logs.getInstance()._data) {
             unencodedHtml += "\n<li>" + a + "</li>";
         }
         unencodedHtml += "\n</ul></body></html>";
@@ -333,7 +332,7 @@ public class WikiCacheUiOrchestrator {
     }
 
     public void displayActionListPage(WebView webView) {
-        _logs.add("Show the list of SyncAction from local db");
+        Logs.getInstance().add("Show the list of SyncAction from local db");
         _webView = webView;
         ActionListRetrieve actionListRetrieve = new ActionListRetrieve(_db);
         actionListRetrieve.getSyncActionListAsync(new PageHtmlRetrieveCallback() {

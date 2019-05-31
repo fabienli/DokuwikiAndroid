@@ -10,6 +10,7 @@ import com.fabienli.dokuwiki.db.SyncAction;
 import com.fabienli.dokuwiki.sync.PageHtmlDownloader;
 import com.fabienli.dokuwiki.sync.PageInfoRetriever;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
+import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 
 import java.util.List;
@@ -32,7 +33,7 @@ public class PageHtmlRetrieve extends AsyncTask<String, Integer, String> {
         // check it in DB
         Page dbPage = _db.pageDao().findByName(pagename);
         if(dbPage != null) {
-            WikiCacheUiOrchestrator.instance()._logs.add("page "+pagename+" loaded from local db" );
+            Logs.getInstance().add("page "+pagename+" loaded from local db" );
             if(!dbPage.isHtmlEmpty()) pageContent = dbPage.html;
             pageVersion = dbPage.rev;
             // Check if a more recent version exists:
@@ -48,7 +49,7 @@ public class PageHtmlRetrieve extends AsyncTask<String, Integer, String> {
         // get it from server if not there
         if(pageContent.length() == 0 || syncActionRelated != null)
         {
-            WikiCacheUiOrchestrator.instance()._logs.add("page "+pagename+" not in local db, get it from server" );
+            Logs.getInstance().add("page "+pagename+" not in local db, get it from server" );
             PageHtmlDownloader pageHtmlDownloader = new PageHtmlDownloader(_xmlRpcAdapter);
             pageContent = pageHtmlDownloader.retrievePageHTML(pagename);
 
@@ -56,7 +57,7 @@ public class PageHtmlRetrieve extends AsyncTask<String, Integer, String> {
             if(pageVersion == null || pageVersion.length() == 0) {
                 // need to update from server
                 PageInfoRetriever pageInfoRetriever = new PageInfoRetriever(_xmlRpcAdapter);
-                pageVersion = pageInfoRetriever.retrievePageInfo(pagename);
+                pageVersion = pageInfoRetriever.retrievePageVersion(pagename);
             }
             // store it in DB cache
             PageUpdateHtml pageUpdateHtml = new PageUpdateHtml(_db, pagename, pageContent, pageVersion);

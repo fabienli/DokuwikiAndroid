@@ -72,6 +72,7 @@ class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
     @Override
     protected void close() throws XmlRpcClientException {
         getCookies(conn);
+        super.close();
     }
 
     @Override

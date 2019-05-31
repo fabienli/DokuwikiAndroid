@@ -9,6 +9,7 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fabienli.dokuwiki.R;
+import com.fabienli.dokuwiki.tools.Logs;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.apache.xmlrpc.XmlRpcException;
@@ -16,7 +17,6 @@ import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.client.XmlRpcSunHttpTransportFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -60,7 +60,8 @@ public class XmlRpcAdapter {
             try {
                 result = client.execute(methodName, parameters);
             } catch (org.apache.xmlrpc.client.XmlRpcClientException exception) {
-                Log.e(TAG,"XmlRpc call " + methodName+ " error: " + exception);
+                Logs.getInstance().add("XmlRpc decode " + methodName+ " response error: " + exception);
+                Log.e(TAG,"XmlRpc decode " + methodName+ " response error: " + exception);
                 return null;
             }
 
@@ -84,6 +85,7 @@ public class XmlRpcAdapter {
 
         } catch (Exception exception) {
             Log.e(TAG,"XmlRpc call " + methodName+ " error: " + exception);
+            Logs.getInstance().add("XmlRpc call " + methodName+ " error: " + exception);
             return null;
         }
         return results;
@@ -106,7 +108,8 @@ public class XmlRpcAdapter {
             try {
                 result = client.execute(methodName, parameters);
             } catch (org.apache.xmlrpc.client.XmlRpcClientException exception) {
-                Log.e(TAG,"XmlRpc call " + methodName+ " error: " + exception);
+                Logs.getInstance().add("XmlRpc decode " + methodName+ " response error: " + exception);
+                Log.e(TAG,"XmlRpc decode " + methodName+ " response error: " + exception);
                 result = exception.toString();
             }
             Log.d(TAG,"4");
@@ -119,6 +122,7 @@ public class XmlRpcAdapter {
 
         } catch (Exception exception) {
             Log.e(TAG,"XmlRpc call " + methodName+ " error: " + exception);
+            Logs.getInstance().add("XmlRpc call " + methodName+ " error: " + exception);
         }
         return results;
     }

@@ -12,9 +12,12 @@ public class PageInfoRetriever {
         _xmlRpcAdapter = xmlRpcAdapter;
     }
 
-    public String retrievePageInfo(String pagename){
+    public String retrievePageVersion(String pagename){
         Log.d(TAG,"GetPage info "+pagename);
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("wiki.getPageInfo", pagename);
+
+        if(resultList == null)
+            resultList = new ArrayList<>();
 
         String pageVersion = "";
         for (String r : resultList) {

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class MediaInfoRetriever {
     protected String TAG = "MediaInfoRetriever";
-    protected XmlRpcAdapter _xmlRpcAdapter = null;
+    protected XmlRpcAdapter _xmlRpcAdapter;
 
     public MediaInfoRetriever(XmlRpcAdapter xmlRpcAdapter) {
         _xmlRpcAdapter = xmlRpcAdapter;
@@ -17,6 +17,9 @@ public class MediaInfoRetriever {
     public Media retrieveMediaInfo(String mediaId){
         Log.d(TAG,"GetMedia info "+mediaId);
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("wiki.getAttachmentInfo", mediaId);
+
+        if(resultList == null)
+            resultList = new ArrayList<>();
 
         // WARNING, wiki.getAttachmentInfo returns only size and lastModified data.
 
@@ -46,7 +49,7 @@ public class MediaInfoRetriever {
                 }
             }
         }
-        if(media.id.length() == 0)
+        if((media.id == null) || (media.id.length() == 0))
             media.id = mediaId;
 
         return media;

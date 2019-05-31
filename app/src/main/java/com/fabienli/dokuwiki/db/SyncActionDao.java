@@ -6,6 +6,7 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 @Dao
 public interface SyncActionDao {
@@ -28,4 +29,7 @@ public interface SyncActionDao {
 
     @Query("DELETE FROM syncaction WHERE priority = :prio")
     void deleteLevel(String prio);
+
+    @Update
+    void update(SyncAction syncActions);
 }

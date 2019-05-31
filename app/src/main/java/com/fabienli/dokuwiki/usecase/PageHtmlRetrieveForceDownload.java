@@ -9,6 +9,7 @@ import com.fabienli.dokuwiki.db.SyncAction;
 import com.fabienli.dokuwiki.sync.PageHtmlDownloader;
 import com.fabienli.dokuwiki.sync.PageInfoRetriever;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
+import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 
 import java.util.List;
@@ -29,13 +30,13 @@ public class PageHtmlRetrieveForceDownload extends AsyncTask<String, Integer, St
         String pageVersion = "";
 
         // get page from server as forced to
-        WikiCacheUiOrchestrator.instance()._logs.add("page "+pagename+" forced to get it from server" );
+        Logs.getInstance().add("page "+pagename+" forced to get it from server" );
         PageHtmlDownloader pageHtmlDownloader = new PageHtmlDownloader(_xmlRpcAdapter);
         pageContent = pageHtmlDownloader.retrievePageHTML(pagename);
 
         // need to get the version from server
         PageInfoRetriever pageInfoRetriever = new PageInfoRetriever(_xmlRpcAdapter);
-        pageVersion = pageInfoRetriever.retrievePageInfo(pagename);
+        pageVersion = pageInfoRetriever.retrievePageVersion(pagename);
 
         // store it in DB cache
         PageUpdateHtml pageUpdateHtml = new PageUpdateHtml(_db, pagename, pageContent, pageVersion);

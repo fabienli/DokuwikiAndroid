@@ -9,6 +9,7 @@ import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.db.Page;
 import com.fabienli.dokuwiki.db.SyncAction;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
+import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.callback.WikiSynchroCallback;
 
 public class PageTextSave extends AsyncTask<String, Integer, String> {
@@ -26,8 +27,8 @@ public class PageTextSave extends AsyncTask<String, Integer, String> {
 
     public void savePageText(String pagename, String newtext) {
 
-        // 1. upload the new text to wiki
-        WikiCacheUiOrchestrator.instance()._logs.add("text page "+pagename+" updated, uploading it to server");
+        // 1. upload the new text to wiki: put it in sync action queue
+        Logs.getInstance().add("text page "+pagename+" updated, uploading it to server");
         Log.d(TAG, "text page "+pagename+" updated, uploading it to server");
         String pageCurrentVersion = "0";
         Page page = _db.pageDao().findByName(pagename);
@@ -35,20 +36,28 @@ public class PageTextSave extends AsyncTask<String, Integer, String> {
             pageCurrentVersion = page.rev;
         }
 
-        SyncAction syncAction = new SyncAction();
-        syncAction.priority = "0";
-        syncAction.verb = "PUT";
-        syncAction.name = pagename;
-        syncAction.rev = pageCurrentVersion;
-        syncAction.data = newtext;
-        _db.syncActionDao().insertAll(syncAction);
+        SyncAction existingSyncAction = _db.syncActionDao().findUnique("0", "PUT", pagename);
+        if(existingSyncAction == null) {
+            SyncAction syncAction = new SyncAction();
+            syncAction.priority = "0";
+            syncAction.verb = "PUT";
+            syncAction.name = pagename;
+            syncAction.rev = pageCurrentVersion;
+            syncAction.data = newtext;
+            _db.syncActionDao().insertAll(syncAction);
+        }
+        else {
+            existingSyncAction.rev = pageCurrentVersion;
+            existingSyncAction.data = newtext;
+            _db.syncActionDao().update(existingSyncAction);
+        }
 
         // 2. save also in local DB
         _db.pageDao().updateText(pagename, newtext);
 
         // 3. call sync to uploac
         SynchroDownloadHandler synchroDownloadHandler = new SynchroDownloadHandler(_settings, _db, _xmlRpcAdapter, "", null);
-        WikiCacheUiOrchestrator.instance()._logs.add("Retry the urgent items to be synced");
+        Logs.getInstance().add("Retry the urgent items to be synced");
         synchroDownloadHandler.syncPrioZero();
     }
 

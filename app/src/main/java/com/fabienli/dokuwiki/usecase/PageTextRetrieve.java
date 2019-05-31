@@ -9,6 +9,7 @@ import com.fabienli.dokuwiki.db.PageUpdateText;
 import com.fabienli.dokuwiki.db.SyncAction;
 import com.fabienli.dokuwiki.sync.PageTextDownUpLoader;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
+import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class PageTextRetrieve extends AsyncTask<String, Integer, String> {
         // check it in DB
         Page dbPage = _db.pageDao().findByName(pagename);
         if(dbPage != null) {
-            WikiCacheUiOrchestrator.instance()._logs.add("page "+pagename+" text loaded from local db" );
+            Logs.getInstance().add("page "+pagename+" text loaded from local db" );
             if(dbPage.text != null) pageContent = dbPage.text;
             // Check if a more recent version exists:
             List<SyncAction> synActionItems = _db.syncActionDao().getAll();
@@ -44,7 +45,7 @@ public class PageTextRetrieve extends AsyncTask<String, Integer, String> {
         // get it from server if not there
         if(pageContent.length() == 0 || syncActionRelated != null)
         {
-            WikiCacheUiOrchestrator.instance()._logs.add("page "+pagename+" not in local db, get it from server" );
+            Logs.getInstance().add("page "+pagename+" not in local db, get it from server" );
             PageTextDownUpLoader pageTextDownUpLoader = new PageTextDownUpLoader(_xmlRpcAdapter);
             pageContent = pageTextDownUpLoader.retrievePageText(pagename);
 
