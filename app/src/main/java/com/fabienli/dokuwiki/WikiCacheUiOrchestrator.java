@@ -12,6 +12,7 @@ import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
 import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.ActionListRetrieve;
+import com.fabienli.dokuwiki.usecase.MediaImport;
 import com.fabienli.dokuwiki.usecase.MediaRetrieve;
 import com.fabienli.dokuwiki.usecase.NotificationHandler;
 import com.fabienli.dokuwiki.usecase.PageHtmlRetrieve;
@@ -31,6 +32,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
@@ -154,6 +156,7 @@ public class WikiCacheUiOrchestrator {
         pageTextSave.savePageTextAsync(pagename, newtext, new WikiSynchroCallback() {
             @Override
             public void onceDone() {
+                Logs.getInstance().add("Saved new version of page: "+pagename);
                 // refresh the html page
                 retrievePageHTMLforDisplay(pagename, _webView);
             }
@@ -355,11 +358,33 @@ public class WikiCacheUiOrchestrator {
     public void createNewPageHtml(WebView webView) {
         Logs.getInstance().add("Show the first page to create a new page");
         _webView = webView;
-        StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(_db);
+        StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(_db, context.getCacheDir().getAbsolutePath());
         staticPagesDisplay.getCreatePageHtmlAsync(new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content) {
                 loadPage(content);
+            }
+        });
+    }
+
+    public void mediaManagerPageHtml(WebView webView) {
+        Logs.getInstance().add("Show the first page to handle medias");
+        _webView = webView;
+        StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(_db, context.getCacheDir().getAbsolutePath());
+        staticPagesDisplay.getMediaPageHtmlAsync(new PageHtmlRetrieveCallback() {
+            @Override
+            public void pageRetrieved(String content) {
+                loadPage(content);
+            }
+        });
+    }
+
+    public void savePictureAndShowMediaManagerPageHtml(String newFileName, InputStream imageStream, WebView webView) {
+        MediaImport mediaImport = new MediaImport(_db, context.getCacheDir().getAbsolutePath());
+        mediaImport.importNewMediaAsync(newFileName, imageStream, new MediaRetrieveCallback() {
+            @Override
+            public void mediaRetrieved(String mediaPathName) {
+                mediaManagerPageHtml(webView);
             }
         });
     }

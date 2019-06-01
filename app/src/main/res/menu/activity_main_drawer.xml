@@ -24,17 +24,21 @@
             android:id="@+id/upload"
             android:icon="@drawable/ic_menu_camera"
             android:title="Upload new media" />
+        <item
+            android:id="@+id/mediamanager"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Media Manager" />
     </group>
 
     <item android:title="Debug">
         <menu>
             <item
                 android:id="@+id/actionList"
-                android:icon="@drawable/ic_menu_slideshow"
+                android:icon="@drawable/ic_menu_manage"
                 android:title="Get Sync Action List" />
             <item
                 android:id="@+id/logs"
-                android:icon="@drawable/ic_menu_slideshow"
+                android:icon="@drawable/ic_menu_manage"
                 android:title="Logs" />
 
         </menu>

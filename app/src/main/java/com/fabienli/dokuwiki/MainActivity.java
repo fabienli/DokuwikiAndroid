@@ -27,11 +27,19 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private WebView _webView;
     protected Context context;
+    private final int SELECT_PHOTO = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,7 +193,10 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.create) {
             WikiCacheUiOrchestrator.instance(this).createNewPageHtml(_webView);
         } else if (id == R.id.upload) {
-            //TODO
+            Intent photoPickerIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            startActivityForResult(photoPickerIntent, SELECT_PHOTO);
+        } else if (id == R.id.mediamanager) {
+            WikiCacheUiOrchestrator.instance(this).mediaManagerPageHtml(_webView);
         }
         else { // shortcuts to a page
             Log.d("Menu", String.valueOf(item));
@@ -237,6 +248,31 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+
+        switch(requestCode) {
+            case SELECT_PHOTO:
+                if(resultCode == RESULT_OK){
+                    try {
+                        final Uri imageUri = imageReturnedIntent.getData();
+                        Log.d("Upload", "got image: "+imageUri);
+                        final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                        String newFileName = imageUri.getLastPathSegment();
+                        Log.d("Upload", "to be saved as: "+newFileName);
+                        WikiCacheUiOrchestrator.instance(this).savePictureAndShowMediaManagerPageHtml(newFileName, imageStream, _webView);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    // finally display the list of medias
+                }
+                else
+                    WikiCacheUiOrchestrator.instance(this).mediaManagerPageHtml(_webView);
+        }
+    }
+
 }
 
 

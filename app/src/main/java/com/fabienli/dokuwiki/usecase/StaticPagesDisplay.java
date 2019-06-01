@@ -3,9 +3,11 @@ package com.fabienli.dokuwiki.usecase;
 import android.os.AsyncTask;
 
 import com.fabienli.dokuwiki.db.AppDatabase;
+import com.fabienli.dokuwiki.db.Media;
 import com.fabienli.dokuwiki.db.Page;
 import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 
+import java.io.File;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -18,8 +20,11 @@ public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
     PageHtmlRetrieveCallback _pageHtmlRetrieveCallback = null;
     String _pageContent = "";
 
-    public StaticPagesDisplay(AppDatabase db) {
+    protected String _mediaLocalDir = "";
+
+    public StaticPagesDisplay(AppDatabase db, String mediaLocalDir) {
         _db = db;
+        _mediaLocalDir = mediaLocalDir;
     }
 
 
@@ -31,9 +36,9 @@ public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
                 "    }" +
                 "</script>" +
                 "<form action=\"http://dokuwiki_create/\" method=\"GET\">" +
-                "Enter page name: " +
-                "<input id=\"id\" name=\"id\"/>" +
-                "<input type=\"submit\" value=\"Create\">" +
+                "Enter page name: <br/>" +
+                "<input style=\"width:100%\" id=\"id\" name=\"id\"/><br/>" +
+                "<input style=\"float:right\" type=\"submit\" value=\"Create\">" +
                 "</form>";
         SortedSet<String> knownNamespaces = new TreeSet<>();
         for(Page p : _db.pageDao().getAll()){
@@ -50,15 +55,54 @@ public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
         return html;
     }
 
+    public String getFolderTree(String currentPath){
+        File currentFilename = new File(_mediaLocalDir+"/"+currentPath);
+        if(currentFilename.isDirectory()){
+            String html = "";
+            for (String filepath2 : currentFilename.list()) {
+                html += getFolderTree(currentPath + "/" + filepath2);
+            }
+            return html;
+        }
+        else {
+            return "<li>"+currentPath+"<img width=\"50\" src=\""+_mediaLocalDir+"/"+currentPath+"\"/></li>";
+        }
+    }
+    public String getMediaPageHtml(){
+        String html = "<ul>";
+        //html+=getFolderTree("");
+        html+="</ul>";
+
+        html+="<table>";
+        for(Media media : _db.mediaDao().getAll()){
+            String localFileName = media.id.replace(":", "/");
+            File f = new File(_mediaLocalDir+"/"+localFileName);
+            if(f.exists())
+                html += "<tr>" +
+                        "<td>"+media.id+"</td>" +
+                        "<td><img width=\"70\" src=\""+_mediaLocalDir+"/"+localFileName+"\"/></td>" +
+                        "<td><input type=\"button\" value=\"...\"/></td>" +
+                        "</tr>";
+        }
+        html+="</table>";
+        return html;
+    }
 
     public void getCreatePageHtmlAsync(PageHtmlRetrieveCallback pageHtmlRetrieveCallback) {
         _pageHtmlRetrieveCallback = pageHtmlRetrieveCallback;
-        execute();
+        execute("getCreatePageHtml");
+    }
+    public void getMediaPageHtmlAsync(PageHtmlRetrieveCallback pageHtmlRetrieveCallback) {
+        _pageHtmlRetrieveCallback = pageHtmlRetrieveCallback;
+        execute("getMediaPageHtml");
     }
 
     @Override
     protected String doInBackground(String... params) {
-        _pageContent = getCreatePageHtml();
+        if(params.length==1 && params[0].compareTo("getCreatePageHtml")==0)
+            _pageContent = getCreatePageHtml();
+        if(params.length==1 && params[0].compareTo("getMediaPageHtml")==0)
+            _pageContent = getMediaPageHtml();
         return "ok";
     }
 
