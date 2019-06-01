@@ -4,7 +4,6 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.fabienli.dokuwiki.WikiCacheUiOrchestrator;
 import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.db.Page;
 import com.fabienli.dokuwiki.db.SyncAction;
@@ -30,7 +29,7 @@ public class PageTextSave extends AsyncTask<String, Integer, String> {
         // 1. upload the new text to wiki: put it in sync action queue
         Logs.getInstance().add("text page "+pagename+" updated, uploading it to server");
         Log.d(TAG, "text page "+pagename+" updated, uploading it to server");
-        String pageCurrentVersion = "0";
+        String pageCurrentVersion = "";
         Page page = _db.pageDao().findByName(pagename);
         if(page != null) {
             pageCurrentVersion = page.rev;

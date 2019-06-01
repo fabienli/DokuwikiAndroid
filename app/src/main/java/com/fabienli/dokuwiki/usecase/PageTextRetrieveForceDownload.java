@@ -1,18 +1,10 @@
 package com.fabienli.dokuwiki.usecase;
 
-import android.os.AsyncTask;
-
-import com.fabienli.dokuwiki.WikiCacheUiOrchestrator;
 import com.fabienli.dokuwiki.db.AppDatabase;
-import com.fabienli.dokuwiki.db.Page;
 import com.fabienli.dokuwiki.db.PageUpdateText;
-import com.fabienli.dokuwiki.db.SyncAction;
 import com.fabienli.dokuwiki.sync.PageTextDownUpLoader;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
 import com.fabienli.dokuwiki.tools.Logs;
-import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
-
-import java.util.List;
 
 public class PageTextRetrieveForceDownload extends PageTextRetrieve {
 

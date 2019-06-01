@@ -29,7 +29,7 @@ public class PageUpdateText extends AsyncTask<String, Void, String> {
             Page page = new Page();
             page.pagename = _pagename;
             page.html = "";
-            page.rev = "0";
+            page.rev = "";
             page.text = _text;
             _db.pageDao().insertAll(page);
             return "insert done";

@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
@@ -19,6 +20,7 @@ import com.fabienli.dokuwiki.usecase.PageListRetrieve;
 import com.fabienli.dokuwiki.usecase.PageTextRetrieve;
 import com.fabienli.dokuwiki.usecase.PageTextRetrieveForceDownload;
 import com.fabienli.dokuwiki.usecase.PageTextSave;
+import com.fabienli.dokuwiki.usecase.StaticPagesDisplay;
 import com.fabienli.dokuwiki.usecase.WikiSynchronizer;
 import com.fabienli.dokuwiki.usecase.callback.MediaRetrieveCallback;
 import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
@@ -181,13 +183,18 @@ public class WikiCacheUiOrchestrator {
         return unencodedHtml;
     }
 
-    public void ensureMediaIsDownloaded(String mediaId, String mediaLocalPath, int width, int height, Boolean iDirectDisplay) {
+    public void ensureMediaIsDownloaded(String mediaId, String mediaLocalPath, int width, int height) {
         Log.d(TAG, "Check if file "+mediaId+" needs to be downloaded");
         MediaRetrieve mediaRetrieve = new MediaRetrieve(_db, new XmlRpcAdapter(context), context.getCacheDir().getAbsolutePath());
         mediaRetrieve.getMediaAsync(mediaId, mediaLocalPath, width, height, new MediaRetrieveCallback(){
             @Override
             public void mediaRetrieved(String mediaPathName) {
-                refreshPage();
+                //refreshPage();
+                Toast.makeText(context,"Media downloaded, you can refresh the page", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void mediaWasAlreadyThere(String mediaPathName) {
             }
         });
     }
@@ -235,7 +242,7 @@ public class WikiCacheUiOrchestrator {
                 Log.d(TAG, "Found image: "+id+ " width="+width+" height="+height);
                 // id now contains <namespace:file.ext>
                 String imageFilePath = id.replaceAll(":","/");
-                ensureMediaIsDownloaded(id, imageFilePath, width, height,true);
+                ensureMediaIsDownloaded(id, imageFilePath, width, height);
                 String localFilename = getLocalFileName(imageFilePath, width, height);
                 html = html.replaceAll("src=\"/lib/exe/fetch.php\\?"+m.group(1)+"\"", "src=\""+context.getCacheDir().getAbsolutePath()+"/"+localFilename+"\"");
             }
@@ -244,6 +251,7 @@ public class WikiCacheUiOrchestrator {
             String aBaseUrl = "file://"+context.getCacheDir().getAbsolutePath();
             Log.d(TAG, "Base Url: "+aBaseUrl);
             _webView.loadDataWithBaseURL(aBaseUrl, html, "text/html", "UTF-8", null);
+            Log.d(TAG, "Loaded page ");
         }
     }
 
@@ -328,6 +336,7 @@ public class WikiCacheUiOrchestrator {
 
     public void refreshPage() {
         Log.d(TAG, "refreshing the page");
+        //_webView.clearView();
         _webView.reload();
     }
 
@@ -343,4 +352,15 @@ public class WikiCacheUiOrchestrator {
         });
     }
 
+    public void createNewPageHtml(WebView webView) {
+        Logs.getInstance().add("Show the first page to create a new page");
+        _webView = webView;
+        StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(_db);
+        staticPagesDisplay.getCreatePageHtmlAsync(new PageHtmlRetrieveCallback() {
+            @Override
+            public void pageRetrieved(String content) {
+                loadPage(content);
+            }
+        });
+    }
 }

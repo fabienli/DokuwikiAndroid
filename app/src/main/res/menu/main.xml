@@ -2,6 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item android:id="@+id/action_refresh"
+        android:title="Refresh Page"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
     <item android:id="@+id/action_edit"
         android:title="Edit Page"
         android:orderInCategory="100"

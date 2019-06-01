@@ -8,12 +8,10 @@ import android.util.Log;
 import com.fabienli.dokuwiki.WikiCacheUiOrchestrator;
 import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.db.Media;
-import com.fabienli.dokuwiki.db.Page;
 import com.fabienli.dokuwiki.sync.MediaDownloader;
 import com.fabienli.dokuwiki.sync.MediaInfoRetriever;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
 import com.fabienli.dokuwiki.usecase.callback.MediaRetrieveCallback;
-import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,6 +25,8 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
     String _mediaPathName = "";
     XmlRpcAdapter _xmlRpcAdapter;
     protected String _mediaLocalDir = "";
+    protected Boolean _mediaDownloaded = false;
+    protected Boolean _mediaResized = false;
 
     public MediaRetrieve(AppDatabase db, XmlRpcAdapter xmlRpcAdapter, String mediaLocalDir) {
         _db = db;
@@ -50,8 +50,10 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
         String newlocalFilename = WikiCacheUiOrchestrator.getLocalFileName(mediaRelativePathname, targetW, targetH);
         File originalfile = new File(_mediaLocalDir, mediaRelativePathname);
         File file = new File(_mediaLocalDir, newlocalFilename);
-        if(file.exists() && !forceDownload) // File is there, in correct size
+        if(file.exists() && !forceDownload) { // File is there, in correct size
+            Log.d(TAG, "Local file already there !");
             return newlocalFilename;
+        }
 
         // 1. retrieve file from server if not there
         if(!originalfile.exists() || forceDownload) {
@@ -69,6 +71,7 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
                 FileOutputStream fw = new FileOutputStream(originalfile.getAbsoluteFile());
                 fw.write(fcontent);
                 fw.close();
+                _mediaDownloaded = true;
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -130,6 +133,7 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
             FileOutputStream ostream = new FileOutputStream(file);
             newBitmap.compress(Bitmap.CompressFormat.PNG, 100, ostream);
             ostream.close();
+            _mediaResized = true;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -153,6 +157,9 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
         if(_mediaRetrieveCallback!=null)
-            _mediaRetrieveCallback.mediaRetrieved(_mediaPathName);
+            if(_mediaDownloaded || _mediaResized)
+                _mediaRetrieveCallback.mediaRetrieved(_mediaPathName);
+            else
+                _mediaRetrieveCallback.mediaWasAlreadyThere(_mediaPathName);
     }
 }

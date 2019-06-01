@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity
         _webView.setWebViewClient(new MyWebViewClient());
         WebSettings webSettings = _webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
         webSettings.setAppCachePath(context.getCacheDir().getAbsolutePath());
         webSettings.setSupportZoom(true);
         webSettings.setBuiltInZoomControls(true);
@@ -142,6 +143,10 @@ public class MainActivity extends AppCompatActivity
             WikiCacheUiOrchestrator.instance(this).forceDownloadPageHTMLforDisplay(_webView);
             return true;
         }
+        else if (id == R.id.action_refresh) {
+            WikiCacheUiOrchestrator.instance(this).refreshPage();
+            return true;
+        }
         else if (id == R.id.action_web_link) {
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
             String baseurl = settings.getString("serverurl", "");
@@ -178,7 +183,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.actionList) {
             WikiCacheUiOrchestrator.instance(this).displayActionListPage(_webView);
         } else if (id == R.id.create) {
-            //TODO
+            WikiCacheUiOrchestrator.instance(this).createNewPageHtml(_webView);
         } else if (id == R.id.upload) {
             //TODO
         }
@@ -211,6 +216,15 @@ public class MainActivity extends AppCompatActivity
                 WebView myWebView = (WebView) findViewById(R.id.webview);
                 String pagename = url.replace("http://dokuwiki/doku.php?id=", "");
                 WikiCacheUiOrchestrator.instance(view.getContext()).retrievePageHTMLforDisplay(pagename, myWebView);
+
+                return false;
+            }
+            else if(url.startsWith("http://dokuwiki_create/")){
+                WebView myWebView = (WebView) findViewById(R.id.webview);
+                String pagename = url.replace("http://dokuwiki_create/?id=", "");
+                Intent intent = new Intent(MainActivity.this, EditActivity.class);
+                intent.putExtra("pagename", pagename);
+                startActivityForResult(intent, 0);
 
                 return false;
             }

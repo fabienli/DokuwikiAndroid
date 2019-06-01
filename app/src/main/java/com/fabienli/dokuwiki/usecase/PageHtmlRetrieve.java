@@ -1,8 +1,8 @@
 package com.fabienli.dokuwiki.usecase;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
-import com.fabienli.dokuwiki.WikiCacheUiOrchestrator;
 import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.db.Page;
 import com.fabienli.dokuwiki.db.PageUpdateHtml;
@@ -16,6 +16,7 @@ import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 import java.util.List;
 
 public class PageHtmlRetrieve extends AsyncTask<String, Integer, String> {
+    String TAG = "PageHtmlRetrieve";
     AppDatabase _db = null;
     PageHtmlRetrieveCallback _pageHtmlRetrieveCallback = null;
     String _pageContent = "";
@@ -33,6 +34,7 @@ public class PageHtmlRetrieve extends AsyncTask<String, Integer, String> {
         // check it in DB
         Page dbPage = _db.pageDao().findByName(pagename);
         if(dbPage != null) {
+            Log.d(TAG, "page "+pagename+" loaded from local db" );
             Logs.getInstance().add("page "+pagename+" loaded from local db" );
             if(!dbPage.isHtmlEmpty()) pageContent = dbPage.html;
             pageVersion = dbPage.rev;
@@ -49,6 +51,7 @@ public class PageHtmlRetrieve extends AsyncTask<String, Integer, String> {
         // get it from server if not there
         if(pageContent.length() == 0 || syncActionRelated != null)
         {
+            Log.d(TAG,"page "+pagename+" not in local db, get it from server" );
             Logs.getInstance().add("page "+pagename+" not in local db, get it from server" );
             PageHtmlDownloader pageHtmlDownloader = new PageHtmlDownloader(_xmlRpcAdapter);
             pageContent = pageHtmlDownloader.retrievePageHTML(pagename);
