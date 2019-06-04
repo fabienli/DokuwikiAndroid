@@ -56,18 +56,25 @@ public class PageHtmlRetrieve extends AsyncTask<String, Integer, String> {
             PageHtmlDownloader pageHtmlDownloader = new PageHtmlDownloader(_xmlRpcAdapter);
             pageContent = pageHtmlDownloader.retrievePageHTML(pagename);
 
-            // get the version if we need
-            if(pageVersion == null || pageVersion.length() == 0) {
-                // need to update from server
-                PageInfoRetriever pageInfoRetriever = new PageInfoRetriever(_xmlRpcAdapter);
-                pageVersion = pageInfoRetriever.retrievePageVersion(pagename);
+            if(pageContent == null || pageContent.length()==0) {
+                // new page, propose to create it
+                StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(_db, "");
+                pageContent = staticPagesDisplay.getProposeCreatePageHtml(pagename);
             }
-            // store it in DB cache
-            PageUpdateHtml pageUpdateHtml = new PageUpdateHtml(_db, pagename, pageContent, pageVersion);
-            pageUpdateHtml.doSync();
+            else {
+                // get the version if we need
+                if (pageVersion == null || pageVersion.length() == 0) {
+                    // need to update from server
+                    PageInfoRetriever pageInfoRetriever = new PageInfoRetriever(_xmlRpcAdapter);
+                    pageVersion = pageInfoRetriever.retrievePageVersion(pagename);
+                }
+                // store it in DB cache
+                PageUpdateHtml pageUpdateHtml = new PageUpdateHtml(_db, pagename, pageContent, pageVersion);
+                pageUpdateHtml.doSync();
 
-            if(syncActionRelated != null){
-                _db.syncActionDao().deleteAll(syncActionRelated);
+                if (syncActionRelated != null) {
+                    _db.syncActionDao().deleteAll(syncActionRelated);
+                }
             }
         }
         return pageContent;

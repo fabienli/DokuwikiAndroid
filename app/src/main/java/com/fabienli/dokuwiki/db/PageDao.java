@@ -11,7 +11,7 @@ import androidx.room.Update;
 
 @Dao
 public interface PageDao {
-    @Query("SELECT * FROM page")
+    @Query("SELECT * FROM page ORDER BY pagename")
     List<Page> getAll();
 
     @Query("SELECT * FROM page WHERE pagename IN (:pagename) LIMIT 1")

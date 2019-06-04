@@ -41,6 +41,7 @@ public class XmlRpcAdapter {
         _xmlConfig = new XmlRpcClientConfigImpl();
         try {
             _xmlConfig.setServerURL(new URL(_urlserver));
+            //_xmlConfig.setUserAgent("Mozilla/5.0 (Android 9; Mobile; rv:67.0) Gecko/67.0 Firefox/67.0");
             client.setConfig(_xmlConfig);
         } catch (MalformedURLException e) {
             e.printStackTrace();

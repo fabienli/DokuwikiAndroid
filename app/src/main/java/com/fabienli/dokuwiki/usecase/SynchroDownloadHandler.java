@@ -6,6 +6,7 @@ import android.util.Log;
 import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.db.PageUpdateText;
 import com.fabienli.dokuwiki.db.SyncAction;
+import com.fabienli.dokuwiki.sync.MediaDownloader;
 import com.fabienli.dokuwiki.sync.PageInfoRetriever;
 import com.fabienli.dokuwiki.sync.PageTextDownUpLoader;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
@@ -16,6 +17,8 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+
+import static java.lang.Math.min;
 
 public class SynchroDownloadHandler {
     static String TAG = "SynchroDownloadHandler";
@@ -45,8 +48,29 @@ public class SynchroDownloadHandler {
             int max = saList.size();
             for (SyncAction sa : saList) {
                 if(_wikiSynchroCallback != null)
-                    _wikiSynchroCallback.progressUpdate(i, max);
+                    _wikiSynchroCallback.progressUpdate("Send pages", i, max);
                 executeAction(sa);
+                i++;
+            }
+            removeOneSyncOngoing();
+
+        }
+        else
+        {
+            _syncToBePlanned = true;
+        }
+    }
+
+    public void syncPrio1(){
+        if(_syncOngoing == 0) {
+            addOneSyncOngoing();
+            int i=0;
+            List<SyncAction> saList = _db.syncActionDao().getAllPriority("1");
+            int max = saList.size();
+            for (SyncAction sa : saList) {
+                if(_wikiSynchroCallback != null)
+                    _wikiSynchroCallback.progressUpdate("Send media", i, max);
+                executeMediaAction(sa);
                 i++;
             }
             removeOneSyncOngoing();
@@ -61,56 +85,71 @@ public class SynchroDownloadHandler {
     public void syncPage2(){
         if(_syncOngoing == 0) {
             addOneSyncOngoing();
+
             final int maxpages = Integer.parseInt(_settings.getString("max_page_sync", "2"));;
+
+            List<SyncAction> saList = _db.syncActionDao().getAllPriority("2");
 
             // init the sync for requested level
             if(_level2ongoing == 0)
-                _level2ongoing = maxpages;
-            if(_wikiSynchroCallback != null)
-                _wikiSynchroCallback.progressUpdate((maxpages - _level2ongoing), maxpages);
+                _level2ongoing = min(maxpages, saList.size());
 
-            _level2ongoing--;
+            if(_level2ongoing > 0) {
+                if(_wikiSynchroCallback != null)
+                    _wikiSynchroCallback.progressUpdate("Download pages", (maxpages - _level2ongoing), maxpages);
 
-            try {
-                for (SyncAction sa : _db.syncActionDao().getAllPriority("2")) {
-                    executeAction(sa);
-                    break;
+                _level2ongoing--;
+
+                try {
+                    for (SyncAction sa : saList) {
+                        executeAction(sa);
+                        break;
+                    }
+                } finally {
+                    removeOneSyncOngoing();
                 }
-            } finally {
+            }
+            else {
                 removeOneSyncOngoing();
             }
-
         }
     }
 
     public void syncMedia3(){//to be re-used for level 1?
         if(_syncOngoing == 0) {
             addOneSyncOngoing();
+
             final int maxmedia = Integer.parseInt(_settings.getString("max_media_sync", "2"));;
 
+            List<SyncAction> saList = _db.syncActionDao().getAllPriority("3");
+
             if(_level3ongoing == 0)
-                _level3ongoing = maxmedia;
+                _level3ongoing = min(maxmedia, saList.size());
 
-            if(_wikiSynchroCallback != null)
-                _wikiSynchroCallback.progressUpdate((maxmedia - _level3ongoing), maxmedia);
+            if(_level3ongoing > 0) {
+                if (_wikiSynchroCallback != null)
+                    _wikiSynchroCallback.progressUpdate("Download medias", (maxmedia - _level3ongoing), maxmedia);
 
-            _level3ongoing--;
+                _level3ongoing--;
 
-            try {
-                for (SyncAction sa : _db.syncActionDao().getAllPriority("3")) {
-                    executeMediaAction(sa);
-                    break;
+                try {
+                    for (SyncAction sa : saList) {
+                        executeMediaAction(sa);
+                        break;
+                    }
+                } finally {
+                    removeOneSyncOngoing();
                 }
-            } finally {
+            }
+            else {
                 removeOneSyncOngoing();
             }
-
         }
     }
 
     private void executeAction(final SyncAction sa) {
+        addOneSyncOngoing();
         if(sa.verb.compareTo("PUT")==0){
-            addOneSyncOngoing();
             PageTextDownUpLoader pageTextDownUpLoader = new PageTextDownUpLoader(_xmlRpcAdapter);
 
             // 1. get the current server's version
@@ -148,10 +187,8 @@ public class SynchroDownloadHandler {
 
             // 5. the end
             _db.syncActionDao().deleteAll(sa);
-            removeOneSyncOngoing(); // remove the synchro from PUT page
         }
         else if(sa.verb.compareTo("GET")==0){
-            addOneSyncOngoing();
             Logs.getInstance().add("Get page "+sa.name+" from server");
 
             // 1. force the download of current's server version
@@ -160,13 +197,13 @@ public class SynchroDownloadHandler {
 
             // 2. the end
             _db.syncActionDao().deleteAll(sa);
-            removeOneSyncOngoing(); // remove the synchro from GET page
         }
+        removeOneSyncOngoing(); // remove the synchro from GET/PUT page
     }
 
     private void executeMediaAction(final SyncAction sa) {
+        addOneSyncOngoing();
         if(sa.verb.compareTo("GET")==0){
-            addOneSyncOngoing();
             Logs.getInstance().add("Get media "+sa.name+" from server");
             String mediaFilePath = sa.name.replaceAll(":","/");
 
@@ -185,8 +222,21 @@ public class SynchroDownloadHandler {
 
             // 3. the end
             _db.syncActionDao().deleteAll(sa);
-            removeOneSyncOngoing(); // remove the synchro from GET media
         }
+        else if(sa.verb.compareTo("PUT")==0){
+            Log.d(TAG, "PUT media: "+sa.toText());
+            if(sa.data != null) {
+
+                // 1. call the upload of this file
+                MediaDownloader mediaDownloader = new MediaDownloader(_xmlRpcAdapter);
+                mediaDownloader.uploadMedia(sa.data);
+
+                // 2. the end
+                //TODO: one fully implemented: _db.syncActionDao().deleteAll(sa);
+
+            }
+        }
+        removeOneSyncOngoing(); // remove the synchro from GET media
     }
 
     public void addOneSyncOngoing() {

@@ -4,12 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import android.preference.PreferenceManager;
+import android.text.Html;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -33,6 +35,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 
 public class MainActivity extends AppCompatActivity
@@ -231,8 +236,20 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
             else if(url.startsWith("http://dokuwiki_create/")){
-                WebView myWebView = (WebView) findViewById(R.id.webview);
                 String pagename = url.replace("http://dokuwiki_create/?id=", "");
+                // convert url characters
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        pagename = URLDecoder.decode(pagename, StandardCharsets.UTF_8.name());
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+
+                // replace special characters with underscore
+                pagename = pagename.replaceAll("[^-a-z0-9:]","_").toLowerCase();
+
+                // call the edit window
                 Intent intent = new Intent(MainActivity.this, EditActivity.class);
                 intent.putExtra("pagename", pagename);
                 startActivityForResult(intent, 0);
@@ -266,7 +283,6 @@ public class MainActivity extends AppCompatActivity
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
-                    // finally display the list of medias
                 }
                 else
                     WikiCacheUiOrchestrator.instance(this).mediaManagerPageHtml(_webView);

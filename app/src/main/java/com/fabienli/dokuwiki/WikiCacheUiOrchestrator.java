@@ -96,9 +96,9 @@ public class WikiCacheUiOrchestrator {
         wikiSynchronizer.retrieveDataFromServerAsync(new WikiSynchroCallback() {
 
             @Override
-            public void progressUpdate(Integer... values) {
+            public void progressUpdate(String header, Integer... values) {
                 if(values.length>=2){
-                    notificationHandler.updateNotification("updating: "+values[0]+"/"+values[1]);
+                    notificationHandler.updateNotification(header +" : "+values[0]+"/"+values[1]);
                 }
             }
 

@@ -143,7 +143,7 @@ public class PageHtmlRetrieveUnitTest {
      * test that when a page is not in DB (not found) we try to retrieve it from server
      */
     @Test
-    public void PageHtmlRetrieve_retrievePageFromServer_new() {
+    public void PageHtmlRetrieve_retrievePageFromServer_newInLocal() {
         // test the basic call is getting into the callback
         final String HTML_CONTENT = "test content";
         AppDatabase appDatabase = mock(AppDatabase.class);
@@ -167,5 +167,38 @@ public class PageHtmlRetrieveUnitTest {
         // ensure we updated the content in our DB cache
         verify(pageDao, times(1)).insertAll(any(Page.class));
     }
+
+
+    /**
+     * test that when a page is not in DB (not found), not in server, so we propose to create it
+     */
+    @Test
+    public void PageHtmlRetrieve_retrievePageFromServer_newPage() {
+        // test the basic call is getting into the callback
+        final String PAGENAME = "start";
+        AppDatabase appDatabase = mock(AppDatabase.class);
+        PageDao pageDao = mock(PageDao.class);
+        when(appDatabase.pageDao()).thenReturn(pageDao);
+        when(pageDao.findByName(any(String.class))).thenReturn(null);
+
+        XmlRpcAdapter xmlRpcAdapter = mock(XmlRpcAdapter.class);
+        ArrayList<String> results = new ArrayList<String>();
+        when(xmlRpcAdapter.callMethod(any(String.class), any(String.class))).thenReturn(results);
+
+        // test the usecase:
+        PageHtmlRetrieve aPageHtmlRetrieve = new PageHtmlRetrieve(appDatabase, xmlRpcAdapter);
+        String content = aPageHtmlRetrieve.retrievePage(PAGENAME);
+        // check that returned page content is the correct one
+        //System.out.println(content);
+        assert(content.length() > 0);
+        assert(content.indexOf(PAGENAME) != -1);
+        assert(content.indexOf("create") != -1);
+        // ensure we called the server
+        verify(xmlRpcAdapter, times(1)).callMethod(eq("wiki.getPageHTML"), any(String.class));
+        // ensure we didn't try to update anything in our DB cache
+        verify(pageDao, times(0)).insertAll(any(Page.class));
+    }
+
+
 
 }

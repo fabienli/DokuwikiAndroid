@@ -23,7 +23,6 @@ public class SyncAction {
     @ColumnInfo(name = "rev")
     public String rev;
 
-
     @ColumnInfo(name = "data")
     public String data;
 

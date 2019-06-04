@@ -223,6 +223,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
         SynchroDownloadHandler synchroDownloadHandler = new SynchroDownloadHandler(_settings, _db, _xmlRpcAdapter, _mediaLocalPath, _wikiSynchroCallback);
         Logs.getInstance().add("Retry the urgent items to be synced");
         synchroDownloadHandler.syncPrioZero();
+        synchroDownloadHandler.syncPrio1();
 
         Logs.getInstance().add("Download items level 2");
         String typesync = _settings.getString("list_type_sync", "a");
@@ -251,7 +252,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
         if(_wikiSynchroCallback!=null)
-            _wikiSynchroCallback.progressUpdate(values);
+            _wikiSynchroCallback.progressUpdate("Retrieving data", values);
 
     }
 

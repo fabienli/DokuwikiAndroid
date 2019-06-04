@@ -17,4 +17,9 @@ public class MediaDownloader {
         return resultMedia;
     }
 
+    public void uploadMedia(String filename){
+        Log.d(TAG,"Put Media file "+filename);
+        // TODO:  _xmlRpcAdapter.callMethodBinary("wiki.", ...);
+
+    }
 }
