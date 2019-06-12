@@ -2,9 +2,7 @@ package com.fabienli.dokuwiki.usecase;
 
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.util.Log;
 
-import com.fabienli.dokuwiki.WikiCacheUiOrchestrator;
 import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.db.Media;
 import com.fabienli.dokuwiki.db.Page;

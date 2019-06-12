@@ -88,7 +88,7 @@ public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
         for(Media media : _db.mediaDao().getAll()){
             String localFileName = media.id.replace(":", "/");
             File f = new File(_mediaLocalDir+"/"+localFileName);
-            if(f.exists())
+            if(f.exists() && !localFileName.contains("/")) // TODO: limit to top namespace to avoid listing all, but needs to be properly handled
                 html += "<tr>" +
                         "<td>"+media.id+"</td>" +
                         "<td><img width=\"70\" src=\""+_mediaLocalDir+"/"+localFileName+"\"/></td>" +

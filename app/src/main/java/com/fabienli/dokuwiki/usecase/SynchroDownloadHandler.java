@@ -10,6 +10,7 @@ import com.fabienli.dokuwiki.sync.MediaDownloader;
 import com.fabienli.dokuwiki.sync.PageInfoRetriever;
 import com.fabienli.dokuwiki.sync.PageTextDownUpLoader;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
+import com.fabienli.dokuwiki.sync.XmlRpcAdapterFile;
 import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.callback.WikiSynchroCallback;
 
@@ -228,11 +229,13 @@ public class SynchroDownloadHandler {
             if(sa.data != null) {
 
                 // 1. call the upload of this file
-                MediaDownloader mediaDownloader = new MediaDownloader(_xmlRpcAdapter);
-                mediaDownloader.uploadMedia(sa.data);
+                MediaDownloader mediaDownloader = new MediaDownloader(new XmlRpcAdapterFile(_xmlRpcAdapter));
+                Boolean success = mediaDownloader.uploadMedia(sa.name, sa.data);
 
                 // 2. the end
-                //TODO: one fully implemented: _db.syncActionDao().deleteAll(sa);
+                if(success) {
+                    _db.syncActionDao().deleteAll(sa);
+                }
 
             }
         }

@@ -2,6 +2,8 @@ package com.fabienli.dokuwiki.sync;
 
 import android.util.Log;
 
+import java.util.ArrayList;
+
 
 public class MediaDownloader {
     protected String TAG = "MediaDownloader";
@@ -16,10 +18,9 @@ public class MediaDownloader {
         byte[] resultMedia = _xmlRpcAdapter.callMethodBinary("wiki.getAttachment", medianame);
         return resultMedia;
     }
-
-    public void uploadMedia(String filename){
+    public boolean uploadMedia(String medianame, String filename){
         Log.d(TAG,"Put Media file "+filename);
-        // TODO:  _xmlRpcAdapter.callMethodBinary("wiki.", ...);
-
+        ArrayList<String> result = _xmlRpcAdapter.callMethod("wiki.putAttachment", medianame, "file://"+filename, "{}");
+        return (result!= null && result.size()>0);
     }
 }

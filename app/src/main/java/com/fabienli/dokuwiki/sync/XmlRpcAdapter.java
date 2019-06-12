@@ -29,6 +29,7 @@ public class XmlRpcAdapter {
     private String _password;
     private String _user;
     private String _urlserver;
+    private boolean _debug = false;
     protected XmlRpcClientConfigImpl _xmlConfig;
 
     public XmlRpcAdapter(Context context){
@@ -37,6 +38,7 @@ public class XmlRpcAdapter {
         _password = settings.getString("password", "");
         _user = settings.getString("user", "");;
         _urlserver = settings.getString("serverurl", "");;
+        _debug = settings.getBoolean("debuglogs", false);
         Log.d(TAG,"Connecting to server <"+_urlserver + "> with user <"+_user+">");
         _xmlConfig = new XmlRpcClientConfigImpl();
         try {
@@ -52,7 +54,7 @@ public class XmlRpcAdapter {
         ArrayList<String> results = new ArrayList<String>();
 
         try {
-            client.setTransportFactory(getXmlRpcSunHttpTransportFactoryInstance(false));
+            client.setTransportFactory(getXmlRpcSunHttpTransportFactoryInstance(false, _debug));
             Vector parameters = getParametersVector(params);
 
             ensureLogin();
@@ -96,7 +98,7 @@ public class XmlRpcAdapter {
         byte[] results = null;
 
         try {
-            client.setTransportFactory(getXmlRpcSunHttpTransportFactoryInstance(true));
+            client.setTransportFactory(getXmlRpcSunHttpTransportFactoryInstance(true, false));
 
             Log.d(TAG,"2");
 
@@ -154,14 +156,13 @@ public class XmlRpcAdapter {
     protected Vector getParametersVector(String... params){
         Vector parameters = new Vector();
         for (int i=0; i<params.length; i++) {
-
             parameters.addElement(params[i]);
         }
         return parameters;
     }
 
-    public XmlRpcSunHttpTransportFactory getXmlRpcSunHttpTransportFactoryInstance(Boolean isBinaryExpected)
+    public XmlRpcSunHttpTransportFactory getXmlRpcSunHttpTransportFactoryInstance(Boolean isBinaryExpected, Boolean debug)
     {
-        return new DwXmlRpcSunHttpTransportFactory(client, isBinaryExpected);
+        return new DwXmlRpcSunHttpTransportFactory(client, isBinaryExpected, debug);
     }
 }

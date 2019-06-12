@@ -1,6 +1,11 @@
 package com.fabienli.dokuwiki.sync;
 
+import android.annotation.TargetApi;
+import android.os.Build;
+import android.text.Html;
 import android.util.Log;
+
+import com.fabienli.dokuwiki.tools.Logs;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.XmlRpcRequest;
@@ -25,28 +30,33 @@ import java.util.Map;
 public class DwXmlRpcSunHttpTransportFactory extends XmlRpcSunHttpTransportFactory {
 
     private Boolean isBinaryExpected;
+    private Boolean _debug;
     private XmlRpcClient client;
-    public DwXmlRpcSunHttpTransportFactory(XmlRpcClient client, Boolean isBinaryExpected) {
+    public DwXmlRpcSunHttpTransportFactory(XmlRpcClient client, Boolean isBinaryExpected, Boolean debug) {
         super(client);
         this.client = client;
         this.isBinaryExpected = isBinaryExpected;
+        this._debug = debug;
     }
 
     public XmlRpcTransport getTransport() {
-        return new DwXmlRpcSunHttpTransport(client, isBinaryExpected);
+        return new DwXmlRpcSunHttpTransport(client, isBinaryExpected, _debug);
     }
 }
 
 class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
     private Boolean isBinaryExpected;
+    private Boolean _debug;
     private URLConnection conn;
     private String TAG = "DwXmlRpcSunHttpTransport";
 
 
-    public DwXmlRpcSunHttpTransport(XmlRpcClient pClient, Boolean isBinaryExpected) {
+    public DwXmlRpcSunHttpTransport(XmlRpcClient pClient, Boolean isBinaryExpected, Boolean debug) {
         super(pClient);
         this.isBinaryExpected = isBinaryExpected;
+        this._debug = debug;
     }
+
     @Override
     protected URLConnection newURLConnection(URL pURL) throws IOException {
         conn = super.newURLConnection(pURL);
@@ -75,18 +85,19 @@ class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
         super.close();
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected Object readResponse(XmlRpcStreamRequestConfig pConfig, InputStream pStream) throws XmlRpcException {
         // if Binary is expected, don't try to alter it
         if(isBinaryExpected)
             return super.readResponse(pConfig, pStream);
-
         // not Binary, so we can adapt a few things:
         final StringBuffer sb = new StringBuffer();
         try {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(pStream));
             String line = reader.readLine();
             while (line != null) {
+                if(_debug) Logs.getInstance().add("response:"+ Html.escapeHtml(line));
                 //It seems that the date format is not fully handled with ISO 8601, work this around by updating all dates
                 //<dateTime.iso8601>2018-10-16T12:08:21+0000</dateTime.iso8601>
                 // to
@@ -99,7 +110,7 @@ class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
         } catch (final IOException e) {
             Log.d(TAG, "While reading server response" + e.toString());
         }
-        Log.d(TAG, sb.toString());
+        //Log.d(TAG, sb.toString());
 
         final ByteArrayInputStream bais = new ByteArrayInputStream(sb.toString().getBytes());
         return super.readResponse(pConfig, bais);

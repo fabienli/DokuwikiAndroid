@@ -3,6 +3,7 @@ package com.fabienli.dokuwiki;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,7 +12,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import android.preference.PreferenceManager;
-import android.text.Html;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -199,6 +200,7 @@ public class MainActivity extends AppCompatActivity
             WikiCacheUiOrchestrator.instance(this).createNewPageHtml(_webView);
         } else if (id == R.id.upload) {
             Intent photoPickerIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            photoPickerIntent.setType("image/*");
             startActivityForResult(photoPickerIntent, SELECT_PHOTO);
         } else if (id == R.id.mediamanager) {
             WikiCacheUiOrchestrator.instance(this).mediaManagerPageHtml(_webView);
@@ -256,10 +258,13 @@ public class MainActivity extends AppCompatActivity
 
                 return false;
             }
+            //TODO: check if the link is to a local file; then to be displayed/downloaded
+
             String aBaseUrl = "file://"+context.getCacheDir().getAbsolutePath();
             if(url.startsWith(aBaseUrl)) // local cache folder, means invalid link
                 return true;
             // Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
+
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
             return true;
@@ -277,9 +282,21 @@ public class MainActivity extends AppCompatActivity
                         final Uri imageUri = imageReturnedIntent.getData();
                         Log.d("Upload", "got image: "+imageUri);
                         final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                        String newFileName = imageUri.getLastPathSegment();
+                        String[] filePathColumn = { MediaStore.Images.Media.DATA };
+                        Cursor cursor = getContentResolver().query(imageUri,
+                                filePathColumn, null, null, null);
+                        cursor.moveToFirst();
+                        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                        String fullPathName = cursor.getString(columnIndex);
+                        cursor.close();
+                        String[] fullPathNameSplit = fullPathName.split("/");
+                        String newFileName = fullPathName;
+                        if (fullPathNameSplit.length > 1) {
+                            newFileName = fullPathNameSplit[fullPathNameSplit.length -1];
+                        }
                         Log.d("Upload", "to be saved as: "+newFileName);
-                        WikiCacheUiOrchestrator.instance(this).savePictureAndShowMediaManagerPageHtml(newFileName, imageStream, _webView);
+                        WikiCacheUiOrchestrator.instance(this).
+                                savePictureAndShowMediaManagerPageHtml(newFileName, imageStream, _webView);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -288,6 +305,7 @@ public class MainActivity extends AppCompatActivity
                     WikiCacheUiOrchestrator.instance(this).mediaManagerPageHtml(_webView);
         }
     }
+
 
 }
 
