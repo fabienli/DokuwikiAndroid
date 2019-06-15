@@ -1,0 +1,13 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="debugpanel"
+        android:title="Display Debug Panel" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="debuglogs"
+        android:title="Full Debug Logs" />
+
+
+</PreferenceScreen>

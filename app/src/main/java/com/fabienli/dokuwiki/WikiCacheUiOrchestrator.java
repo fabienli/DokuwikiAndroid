@@ -22,6 +22,7 @@ import com.fabienli.dokuwiki.usecase.PageTextRetrieve;
 import com.fabienli.dokuwiki.usecase.PageTextRetrieveForceDownload;
 import com.fabienli.dokuwiki.usecase.PageTextSave;
 import com.fabienli.dokuwiki.usecase.StaticPagesDisplay;
+import com.fabienli.dokuwiki.usecase.UrlConverter;
 import com.fabienli.dokuwiki.usecase.WikiSynchronizer;
 import com.fabienli.dokuwiki.usecase.callback.MediaRetrieveCallback;
 import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
@@ -202,15 +203,6 @@ public class WikiCacheUiOrchestrator {
         });
     }
 
-    public static String getLocalFileName(String localPath, int width, int height){
-        if(width == 0 && height == 0)
-            return localPath;
-        else if(width == 0)
-            return localPath + "__" +Integer.toString(height);
-        else if(height == 0)
-            return localPath + "_" +Integer.toString(width)+"_";
-        return localPath + "_" + Integer.toString(width)+"_" + Integer.toString(height);
-    }
 
     public void loadPage(String iPageData) {
         if(_webView == null) {
@@ -218,38 +210,11 @@ public class WikiCacheUiOrchestrator {
             _webView = (WebView) ((MainActivity)context).findViewById(R.id.webview);
         }
         if(_webView != null) {
-            String html = iPageData
-                    .replaceAll("href=\"/doku.php", "href=\"http://dokuwiki/doku.php");
-                    //.replaceAll("href=\"/", "href=\"http://dokuwiki/");
-                    //.replaceAll("src=\"/lib/exe/fetch.php\\S*media=([^\\s^&]*)\"","src=\"$1\"");
-                    //.replaceAll("src=\"/lib/exe/fetch.php\\S*media=([^\\s^&]*)\"","src=\"$1\"");
-            // find the list of media, to ensure they're here
-            Pattern mediaPattern = Pattern.compile("src=\"/lib/exe/fetch.php\\?(\\S+)\"");
-            Matcher m = mediaPattern.matcher(iPageData);
-            while (m.find()) {
-                int width = 0;
-                int height = 0;
-                String id="";
-                String[] args = m.group(1).split("&amp;");
-                for (String v:args) {
-                    String[] opt = v.split("=");
-                    if(opt.length == 2){
-                        if(opt[0].compareTo("w") == 0)
-                            width = Integer.parseInt(opt[1]);
-                        else if(opt[0].compareTo("h") == 0)
-                            height = Integer.parseInt(opt[1]);
-                        else if(opt[0].compareTo("media") == 0)
-                            id = opt[1];
-                    }
-                }
-                Log.d(TAG, "Found image: "+id+ " width="+width+" height="+height);
-                // id now contains <namespace:file.ext>
-                String imageFilePath = id.replaceAll(":","/");
-                ensureMediaIsDownloaded(id, imageFilePath, width, height);
-                String localFilename = getLocalFileName(imageFilePath, width, height);
-                html = html.replaceAll("src=\"/lib/exe/fetch.php\\?"+m.group(1)+"\"", "src=\""+context.getCacheDir().getAbsolutePath()+"/"+localFilename+"\"");
+            UrlConverter urlConverter = new UrlConverter(context.getCacheDir().getAbsolutePath());
+            String html = urlConverter.getHtmlContentConverted(iPageData);
+            for(UrlConverter.ImageRefData img : urlConverter._imageList){
+                ensureMediaIsDownloaded(img.id, img.imageFilePath, img.width, img.height);
             }
-            html = addHeaders(html);
             Log.d(TAG, "Display page: "+html);
             String aBaseUrl = "file://"+context.getCacheDir().getAbsolutePath();
             Log.d(TAG, "Base Url: "+aBaseUrl);
@@ -258,12 +223,7 @@ public class WikiCacheUiOrchestrator {
         }
     }
 
-    private String addHeaders(String html) {
-        File cssFile = new File(context.getCacheDir(), "default.css");
-        final String START_HEADERS = "<html>\n<head>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssFile.getAbsolutePath() +"\">\n</head>\n<body>\n";
-        final String END_HEADERS = "\n</body>\n</html>";
-        return START_HEADERS + html + END_HEADERS;
-    }
+
 
     private void writeDefaultCss() {
         // ugly copy paste of a few CSS properties

@@ -7,10 +7,6 @@
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="Start page's name" />
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="debuglogs"
-        android:title="Switch Debug Logs" />
 
 
 </PreferenceScreen>

@@ -35,7 +35,7 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
     }
 
     public String getMedia(String mediaId, String mediaRelativePathname, int targetW, int targetH, boolean forceDownload) {
-        Log.d(TAG, "downloading file to: "+_mediaLocalDir+"/"+mediaRelativePathname);
+        Log.d(TAG, "downloading file "+mediaId+" to: "+_mediaLocalDir+"/"+mediaRelativePathname);
         // check if media is in DB
         Media media = _db.mediaDao().findByName(mediaId);
         if(media == null) {
@@ -47,7 +47,7 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
         }
 
         // check if media is in local folder
-        String newlocalFilename = WikiCacheUiOrchestrator.getLocalFileName(mediaRelativePathname, targetW, targetH);
+        String newlocalFilename = UrlConverter.getLocalFileName(mediaRelativePathname, targetW, targetH);
         File originalfile = new File(_mediaLocalDir, mediaRelativePathname);
         File file = new File(_mediaLocalDir, newlocalFilename);
         if(file.exists() && !forceDownload) { // File is there, in correct size
@@ -87,7 +87,7 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
     }
 
     public String createLocalFileResized(String localPath, int targetW, int targetH){
-        String newlocalFilename = WikiCacheUiOrchestrator.getLocalFileName(localPath, targetW, targetH);
+        String newlocalFilename = UrlConverter.getLocalFileName(localPath, targetW, targetH);
         Log.d(TAG, "Resizing "+localPath+" to "+newlocalFilename);
 
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();

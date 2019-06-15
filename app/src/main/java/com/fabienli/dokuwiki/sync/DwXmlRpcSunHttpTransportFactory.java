@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,15 +44,15 @@ public class DwXmlRpcSunHttpTransportFactory extends XmlRpcSunHttpTransportFacto
 }
 
 class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
-    private Boolean isBinaryExpected;
+    private Boolean _isBinaryExpected;
     private Boolean _debug;
     private URLConnection conn;
     private String TAG = "DwXmlRpcSunHttpTransport";
 
 
-    public DwXmlRpcSunHttpTransport(XmlRpcClient pClient, Boolean isBinaryExpected, Boolean debug) {
+    public DwXmlRpcSunHttpTransport(XmlRpcClient pClient, Boolean _isBinaryExpected, Boolean debug) {
         super(pClient);
-        this.isBinaryExpected = isBinaryExpected;
+        this._isBinaryExpected = _isBinaryExpected;
         this._debug = debug;
     }
 
@@ -89,7 +88,7 @@ class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
     @Override
     protected Object readResponse(XmlRpcStreamRequestConfig pConfig, InputStream pStream) throws XmlRpcException {
         // if Binary is expected, don't try to alter it
-        if(isBinaryExpected)
+        if(_isBinaryExpected)
             return super.readResponse(pConfig, pStream);
         // not Binary, so we can adapt a few things:
         final StringBuffer sb = new StringBuffer();
@@ -97,6 +96,8 @@ class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(pStream));
             String line = reader.readLine();
             while (line != null) {
+                if(sb.length()==0)
+                    line = line.replaceAll("^[ ]*", "");
                 if(_debug) Logs.getInstance().add("response:"+ Html.escapeHtml(line));
                 //It seems that the date format is not fully handled with ISO 8601, work this around by updating all dates
                 //<dateTime.iso8601>2018-10-16T12:08:21+0000</dateTime.iso8601>
@@ -104,13 +105,15 @@ class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
                 //<dateTime.iso8601>20181016T12:08:21+0000</dateTime.iso8601>
                 line = line.replaceAll("<dateTime.iso8601>(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)", "<dateTime.iso8601>$1$2$3");
                 sb.append(line);
-                sb.append("\n");
+                if(sb.length()>0)
+                    sb.append("\n");
                 line = reader.readLine();
             }
         } catch (final IOException e) {
             Log.d(TAG, "While reading server response" + e.toString());
         }
         //Log.d(TAG, sb.toString());
+        //System.out.println(sb.toString());
 
         final ByteArrayInputStream bais = new ByteArrayInputStream(sb.toString().getBytes());
         return super.readResponse(pConfig, bais);
