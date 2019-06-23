@@ -285,7 +285,7 @@ public class MainActivity extends AppCompatActivity
                         String[] fullPathNameSplit = fullPathName.split("/");
                         String newFileName = fullPathName;
                         if (fullPathNameSplit.length > 1) {
-                            newFileName = fullPathNameSplit[fullPathNameSplit.length -1];
+                            newFileName = UrlConverter.getFileName(fullPathNameSplit[fullPathNameSplit.length -1]);
                         }
                         Log.d("Upload", "to be saved as: "+newFileName);
                         WikiCacheUiOrchestrator.instance(this).

@@ -34,6 +34,16 @@ public class UrlConverterUnitTest {
     }
 
     /**
+     * Test the create page link conversions, consecutive special char in pagename
+     */
+    @Test
+    public void UrlConverter_createPageUrlTransform_consecutiveSpecial(){
+        String url = UrlConverter.WIKICREATEURL+"Pagename+#$(_]@,.1";
+        String newUrl = UrlConverter.getPageName(url);
+        assert(newUrl.compareTo("pagename_1")==0);
+    }
+
+    /**
      * Test the create page link conversions, pagename with namespace
      */
     @Test
@@ -41,6 +51,18 @@ public class UrlConverterUnitTest {
         String url = UrlConverter.WIKICREATEURL+"wiki:pagename1";
         String newUrl = UrlConverter.getPageName(url);
         assert(newUrl.compareTo("wiki:pagename1")==0);
+    }
+
+
+    /**
+     * Test the file name conversions, file with special char
+     */
+    @Test
+    public void UrlConverter_getFileName_special(){
+        String filename = "My_File-name+%1.jpg";
+        String newFilename = UrlConverter.getFileName(filename);
+        System.out.println(newFilename);
+        assert(newFilename.compareTo("my_file-name_1.jpg")==0);
     }
 
     /**

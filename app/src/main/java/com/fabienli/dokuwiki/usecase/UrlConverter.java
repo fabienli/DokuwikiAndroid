@@ -86,13 +86,17 @@ public class UrlConverter {
                 e.printStackTrace();
             }
 
-            // replace special characters (all but a-z 0-9 A-Z - or : with underscore
-            result = result.replaceAll("[^-a-zA-Z0-9:]","_").toLowerCase();
+            // replace special characters (all but a-z 0-9 A-Z - or :) with underscore
+            result = result.replaceAll("[^-a-zA-Z0-9:]+","_").toLowerCase();
 
         }
         if(isLocalMediaLink(url))
             result = url;
         return result;
+    }
+
+    public static String getFileName(String filename){
+        return filename.replaceAll("[^-a-zA-Z0-9.]+","_").toLowerCase();
     }
 
     public static boolean isInternalPageLink(String url){
