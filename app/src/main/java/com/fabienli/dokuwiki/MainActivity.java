@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.UrlConverter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -29,7 +30,10 @@ import android.view.MenuItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
@@ -94,6 +98,41 @@ public class MainActivity extends AppCompatActivity
         // first page initiate
         String startpage = settings.getString("startpage", "start");
         displayPage(startpage);
+
+    }
+
+    protected void updateNavigationHeader() {
+        try {
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+            // update wiki's picture if any
+            Boolean isLogoNeeded = settings.getBoolean("toplogo", false);
+            if (isLogoNeeded) {
+                String wikiTitle = settings.getString("wikiTitle", "");
+                if (wikiTitle.length() == 0) {
+                    wikiTitle = getResources().getString(R.string.nav_header_title);
+                }
+                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                View header = navigationView.getHeaderView(0);
+
+                // Title
+                TextView textTitle = (TextView) header.findViewById(R.id.navHeaderTitle);
+                textTitle.setText(wikiTitle);
+
+                // Logo
+                ImageView topPicture = (ImageView) header.findViewById(R.id.topBarImageView);
+                File filePng = new File(context.getCacheDir(), "logo.png");
+                if (filePng.exists()) {
+                    topPicture.setImageURI(Uri.fromFile(filePng));
+                }
+                File fileJpg = new File(context.getCacheDir(), "logo.jpg");
+                if (fileJpg.exists()) {
+                    topPicture.setImageURI(Uri.fromFile(fileJpg));
+                }
+            }
+        }
+        catch(NullPointerException e){
+            Logs.getInstance().add("Can't update the header's logo or title");
+        }
     }
 
     @Override
@@ -102,6 +141,8 @@ public class MainActivity extends AppCompatActivity
 
         //ensure cache is initiated
         WikiCacheUiOrchestrator.instance(this);
+
+        updateNavigationHeader();
     }
 
     @Override

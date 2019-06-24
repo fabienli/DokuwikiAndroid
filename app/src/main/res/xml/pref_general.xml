@@ -8,5 +8,9 @@
         android:singleLine="true"
         android:title="Start page's name" />
 
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="toplogo"
+        android:title="Show your dokuwiki's logo and title" />
 
 </PreferenceScreen>

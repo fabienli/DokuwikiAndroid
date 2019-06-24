@@ -8,6 +8,7 @@ import com.fabienli.dokuwiki.db.Media;
 import com.fabienli.dokuwiki.db.Page;
 import com.fabienli.dokuwiki.db.SyncAction;
 import com.fabienli.dokuwiki.sync.FileListRetriever;
+import com.fabienli.dokuwiki.sync.WikiTitleRetriever;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
 import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.callback.WikiSynchroCallback;
@@ -34,16 +35,21 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
     public void retrieveDataFromServer() {
 
         // 1. pages
-        publishProgress(1, 3, 1, 1);
+        publishProgress(1, 4, 1, 1);
         retrievePagesDataFromServer();
 
         // 2. medias
-        publishProgress(2, 3, 1, 1);
+        publishProgress(2, 4, 1, 1);
         retrieveMediasDataFromServer();
 
         // 3. download synchro
-        publishProgress(3, 3, 0, 99999);
+        publishProgress(3, 4, 0, 99999);
         runDownloadSynchro();
+
+        // 4. wiki title
+        publishProgress(4, 4, 1, 1);
+        retrieveTitleFromServer();
+
     }
 
     public void retrievePagesDataFromServer() {
@@ -233,6 +239,12 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
         if(typesync.compareTo("b")==0) {
             synchroDownloadHandler.syncMedia3();
         }
+    }
+
+    public void retrieveTitleFromServer() {
+        WikiTitleRetriever wikiTitleRetriever = new WikiTitleRetriever(_xmlRpcAdapter);
+        String title = wikiTitleRetriever.retrieveTitle();
+        _settings.edit().putString("wikiTitle", title).commit();
     }
 
     public void retrieveDataFromServerAsync(WikiSynchroCallback wikiSynchroCallback) {
