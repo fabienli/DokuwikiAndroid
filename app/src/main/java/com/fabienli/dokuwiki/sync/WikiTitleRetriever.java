@@ -15,7 +15,7 @@ public class WikiTitleRetriever {
     public String retrieveTitle() {
         Log.d(TAG, "Looking for wiki title");
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("dokuwiki.getTitle");
-        if (resultList.size() > 0)
+        if (resultList != null && resultList.size() > 0)
             return resultList.get(0);
         else
             return "";

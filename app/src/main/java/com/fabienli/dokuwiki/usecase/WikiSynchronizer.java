@@ -181,7 +181,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
             // 4.2 this media is not to be removed from db
             oldMediasToRemove.remove(mediaId);
 
-            // 4.3 make sure the page exists in db, with up-to-date data
+            // 4.3 make sure the media exists in db, with up-to-date data
             Media media = _db.mediaDao().findByName(mediaId);
             if (media == null) {
                 media = new Media();
@@ -192,7 +192,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
                 media.mtime = mediaMTime;
                 media.lastModified = mediaLastModified;
                 _db.mediaDao().insertAll(media);
-            } else if (media.mtime.compareTo(mediaMTime) != 0) {
+            } else if (media.mtime == null || media.mtime.compareTo(mediaMTime) != 0) {
                 //TODO: change values or to be done at file download time? -> _db.mediaDao().updateAll(media);
                 isDownloadNeeded = true;
             }

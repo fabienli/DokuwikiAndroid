@@ -38,9 +38,16 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.Room;
 
 public class WikiCacheUiOrchestrator {
@@ -57,6 +64,7 @@ public class WikiCacheUiOrchestrator {
     // UI access
     protected WebView _webView = null;
     protected EditText _editTextView = null;
+    protected Stack<String> _pageHistory;
 
 
     // initialisation
@@ -79,6 +87,7 @@ public class WikiCacheUiOrchestrator {
 
     private WikiCacheUiOrchestrator(Context ictx) {
         context = ictx;
+        _pageHistory = new Stack<>();
         if(context != null)
           _db = Room.databaseBuilder(ictx.getApplicationContext(),
                 AppDatabase.class, "localcache")
@@ -125,6 +134,9 @@ public class WikiCacheUiOrchestrator {
     public void retrievePageHTMLforDisplay(String pagename, final WebView webview){
         this._webView = webview;
         _currentPageName = pagename;
+        if(_pageHistory.size()==0 || _pageHistory.lastElement().compareTo(pagename)!=0){
+            _pageHistory.push(pagename);
+        }
         PageHtmlRetrieve aPageHtmlRetrieve = new PageHtmlRetrieve(_db, new XmlRpcAdapter(context));
         aPageHtmlRetrieve.retrievePageAsync(pagename, new PageHtmlRetrieveCallback() {
             @Override
@@ -300,7 +312,19 @@ public class WikiCacheUiOrchestrator {
     public void refreshPage() {
         Log.d(TAG, "refreshing the page");
         //_webView.clearView();
-        _webView.reload();
+        //_webView.reload();
+        retrievePageHTMLforDisplay(_pageHistory.lastElement(), this._webView);
+    }
+
+    public boolean backHistory(WebView webView) {
+        Logs.getInstance().add("Back one page in history");
+        if(_pageHistory.size()>1) {
+            // remove current item
+            _pageHistory.pop();
+            retrievePageHTMLforDisplay(_pageHistory.lastElement(), webView);
+            return true;
+        }
+        return false;
     }
 
     public void displayActionListPage(WebView webView) {

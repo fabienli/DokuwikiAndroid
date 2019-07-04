@@ -147,22 +147,29 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
+        Log.d("MainActivity", "onBackPressed");
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if(_webView.canGoBack()) {
-            _webView.goBack();
+        //} else if(_webView.canGoBack()) {
+        //    _webView.goBack();
         } else {
-            super.onBackPressed();
+            Boolean hadAPageBack = WikiCacheUiOrchestrator.instance(this).backHistory(_webView);
+            if(!hadAPageBack)
+                super.onBackPressed();
         }
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // Check if the key event was the Back button and if there's history
-        if ((keyCode == KeyEvent.KEYCODE_BACK) && _webView.canGoBack()) {
-            _webView.goBack();
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            onBackPressed();
             return true;
         }
+        /*if ((keyCode == KeyEvent.KEYCODE_BACK) && _webView.canGoBack()) {
+            _webView.goBack();
+            return true;
+        }*/
         // If it wasn't the Back key or there's no web page history, bubble up to the default
         // system behavior (probably exit the activity)
         return super.onKeyDown(keyCode, event);
@@ -206,6 +213,8 @@ public class MainActivity extends AppCompatActivity
         else if (id == R.id.action_web_link) {
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
             String baseurl = settings.getString("serverurl", "");
+            if(!baseurl.startsWith("http"))
+                baseurl = "http://" + baseurl;
             String url = baseurl.replace("lib/exe/xmlrpc.php", "doku.php?id=")
                     + WikiCacheUiOrchestrator.instance(this)._currentPageName;
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
