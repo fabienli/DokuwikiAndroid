@@ -254,7 +254,7 @@ public class MainActivity extends AppCompatActivity
             photoPickerIntent.setType("image/*");
             startActivityForResult(photoPickerIntent, SELECT_PHOTO);
         } else if (id == R.id.mediamanager) {
-            WikiCacheUiOrchestrator.instance(this).mediaManagerPageHtml(_webView);
+            WikiCacheUiOrchestrator.instance(this).mediaManagerPageHtml(_webView, "");
         }
         else { // shortcuts to a page
             Log.d("Menu", String.valueOf(item));
@@ -296,6 +296,11 @@ public class MainActivity extends AppCompatActivity
                 intent.putExtra("pagename", pagename);
                 startActivityForResult(intent, 0);
 
+                return false;
+            }
+            else if(UrlConverter.isMediaManagerPageLink(url)){
+                String subfolder = UrlConverter.getPageName(url);
+                WikiCacheUiOrchestrator.instance(view.getContext()).mediaManagerPageHtml(_webView, subfolder);
                 return false;
             }
             else if(UrlConverter.isLocalMediaLink(url)) {
@@ -345,7 +350,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
                 else
-                    WikiCacheUiOrchestrator.instance(this).mediaManagerPageHtml(_webView);
+                    WikiCacheUiOrchestrator.instance(this).mediaManagerPageHtml(_webView , "");
         }
     }
 

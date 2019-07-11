@@ -18,6 +18,7 @@ public class UrlConverter {
     public static String WIKILINKPATTERN = "href=\"(/[-:/a-zA-Z0-9]+)?/doku.php\\?id=";
     public static String WIKICREATEURL = "http://dokuwiki_create/?id=";
     public static String WIKICREATEPATTERN = "src=\"(/[-:/a-zA-Z0-9]+)?/lib/exe/fetch.php\\?";
+    public static String WIKIMEDIAMANAGERURL = "http://dokuwiki_media_manager/?folder=";
     protected String _cacheDir;
     public List<ImageRefData> _imageList;
 
@@ -75,7 +76,7 @@ public class UrlConverter {
         String result = "";
         if(isInternalPageLink(url))
             result = url.replace(WIKILINKURL, "");
-        if(isCreatePageLink(url)) {
+        else if(isCreatePageLink(url)) {
             result = url.replace(WIKICREATEURL, "");
             // convert url characters
             try {
@@ -90,7 +91,10 @@ public class UrlConverter {
             result = result.replaceAll("[^-a-zA-Z0-9:]+","_").toLowerCase();
 
         }
-        if(isLocalMediaLink(url))
+        else if(isMediaManagerPageLink(url)){
+            result = url.replace(WIKIMEDIAMANAGERURL, "");
+        }
+        else if(isLocalMediaLink(url))
             result = url;
         return result;
     }
@@ -106,6 +110,11 @@ public class UrlConverter {
     public static boolean isCreatePageLink(String url){
         return url.startsWith(WIKICREATEURL);
     }
+
+    public static boolean isMediaManagerPageLink(String url){
+        return url.startsWith(WIKIMEDIAMANAGERURL);
+    }
+
 
     public static boolean isLocalMediaLink(String url){
         return false;

@@ -1,7 +1,6 @@
 package com.fabienli.dokuwiki;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.webkit.WebView;
@@ -37,17 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.room.Room;
 
 public class WikiCacheUiOrchestrator {
@@ -65,7 +54,13 @@ public class WikiCacheUiOrchestrator {
     protected WebView _webView = null;
     protected EditText _editTextView = null;
     protected Stack<String> _pageHistory;
-
+    // strings for history pages
+    final String APP_INTERNAL_PAGE_PREFIX = "#*com.fabienli.dokuwiki#";
+    final String PAGE_MEDIA_MANAGER = "PAGE_MEDIA_MANAGER";
+    final String PAGE_CREATE_PAGE = "PAGE_CREATE_PAGE";
+    final String PAGE_ACTION_LIST = "PAGE_ACTION_LIST";
+    final String PAGE_PAGES_LIST = "PAGE_PAGES_LIST";
+    final String PAGE_LOGS = "PAGE_LOGS";
 
     // initialisation
     public static WikiCacheUiOrchestrator instance(Context ictx){
@@ -131,12 +126,17 @@ public class WikiCacheUiOrchestrator {
         });
     }
 
+    public void addPageToHistory(String pageUrl){
+        if(_pageHistory.size()==0 || _pageHistory.lastElement().compareTo(pageUrl)!=0){
+            _pageHistory.push(pageUrl);
+        }
+
+    }
+
     public void retrievePageHTMLforDisplay(String pagename, final WebView webview){
         this._webView = webview;
         _currentPageName = pagename;
-        if(_pageHistory.size()==0 || _pageHistory.lastElement().compareTo(pagename)!=0){
-            _pageHistory.push(pagename);
-        }
+        addPageToHistory(pagename);
         PageHtmlRetrieve aPageHtmlRetrieve = new PageHtmlRetrieve(_db, new XmlRpcAdapter(context));
         aPageHtmlRetrieve.retrievePageAsync(pagename, new PageHtmlRetrieveCallback() {
             @Override
@@ -178,6 +178,7 @@ public class WikiCacheUiOrchestrator {
 
     public void displayPageListHtml(WebView webview) {
         this._webView = webview;
+        addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_PAGES_LIST);
         PageListRetrieve pageListRetrieve = new PageListRetrieve(_db);
         pageListRetrieve.getPageListAsync(new PageHtmlRetrieveCallback() {
             @Override
@@ -190,6 +191,7 @@ public class WikiCacheUiOrchestrator {
     }
 
     public String getLogsHtml() {
+        addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_LOGS);
         String unencodedHtml = "<html><body><ul>";
         for (String a : Logs.getInstance()._data) {
             unencodedHtml += "\n<li>" + a + "</li>";
@@ -321,7 +323,28 @@ public class WikiCacheUiOrchestrator {
         if(_pageHistory.size()>1) {
             // remove current item
             _pageHistory.pop();
-            retrievePageHTMLforDisplay(_pageHistory.lastElement(), webView);
+            if(_pageHistory.lastElement().startsWith(APP_INTERNAL_PAGE_PREFIX)){
+                String page = _pageHistory.lastElement().substring(APP_INTERNAL_PAGE_PREFIX.length());
+                switch (page){
+                    case PAGE_MEDIA_MANAGER:
+                        mediaManagerPageHtml(webView, ""); // TODO: handle media manager history
+                        break;
+                    case PAGE_CREATE_PAGE:
+                        createNewPageHtml(webView);
+                        break;
+                    case PAGE_ACTION_LIST:
+                        displayActionListPage(webView);
+                        break;
+                    case PAGE_PAGES_LIST:
+                        displayPageListHtml(_webView);
+                        break;
+                    case PAGE_LOGS:
+                        getLogsHtml(); // TODO: have a real method to display logs
+                        break;
+                }
+            }
+            else
+                retrievePageHTMLforDisplay(_pageHistory.lastElement(), webView);
             return true;
         }
         return false;
@@ -330,6 +353,7 @@ public class WikiCacheUiOrchestrator {
     public void displayActionListPage(WebView webView) {
         Logs.getInstance().add("Show the list of SyncAction from local db");
         _webView = webView;
+        addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_ACTION_LIST);
         ActionListRetrieve actionListRetrieve = new ActionListRetrieve(_db);
         actionListRetrieve.getSyncActionListAsync(new PageHtmlRetrieveCallback() {
             @Override
@@ -342,6 +366,7 @@ public class WikiCacheUiOrchestrator {
     public void createNewPageHtml(WebView webView) {
         Logs.getInstance().add("Show the first page to create a new page");
         _webView = webView;
+        addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_CREATE_PAGE);
         StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(_db, context.getCacheDir().getAbsolutePath());
         staticPagesDisplay.getCreatePageHtmlAsync(new PageHtmlRetrieveCallback() {
             @Override
@@ -351,10 +376,12 @@ public class WikiCacheUiOrchestrator {
         });
     }
 
-    public void mediaManagerPageHtml(WebView webView) {
+    public void mediaManagerPageHtml(WebView webView, String subfolder) {
         Logs.getInstance().add("Show the first page to handle medias");
         _webView = webView;
+        addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_MEDIA_MANAGER);
         StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(_db, context.getCacheDir().getAbsolutePath());
+        staticPagesDisplay.setSubfolder(subfolder);
         staticPagesDisplay.getMediaPageHtmlAsync(new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content) {
@@ -368,7 +395,7 @@ public class WikiCacheUiOrchestrator {
         mediaImport.importNewMediaAsync(newFileName, imageStream, new MediaRetrieveCallback() {
             @Override
             public void mediaRetrieved(String mediaPathName) {
-                mediaManagerPageHtml(webView);
+                mediaManagerPageHtml(webView, ""); // TODO: handle media manager history
             }
         });
     }
