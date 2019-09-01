@@ -42,7 +42,7 @@ public class PageListRetrieveUnitTest {
     @Test
     public void PageListRetrieve_onepagelist(){
         // expected result
-        final String HTML_CONTENT = "<ul>\n<li><a href=\"http://dokuwiki/doku.php?id=page1\">page1</a></li>\n</ul>";
+        final String HTML_CONTENT = "<ul>\n<li><a href=\"http://dokuwiki/doku.php?id=page1\">page1</a> [need sync]</li>\n</ul>";
 
         // init the mocks
         AppDatabase appDatabase = mock(AppDatabase.class);
@@ -59,6 +59,7 @@ public class PageListRetrieveUnitTest {
         String content = pageListRetrieve.getPageList();
 
         //check the results
+        System.out.println(content);
         assert(content.compareTo(HTML_CONTENT) == 0);
     }
 }

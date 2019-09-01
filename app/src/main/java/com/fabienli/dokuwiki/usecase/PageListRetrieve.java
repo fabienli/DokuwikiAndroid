@@ -17,10 +17,15 @@ public class PageListRetrieve extends AsyncTask<String, Integer, String> {
 
     public String getPageList() {
         String htmlPage = "<ul>";
+        String localOrNot = "";
         for (Page page : _db.pageDao().getAll()) {
-            htmlPage += "\n<li><a href=\"http://dokuwiki/doku.php?id=" + page.pagename + "\">" + page.pagename + "</a></li>";
-            // debug:
-            //htmlPage += "\n<li><a href=\"http://dokuwiki/doku.php?id=" + a + "\">" + a + "</a> " + page.rev + " - " + page.html.length() + "</li>";
+            if(page.isHtmlEmpty())
+                localOrNot = " [not in local]";
+            else if(_db.syncActionDao().isSyncNeeded(page.pagename).size()>0)
+                localOrNot = " [need sync]";
+            else
+                localOrNot = "";
+            htmlPage += "\n<li><a href=\"http://dokuwiki/doku.php?id=" + page.pagename + "\">" + page.pagename + "</a>"+localOrNot+"</li>";
         }
         htmlPage += "\n</ul>";
         return htmlPage;

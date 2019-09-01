@@ -49,7 +49,7 @@ public class SynchroDownloadHandler {
             int max = saList.size();
             for (SyncAction sa : saList) {
                 if(_wikiSynchroCallback != null)
-                    _wikiSynchroCallback.progressUpdate("Send pages", i, max);
+                    _wikiSynchroCallback.progressUpdate("Step : 3/4 - Send pages", i, max);
                 executeAction(sa);
                 i++;
             }
@@ -70,7 +70,7 @@ public class SynchroDownloadHandler {
             int max = saList.size();
             for (SyncAction sa : saList) {
                 if(_wikiSynchroCallback != null)
-                    _wikiSynchroCallback.progressUpdate("Send media", i, max);
+                    _wikiSynchroCallback.progressUpdate("Step : 3/4 - Send media", i, max);
                 executeMediaAction(sa);
                 i++;
             }
@@ -97,7 +97,7 @@ public class SynchroDownloadHandler {
 
             if(_level2ongoing > 0) {
                 if(_wikiSynchroCallback != null)
-                    _wikiSynchroCallback.progressUpdate("Download pages", (maxpages - _level2ongoing), maxpages);
+                    _wikiSynchroCallback.progressUpdate("Step : 3/4 - Download pages", (maxpages - _level2ongoing), maxpages);
 
                 _level2ongoing--;
 
@@ -129,7 +129,7 @@ public class SynchroDownloadHandler {
 
             if(_level3ongoing > 0) {
                 if (_wikiSynchroCallback != null)
-                    _wikiSynchroCallback.progressUpdate("Download medias", (maxmedia - _level3ongoing), maxmedia);
+                    _wikiSynchroCallback.progressUpdate("Step : 3/4 - Download medias", (maxmedia - _level3ongoing), maxmedia);
 
                 _level3ongoing--;
 

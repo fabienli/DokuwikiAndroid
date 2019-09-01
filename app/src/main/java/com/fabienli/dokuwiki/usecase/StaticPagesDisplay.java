@@ -40,7 +40,7 @@ public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
                 "<form action=\"http://dokuwiki_create/\" method=\"GET\">" +
                 "Enter page name: <br/>" +
                 "<input style=\"width:100%\" id=\"id\" name=\"id\"/><br/>" +
-                "<input style=\"float:right\" type=\"submit\" value=\"Create\">" +
+                "<input style=\"float:right; height:8%\" type=\"submit\" value=\"Create\">" +
                 "</form>";
         SortedSet<String> knownNamespaces = new TreeSet<>();
         for(Page p : _db.pageDao().getAll()){
@@ -63,7 +63,7 @@ public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
                 "Page was not found on your dokuwiki: either there's an error while connecting to the server, or the page doesn't exist. <br/>" +
                 "If the page '"+pagename+"' doesn't exist, do you want to create it? <br/>" +
                 "<input type=\"hidden\" id=\"id\" name=\"id\" value=\""+pagename+"\"/><br/>" +
-                "<input style=\"float:right\" type=\"submit\" value=\"Create\">" +
+                "<input style=\"float:right; height:8%; width:100%\" type=\"submit\" value=\"Create\">" +
                 "</form>";
         return html;
     }

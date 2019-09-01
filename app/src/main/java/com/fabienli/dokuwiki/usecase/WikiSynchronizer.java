@@ -262,7 +262,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
         if(_wikiSynchroCallback!=null)
-            _wikiSynchroCallback.progressUpdate("Retrieving data", values);
+            _wikiSynchroCallback.progressUpdate("Step", values);
 
     }
 
