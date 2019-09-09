@@ -15,9 +15,9 @@ import java.util.regex.Pattern;
 public class UrlConverter {
     protected String TAG = "UrlConverter";
     public static String WIKILINKURL = "http://dokuwiki/doku.php?id=";
-    public static String WIKILINKPATTERN = "href=\"(/[-:/a-zA-Z0-9]+)?/doku.php\\?id=";
+    public static String WIKILINKPATTERN = "href=\"(/[-~_:/a-zA-Z0-9]+)?/doku.php\\?id=";
     public static String WIKICREATEURL = "http://dokuwiki_create/?id=";
-    public static String WIKICREATEPATTERN = "src=\"(/[-:/a-zA-Z0-9]+)?/lib/exe/fetch.php\\?";
+    public static String WIKICREATEPATTERN = "src=\"(/[-~_:/a-zA-Z0-9]+)?/lib/exe/fetch.php\\?";
     public static String WIKIMEDIAMANAGERURL = "http://dokuwiki_media_manager/?folder=";
     protected String _cacheDir;
     public List<ImageRefData> _imageList;
@@ -87,8 +87,8 @@ public class UrlConverter {
                 e.printStackTrace();
             }
 
-            // replace special characters (all but a-z 0-9 A-Z - or :) with underscore
-            result = result.replaceAll("[^-a-zA-Z0-9:]+","_").toLowerCase();
+            // replace special characters (all but a-z 0-9 A-Z - . or :) with underscore
+            result = result.replaceAll("[^-a-zA-Z0-9:\\.]+","_").toLowerCase();
 
         }
         else if(isMediaManagerPageLink(url)){
