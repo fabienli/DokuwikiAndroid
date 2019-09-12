@@ -42,7 +42,7 @@ public class PageListRetrieveUnitTest {
     @Test
     public void PageListRetrieve_onepagelist(){
         // expected result
-        final String HTML_CONTENT = "<ul>\n<li><a href=\"http://dokuwiki/doku.php?id=page1\">page1</a> [need sync]</li>\n</ul>";
+        final String HTML_CONTENT = "<ul>\n<li><a href=\"http://dokuwiki/doku.php?id=page1\">page1</a> [not in local]</li>\n</ul>";
 
         // init the mocks
         AppDatabase appDatabase = mock(AppDatabase.class);

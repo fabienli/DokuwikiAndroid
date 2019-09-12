@@ -18,7 +18,7 @@ public class UrlConverter {
     public static String WIKILINKPATTERN = "href=\"(/[-~_:/a-zA-Z0-9]+)?/doku.php\\?id=";
     public static String WIKICREATEURL = "http://dokuwiki_create/?id=";
     public static String WIKICREATEPATTERN = "src=\"(/[-~_:/a-zA-Z0-9]+)?/lib/exe/fetch.php\\?";
-    public static String WIKIMEDIAMANAGERURL = "http://dokuwiki_media_manager/?folder=";
+    public static String WIKIMEDIAMANAGERURL = "http://dokuwiki_media_manager/?";
     protected String _cacheDir;
     public List<ImageRefData> _imageList;
 
@@ -94,8 +94,10 @@ public class UrlConverter {
         else if(isMediaManagerPageLink(url)){
             result = url.replace(WIKIMEDIAMANAGERURL, "");
         }
-        else if(isLocalMediaLink(url))
-            result = url;
+        else if(isLocalMediaLink(url)){
+            Log.d("URL", url);
+            result = url.replace("file://", "");
+        }
         return result;
     }
 
@@ -117,7 +119,7 @@ public class UrlConverter {
 
 
     public static boolean isLocalMediaLink(String url){
-        return false;
+        return url.startsWith("file://");
     }
 
     private String addHeaders(String html) {

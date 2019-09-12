@@ -1,10 +1,8 @@
 package com.fabienli.dokuwiki.usecase;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.fabienli.dokuwiki.db.AppDatabase;
-import com.fabienli.dokuwiki.db.Media;
 import com.fabienli.dokuwiki.db.Page;
 import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 
@@ -42,6 +40,16 @@ public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
                 "<input style=\"width:100%\" id=\"id\" name=\"id\"/><br/>" +
                 "<input style=\"float:right; height:8%\" type=\"submit\" value=\"Create\">" +
                 "</form>";
+        SortedSet<String> knownNamespaces = getKnownNamespaces();
+        html+="Select namespace:<ul>";
+        for(String ns : knownNamespaces){
+            html+="<li onclick=\"appendNS('"+ns+"')\">"+ns+"</li>";
+        }
+        html+="</ul>";
+        return html;
+    }
+
+    protected SortedSet<String> getKnownNamespaces(){
         SortedSet<String> knownNamespaces = new TreeSet<>();
         for(Page p : _db.pageDao().getAll()){
             int pos = p.pagename.lastIndexOf(":" );
@@ -49,12 +57,7 @@ public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
                 knownNamespaces.add(p.pagename.substring(0, pos+1));
             }
         }
-        html+="Select namespace:<ul>";
-        for(String ns : knownNamespaces){
-            html+="<li onclick=\"appendNS('"+ns+"')\">"+ns+"</li>";
-        }
-        html+="</ul>";
-        return html;
+        return knownNamespaces;
     }
 
     public String getProposeCreatePageHtml(String pagename){
@@ -82,100 +85,14 @@ public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
         }
     }
 
-    public String getMediaPageHtml(){
-        String html = "";
-
-        int subfolderLevel = _subfolder.split("/").length;
-        if(_subfolder.length()>0) subfolderLevel++;
-        Log.d("StaticPagesDisplay", "MediaManager subfolder : "+ _subfolder);
-
-        // back link to upper folder
-        if(_subfolder.length()>0){
-            int endPath = _subfolder.lastIndexOf("/");
-            if(endPath < 0) endPath=0;
-            String parentFolder = _subfolder.substring(0, endPath);
-            html += "<form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
-                    "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+parentFolder+"\"/><br/>" +
-                    "<input type=\"submit\" value=\"back\"/>" +
-                    "</form>";
-        }
-
-        // list local media
-        html+="<table>";
-        for(Media media : _db.mediaDao().getAll()){
-            String localFileName = media.id.replace(":", "/");
-            int mediaLevel = localFileName.split("/").length;
-
-            //Log.d("StaticPagesDisplay","Media "+localFileName+" "+subfolderLevel+"-"+mediaLevel+"-"+localFileName.startsWith(_subfolder));
-            if(subfolderLevel == mediaLevel && localFileName.startsWith(_subfolder)) {
-                File f = new File(_mediaLocalDir + "/" + localFileName);
-                if (f.exists())
-                    html += "<tr>" +
-                            "<td>" + media.id + "</td>" +
-                            "<td><img width=\"70\" src=\"" + _mediaLocalDir + "/" + localFileName + "\"/></td>" +
-                            "<td><input type=\"button\" value=\"...\"/></td>" +
-                            "</tr>";
-                else
-                    html += "<tr>" +
-                            "<td>" + media.id + "</td>" +
-                            "<td>missing image</td>" +
-                            "<td><input type=\"button\" value=\"...\"/></td>" +
-                            "</tr>";
-
-            }
-        }
-        html+="</table>";
-
-        // list subfolders
-        html+="<table>";
-        SortedSet<String> subFolders = new TreeSet<>();
-        for(Media media : _db.mediaDao().getAll()){
-            String[] localFilePath = media.id.split(":");
-            String localFileName = media.id.replace(":", "/");
-            int mediaLevel = localFilePath.length;
-            //Log.d("StaticPagesDisplay", "Folder : "+ localFilePath[0]+mediaLevel+"-"+subfolderLevel+"-"+localFileName.startsWith(_subfolder));
-
-            if(mediaLevel > subfolderLevel && localFileName.startsWith(_subfolder)){
-                int i=0;
-                String subFolderPath = "";
-                while (i<subfolderLevel){
-                    subFolderPath+=localFilePath[i]+"/";
-                    //Log.d("StaticPagesDisplay", "temp subFolder : "+ subFolderPath);
-                    i++;
-                }
-                //Log.d("StaticPagesDisplay", "New subFolder : "+ subFolderPath.substring(0, subFolderPath.length()-1));
-
-                subFolders.add(subFolderPath.substring(0, subFolderPath.length()-1));
-            }
-        }
-        for(String folder : subFolders){
-            html += "<tr>" +
-                    "<td><form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
-                    "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+folder+"\"/><br/>" +
-                    "<input type=\"submit\" value=\""+folder+"\"/>" +
-                    "</form></td>" +
-                    "</tr>";
-        }
-        html+="</table>";
-
-        return html;
-    }
-
     public void getCreatePageHtmlAsync(PageHtmlRetrieveCallback pageHtmlRetrieveCallback) {
         _pageHtmlRetrieveCallback = pageHtmlRetrieveCallback;
-        execute("getCreatePageHtml");
-    }
-    public void getMediaPageHtmlAsync(PageHtmlRetrieveCallback pageHtmlRetrieveCallback) {
-        _pageHtmlRetrieveCallback = pageHtmlRetrieveCallback;
-        execute("getMediaPageHtml");
+        execute();
     }
 
     @Override
     protected String doInBackground(String... params) {
-        if(params.length==1 && params[0].compareTo("getCreatePageHtml")==0)
-            _pageContent = getCreatePageHtml();
-        if(params.length==1 && params[0].compareTo("getMediaPageHtml")==0)
-            _pageContent = getMediaPageHtml();
+        _pageContent = getCreatePageHtml();
         return "ok";
     }
 
@@ -189,4 +106,5 @@ public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
     public void setSubfolder(String subfolder) {
         _subfolder = subfolder.replace("%2F","/");
     }
+
 }

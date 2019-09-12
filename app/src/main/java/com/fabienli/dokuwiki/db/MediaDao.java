@@ -23,5 +23,5 @@ public interface MediaDao {
     void updateAll(Media... medias);
 
     @Delete
-    void delete(Media pages);
+    void delete(Media media);
 }

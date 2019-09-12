@@ -17,7 +17,7 @@ public class StaticPagesDisplayUnitTest {
         AppDatabase appDatabase = mock(AppDatabase.class);
         MediaDao mediaDao = mock(MediaDao.class);
         when(appDatabase.mediaDao()).thenReturn(mediaDao);
-        StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(appDatabase, "/");
+        StaticMediaManagerDisplay staticPagesDisplay = new StaticMediaManagerDisplay(appDatabase, "/");
 
         String resultsPage = staticPagesDisplay.getMediaPageHtml();
         //System.out.println(resultsPage);
@@ -33,7 +33,7 @@ public class StaticPagesDisplayUnitTest {
         AppDatabase appDatabase = mock(AppDatabase.class);
         MediaDao mediaDao = mock(MediaDao.class);
         when(appDatabase.mediaDao()).thenReturn(mediaDao);
-        StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(appDatabase, "/");
+        StaticMediaManagerDisplay staticPagesDisplay = new StaticMediaManagerDisplay(appDatabase, "/");
         staticPagesDisplay.setSubfolder("/path/to/folder");
         String resultsPage = staticPagesDisplay.getMediaPageHtml();
         //System.out.println(resultsPage);

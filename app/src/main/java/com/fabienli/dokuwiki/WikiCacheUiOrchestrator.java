@@ -20,6 +20,7 @@ import com.fabienli.dokuwiki.usecase.PageListRetrieve;
 import com.fabienli.dokuwiki.usecase.PageTextRetrieve;
 import com.fabienli.dokuwiki.usecase.PageTextRetrieveForceDownload;
 import com.fabienli.dokuwiki.usecase.PageTextSave;
+import com.fabienli.dokuwiki.usecase.StaticMediaManagerDisplay;
 import com.fabienli.dokuwiki.usecase.StaticPagesDisplay;
 import com.fabienli.dokuwiki.usecase.UrlConverter;
 import com.fabienli.dokuwiki.usecase.WikiSynchronizer;
@@ -56,6 +57,7 @@ public class WikiCacheUiOrchestrator {
     protected Stack<String> _pageHistory;
     // strings for history pages
     final String APP_INTERNAL_PAGE_PREFIX = "#*com.fabienli.dokuwiki#";
+    final String PAGE_MEDIA_FULLSCREEN = "PAGE_MEDIA_FULLSCREEN";
     final String PAGE_MEDIA_MANAGER = "PAGE_MEDIA_MANAGER";
     final String PAGE_CREATE_PAGE = "PAGE_CREATE_PAGE";
     final String PAGE_ACTION_LIST = "PAGE_ACTION_LIST";
@@ -376,12 +378,12 @@ public class WikiCacheUiOrchestrator {
         });
     }
 
-    public void mediaManagerPageHtml(WebView webView, String subfolder) {
+    public void mediaManagerPageHtml(WebView webView, String args) {
         Logs.getInstance().add("Show the first page to handle medias");
         _webView = webView;
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_MEDIA_MANAGER);
-        StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(_db, context.getCacheDir().getAbsolutePath());
-        staticPagesDisplay.setSubfolder(subfolder);
+        StaticMediaManagerDisplay staticPagesDisplay = new StaticMediaManagerDisplay(_db, context.getCacheDir().getAbsolutePath());
+        staticPagesDisplay.setMediaManagerParams(args);
         staticPagesDisplay.getMediaPageHtmlAsync(new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content) {
@@ -399,4 +401,6 @@ public class WikiCacheUiOrchestrator {
             }
         });
     }
+
+
 }

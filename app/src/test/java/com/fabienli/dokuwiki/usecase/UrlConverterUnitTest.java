@@ -30,7 +30,7 @@ public class UrlConverterUnitTest {
     public void UrlConverter_createPageUrlTransform_special(){
         String url = UrlConverter.WIKICREATEURL+"P+a#g$e(n]a@m,e.1";
         String newUrl = UrlConverter.getPageName(url);
-        assert(newUrl.compareTo("p_a_g_e_n_a_m_e_1")==0);
+        assert(newUrl.compareTo("p_a_g_e_n_a_m_e.1")==0);
     }
 
     /**
@@ -40,7 +40,7 @@ public class UrlConverterUnitTest {
     public void UrlConverter_createPageUrlTransform_consecutiveSpecial(){
         String url = UrlConverter.WIKICREATEURL+"Pagename+#$(_]@,.1";
         String newUrl = UrlConverter.getPageName(url);
-        assert(newUrl.compareTo("pagename_1")==0);
+        assert(newUrl.compareTo("pagename_.1")==0);
     }
 
     /**

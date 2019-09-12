@@ -20,6 +20,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import com.google.android.material.navigation.NavigationView;
 
+import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -27,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.MimeTypeMap;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -299,13 +301,29 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
             else if(UrlConverter.isMediaManagerPageLink(url)){
-                String subfolder = UrlConverter.getPageName(url);
-                WikiCacheUiOrchestrator.instance(view.getContext()).mediaManagerPageHtml(_webView, subfolder);
+                String args = UrlConverter.getPageName(url);
+                WikiCacheUiOrchestrator.instance(view.getContext()).mediaManagerPageHtml(_webView, args);
                 return false;
             }
             else if(UrlConverter.isLocalMediaLink(url)) {
-                String pagename = UrlConverter.getPageName(url);
+                String filename = UrlConverter.getPageName(url);
                 //TODO: check if the link is to a local file; then to be displayed/downloaded
+                //WikiCacheUiOrchestrator.instance(view.getContext()).viewMediaFullScreen(_webView, filename);
+                Intent intent = new Intent();
+                intent.setAction(android.content.Intent.ACTION_VIEW);
+                File file = new File(filename);
+                Uri fileURI = FileProvider.getUriForFile(context,
+                        "com.fabienli.dokuwiki.fileprovider",
+                        file);
+                MimeTypeMap myMime = MimeTypeMap.getSingleton();
+                String parts[]=url.split("\\.");
+                String extension=parts[parts.length-1];
+                String mimeType =
+                        myMime.getMimeTypeFromExtension(extension);
+                Log.d("URL shared", fileURI.toString());
+                intent.setDataAndType(fileURI, mimeType);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivityForResult(intent, 10);
             }
 
             String aBaseUrl = "file://"+context.getCacheDir().getAbsolutePath();
@@ -356,5 +374,3 @@ public class MainActivity extends AppCompatActivity
 
 
 }
-
-
