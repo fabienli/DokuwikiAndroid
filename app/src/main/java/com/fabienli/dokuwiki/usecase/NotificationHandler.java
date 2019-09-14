@@ -29,7 +29,7 @@ public class NotificationHandler {
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("Dokuwiki Synchro")
                 .setContentText(contentText)
-                .setContentInfo("more info")
+                .setContentInfo("sync'ing...")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         _notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);

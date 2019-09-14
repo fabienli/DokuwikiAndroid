@@ -14,7 +14,7 @@
             android:title="All Pages List" />
         <item
             android:id="@+id/synchro"
-            android:icon="@drawable/ic_menu_manage"
+            android:icon="@drawable/ic_menu_sync"
             android:title="Synchro" />
         <item
             android:id="@+id/create"
