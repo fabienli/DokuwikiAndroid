@@ -18,6 +18,7 @@ public class UrlConverter {
     public static String WIKILINKPATTERN = "href=\"(/[-~_:/a-zA-Z0-9]+)?/doku.php\\?id=";
     public static String WIKICREATEURL = "http://dokuwiki_create/?id=";
     public static String WIKICREATEPATTERN = "src=\"(/[-~_:/a-zA-Z0-9]+)?/lib/exe/fetch.php\\?";
+    public static String WIKIMEDIALINKPATTERN = "href=\"(/[-~_:/a-zA-Z0-9]+)?/lib/exe/fetch.php\\?[^\"]*media=";
     public static String WIKIMEDIAMANAGERURL = "http://dokuwiki_media_manager/?";
     protected String _cacheDir;
     public List<ImageRefData> _imageList;
@@ -50,13 +51,30 @@ public class UrlConverter {
                 }
             }
             Log.d(TAG, "Found image: "+imageData.toString());
-            // id now contains <namespace:file.ext>
-            imageData.imageFilePath = imageData.id.replaceAll(":","/");
-            _imageList.add(imageData);
+            if(imageData.id.startsWith("http%3A%2F%2F") || imageData.id.startsWith("https%3A%2F%2F"))
+            {
+                String mediaUrl = imageData.id.replaceAll("%3A",":").replaceAll("%2F","/");
+                html = html.replaceAll(WIKICREATEPATTERN + m.group(2) + "\"", "src=\"" + mediaUrl + "\"");
+            }
+            else {
+                // id now contains <namespace:file.ext>
+                imageData.imageFilePath = imageData.id.replaceAll(":", "/");
+                _imageList.add(imageData);
 
-            String localFilename = getLocalFileName(imageData.imageFilePath, imageData.width, imageData.height);
-            html = html.replaceAll(WIKICREATEPATTERN+m.group(2)+"\"", "src=\""+_cacheDir+"/"+localFilename+"\"");
+                String localFilename = getLocalFileName(imageData.imageFilePath, imageData.width, imageData.height);
+                html = html.replaceAll(WIKICREATEPATTERN + m.group(2) + "\"", "src=\"" + _cacheDir + "/" + localFilename + "\"");
+            }
         }
+
+        // update internal links
+        Pattern linkPattern = Pattern.compile(WIKIMEDIALINKPATTERN+"(\\S+)\"");
+        m = linkPattern.matcher(html);
+        while (m.find()) {
+            Log.d(TAG, "Found link: "+m.group(2));
+            String newUrl = m.group(2).replaceAll("%3A",":").replaceAll("%2F","/");
+            html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\""+newUrl);
+        }
+
         html = addHeaders(html);
         return html;
     }

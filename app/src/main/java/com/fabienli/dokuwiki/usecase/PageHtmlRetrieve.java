@@ -28,6 +28,7 @@ public class PageHtmlRetrieve extends AsyncTask<String, Integer, String> {
     }
 
     public String retrievePage(String pagename) {
+        Log.d(TAG, "retrievePage: "+pagename);
         String pageContent = "";
         String pageVersion = "";
         SyncAction syncActionRelated = null;
@@ -81,13 +82,16 @@ public class PageHtmlRetrieve extends AsyncTask<String, Integer, String> {
     }
 
     public void retrievePageAsync(String pagename, PageHtmlRetrieveCallback pageHtmlRetrieveCallback) {
+        Log.d(TAG, "retrievePageAsync: "+pagename);
         _pageHtmlRetrieveCallback = pageHtmlRetrieveCallback;
-        execute(pagename);
+        //execute(pagename);
+        executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, pagename);
     }
 
     @Override
     protected String doInBackground(String... pagename) {
         if(pagename.length == 1){
+            Log.d(TAG, "doInBackground: "+pagename[0]);
             _pageContent = retrievePage(pagename[0]);
         }
         return "ok";

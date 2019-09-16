@@ -138,6 +138,7 @@ public class WikiCacheUiOrchestrator {
     public void retrievePageHTMLforDisplay(String pagename, final WebView webview){
         this._webView = webview;
         _currentPageName = pagename;
+        Log.d(TAG, "Requested page: "+pagename);
         addPageToHistory(pagename);
         PageHtmlRetrieve aPageHtmlRetrieve = new PageHtmlRetrieve(_db, new XmlRpcAdapter(context));
         aPageHtmlRetrieve.retrievePageAsync(pagename, new PageHtmlRetrieveCallback() {

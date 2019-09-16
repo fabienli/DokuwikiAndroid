@@ -44,16 +44,19 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
         for(String arg : argsList) {
             Log.d(TAG, "arg: " + arg);
             String[] argDuple = arg.split("=");
+            String argValue = "";
+            if (argDuple.length > 1) {
+                argValue = argDuple[1];
+            }
             if (argDuple.length > 0) {
                 if (argDuple[0].compareTo("action") == 0)
-                    action = argDuple[1];
-                if (argDuple[0].compareTo("media") == 0)
-                    mediaName = argDuple[1].replace("%3A", ":");
-                ;
-                if (argDuple[0].compareTo("folder") == 0)
-                    setSubfolder(argDuple[1]);
-                if (argDuple[0].compareTo("destmove") == 0)
-                    moveFolder = argDuple[1].replace("%3A", ":");
+                    action = argValue;
+                else if (argDuple[0].compareTo("media") == 0)
+                    mediaName = argValue.replace("%3A", ":");
+                else if (argDuple[0].compareTo("folder") == 0)
+                    setSubfolder(argValue);
+                else if (argDuple[0].compareTo("destmove") == 0)
+                    moveFolder = argValue.replace("%3A", ":");
             }
         }
 
