@@ -69,10 +69,22 @@ public class UrlConverter {
         // update internal links
         Pattern linkPattern = Pattern.compile(WIKIMEDIALINKPATTERN+"(\\S+)\"");
         m = linkPattern.matcher(html);
-        while (m.find()) {
+        while (m.find())
+        {
             Log.d(TAG, "Found link: "+m.group(2));
-            String newUrl = m.group(2).replaceAll("%3A",":").replaceAll("%2F","/");
-            html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\""+newUrl);
+            if(m.group(2).startsWith("http%3A%2F%2F") || m.group(2).startsWith("https%3A%2F%2F"))
+            {
+                String newUrl = m.group(2).replaceAll("%3A", ":").replaceAll("%2F", "/");
+                html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\"" + newUrl);
+            }
+            else
+            {
+                //String newUrl = m.group(2).replaceAll("%3A", ":").replaceAll(":", "/").replaceAll("%2F", "/");
+                String localFilename = getLocalFileName(m.group(2).replaceAll("%3A", ":"), 0, 0);
+                localFilename = m.group(2).replaceAll("%3A", ":").replaceAll(":", "/").replaceAll("%2F", "/");
+                //html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\"file://" + _cacheDir + "/" + newUrl);
+                html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\"file://" + _cacheDir + "/" + localFilename);
+            }
         }
 
         html = addHeaders(html);

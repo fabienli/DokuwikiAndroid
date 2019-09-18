@@ -307,8 +307,7 @@ public class MainActivity extends AppCompatActivity
             }
             else if(UrlConverter.isLocalMediaLink(url)) {
                 String filename = UrlConverter.getPageName(url);
-                //TODO: check if the link is to a local file; then to be displayed/downloaded
-                //WikiCacheUiOrchestrator.instance(view.getContext()).viewMediaFullScreen(_webView, filename);
+                // link is to a local file; then to be displayed/downloaded
                 Intent intent = new Intent();
                 intent.setAction(android.content.Intent.ACTION_VIEW);
                 File file = new File(filename);
@@ -329,8 +328,8 @@ public class MainActivity extends AppCompatActivity
             String aBaseUrl = "file://"+context.getCacheDir().getAbsolutePath();
             if(url.startsWith(aBaseUrl)) // local cache folder, means invalid link
                 return true;
-            // Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
 
+            // Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
             return true;
