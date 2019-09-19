@@ -237,6 +237,12 @@ public class SynchroDownloadHandler {
                     _db.syncActionDao().deleteAll(sa);
                 }
 
+                // 3.remove useless sync action if file doesn't exists
+                File file = new File(sa.name);
+                if(!file.exists())
+                {
+                    _db.syncActionDao().deleteAll(sa);
+                }
             }
         }
         removeOneSyncOngoing(); // remove the synchro from GET media

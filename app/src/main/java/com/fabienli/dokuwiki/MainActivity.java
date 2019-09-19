@@ -1,5 +1,6 @@
 package com.fabienli.dokuwiki;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -240,6 +241,9 @@ public class MainActivity extends AppCompatActivity
             displayPage(startpage);
         } else if (id == R.id.synchro) {
             WikiCacheUiOrchestrator.instance(this).updatePageListFromServer();
+            Snackbar.make(_webView.getRootView(), "Synchronisation starting, check details in notification bar... ", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+
         } else if (id == R.id.logs) {
             String html = WikiCacheUiOrchestrator.instance(this).getLogsHtml();
             String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
@@ -322,7 +326,13 @@ public class MainActivity extends AppCompatActivity
                 Log.d("URL shared", fileURI.toString());
                 intent.setDataAndType(fileURI, mimeType);
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivityForResult(intent, 10);
+                try {
+                    startActivityForResult(intent, 10);
+                }catch (ActivityNotFoundException e)
+                {
+                    Snackbar.make(view, "No application found to open "+filename, Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                }
             }
 
             String aBaseUrl = "file://"+context.getCacheDir().getAbsolutePath();

@@ -249,7 +249,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
 
     public void retrieveDataFromServerAsync(WikiSynchroCallback wikiSynchroCallback) {
         _wikiSynchroCallback = wikiSynchroCallback;
-        execute();
+        executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override

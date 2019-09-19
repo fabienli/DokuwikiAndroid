@@ -39,6 +39,7 @@ public class MediaImport extends AsyncTask<String, Integer, String> {
             media = new Media();
             media.id = newFileName;
             media.file = newFileName;
+            media.isimg = "true";
             //TODO: other fields?
             _db.mediaDao().insertAll(media);
             SyncAction sa = new SyncAction();
@@ -48,6 +49,7 @@ public class MediaImport extends AsyncTask<String, Integer, String> {
             sa.rev = "";
             sa.data = _mediaLocalDir + "/" + newFileName;
             Log.d(TAG, "Will sync: "+sa.toText());
+            _db.syncActionDao().deleteAll(sa);
             _db.syncActionDao().insertAll(sa);
         }
         saveNewMediaInCache(newFileName, imageStream);

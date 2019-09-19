@@ -28,4 +28,8 @@ public class Media {
 
     @ColumnInfo(name = "isimg")
     public String isimg;
+
+    public Boolean isImage(){
+        return (this.isimg != null && this.isimg.compareTo("true")==0);
+    }
 }

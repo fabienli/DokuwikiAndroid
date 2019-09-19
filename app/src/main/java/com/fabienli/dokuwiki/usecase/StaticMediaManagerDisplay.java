@@ -5,6 +5,7 @@ import android.util.Log;
 import com.fabienli.dokuwiki.WikiCacheUiOrchestrator;
 import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.db.Media;
+import com.fabienli.dokuwiki.db.SyncAction;
 import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 
 import java.io.File;
@@ -87,7 +88,7 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
             String parentFolder = _subfolder.substring(0, endPath);
             html += "<form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
                     "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+parentFolder+"\"/><br/>" +
-                    "<input type=\"submit\" value=\"back\"/>" +
+                    "<input type=\"submit\" value=\"< back\"/>" +
                     "</form>";
         }
 
@@ -100,27 +101,30 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
             //Log.d("StaticPagesDisplay","Media "+localFileName+" "+subfolderLevel+"-"+mediaLevel+"-"+localFileName.startsWith(_subfolder));
             if(subfolderLevel == mediaLevel && localFileName.startsWith(_subfolder)) {
                 File f = new File(_mediaLocalDir + "/" + localFileName);
-                html += "<tr><td>" +
-                        "<form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
-                        "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+_subfolder+"\"/><br/>" +
-                        "<input type=\"hidden\" id=\"action\" name=\"action\" value=\"details\"/><br/>" +
-                        "<input type=\"hidden\" id=\"media\" name=\"media\" value=\""+media.id+"\"/><br/>" + media.id + "</td>" ;
-                if (f.exists())
-                    html += "<td><img width=\"70\" src=\"" + _mediaLocalDir + "/" + localFileName + "\"/></td>";
+                String a_link = "<a href=\"http://dokuwiki_media_manager/?folder="+_subfolder+"&action=details&media="+media.id+"\">";
+                html += "<tr><td>" + a_link;
+                if (f.exists() && media.isImage())
+                    html += "<img width=\"70\" src=\"" + _mediaLocalDir + "/" + localFileName + "\"/>";
 
                 else
-                    html += "<td>missing image</td>";
-
-                html += "<td><input type=\"submit\" value=\"...\"/></td>" +
-                        "</form>" +
-                        "</tr>";
+                    html += ".";
+                html += "</a></td>";
+                html += "<td>" + a_link + media.id + "</a></td>" ;
+                html += "<td>" +
+                        "<form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
+                        "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+_subfolder+"\"/>" +
+                        "<input type=\"hidden\" id=\"action\" name=\"action\" value=\"details\"/>" +
+                        "<input type=\"hidden\" id=\"media\" name=\"media\" value=\""+media.id+"\"/><br/>" +
+                        "<input type=\"submit\" value=\"...\"/>" +
+                        "</form></td>" +
+                        "</tr>\n";
 
             }
         }
         html+="</table>";
 
         // list subfolders
-        html+="<table>";
+        html+="<table style=\"width:100%\">";
         SortedSet<String> subFolders = new TreeSet<>();
         for(Media media : _db.mediaDao().getAll()){
             String[] localFilePath = media.id.split(":");
@@ -142,10 +146,10 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
             }
         }
         for(String folder : subFolders){
-            html += "<tr>" +
-                    "<td><form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
+            html += "<tr style=\"width:100%\">" +
+                    "<td style=\"width:100%\"><form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
                     "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+folder+"\"/><br/>" +
-                    "<input type=\"submit\" value=\""+folder+"\"/>" +
+                    "<input type=\"submit\" value=\""+folder+"\" style=\"width:100%\"/>" +
                     "</form></td>" +
                     "</tr>";
         }
@@ -153,6 +157,7 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
 
         return html;
     }
+
     public String getMediaDetailPage(String mediaName){
         String html = "";
 
@@ -161,7 +166,7 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
         // back link to current folder
         html += "<form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
                 "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+_subfolder+"\"/><br/>" +
-                "<input type=\"submit\" value=\"back\"/>" +
+                "<input type=\"submit\" value=\"< back\"/>" +
                 "</form>";
 
         // detail of current media
@@ -178,8 +183,8 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
                         0, 0);
 
                 File f = new File(_mediaLocalDir + "/" + localFileName);
-                html += "<tr><td>folder</td><td>" + _subfolder + "</td></tr>" +
-                        "<tr><td>media id</td><td>" + media.id + "</td></tr>";
+                html += "<tr><td>folder:</td><td>" + _subfolder + "</td></tr>" +
+                        "<tr><td>media id:</td><td>" + media.id + "</td></tr>";
 
                 if (f.exists())
                     html += "<tr><td><a href=\"file://" + _mediaLocalDir + "/" + localFileName + "\">" +
@@ -198,7 +203,7 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
                         "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+_subfolder+"\"/>" +
                         "<input type=\"hidden\" id=\"action\" name=\"action\" value=\"details\"/>" +
                         "<input type=\"hidden\" id=\"media\" name=\"media\" value=\""+media.id+"\"/>" +
-                        "<input type=\"submit\" value=\"refresh\"/>" +
+                        "<input type=\"submit\" value=\"refresh image\"/>" +
                         "</form></td>" +
                         "</tr>";
             }
@@ -227,24 +232,46 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
         html+="</ul>";
         return html;
     }
-    public String getMoveNamespacePageHtml(String mediaId, String destFolder){
+    public String getMoveNamespacePageHtml(String mediaId, String destNamespace){
         String fromFileName = mediaId.replace(":", "/");
         for(Media media : _db.mediaDao().getAll()) {
-            if(mediaId.compareTo(media.id)==0){
+            if(mediaId.compareTo(media.id)==0) {
+                // update local DB
                 _db.mediaDao().delete(media);
-                media.id = media.id
-                        .replace(_subfolder, destFolder);
+                if(_subfolder == null || _subfolder.compareTo("")==0) {
+                    media.id = (destNamespace + ":" + media.id).replace("::", ":");
+                }
+                else {
+                    media.id = media.id
+                            .replace(_subfolder, destNamespace).replace("::", ":");
+                }
+                String toFileName = media.id.replace(":", "/");
+                media.file = toFileName;
+                _db.mediaDao().delete(media);
                 _db.mediaDao().insertAll(media);
 
-                String toFileName = media.id.replace(":", "/");
-                Log.d(TAG, "new media:"+mediaId+"->"+media.id + " - " + fromFileName+"->"+toFileName);
+                // move file in correct cache folder
+                Log.d(TAG, "new media: "+mediaId+"->"+media.id + " - " + fromFileName+"->"+toFileName);
                 File fromFile = new File(_mediaLocalDir + "/" + fromFileName);
                 File toFile = new File(_mediaLocalDir + "/" + toFileName);
                 fromFile.renameTo(toFile);
+
+                // force update of this media in next synchro
+                SyncAction sa = new SyncAction();
+                sa.verb = "PUT";
+                sa.priority = "1";
+                sa.name = media.id;
+                sa.rev = "";
+                sa.data = _mediaLocalDir + "/" + toFileName;
+                Log.d(TAG, "Will sync: "+sa.toText());
+                _db.syncActionDao().deleteAll(sa);
+                _db.syncActionDao().insertAll(sa);
+
+                //TODO: delete the orginal file from server?
                 break;
             }
         }
-        //TODO: move -> force sync
+
         return getMediaDetailPage(mediaId);
     }
     public void setMediaManagerParams(String args) {

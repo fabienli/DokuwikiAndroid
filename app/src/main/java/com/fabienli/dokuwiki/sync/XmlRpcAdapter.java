@@ -71,11 +71,11 @@ public class XmlRpcAdapter {
             Log.d(TAG,"type:" + result.getClass());
             if(result.getClass().isArray())
             {
-                Log.d(TAG,"The result is a list: "+ result);
+                //Log.d(TAG,"The result is a list: "+ result);
                 Object[] aRestIt = ((Object[]) result);
-                Log.d(TAG,"The result list: "+ aRestIt);
+                //Log.d(TAG,"The result list: "+ aRestIt);
                 for(int i=0; i<aRestIt.length;i++){
-                    Log.d(TAG,"The result list#"+i+": "+ aRestIt[i]);
+                    //Log.d(TAG,"The result list#"+i+": "+ aRestIt[i]);
                     results.add(aRestIt[i].toString());
                 }
                 Log.d(TAG,"The result size: "+ results.size());
