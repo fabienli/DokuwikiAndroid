@@ -245,6 +245,19 @@ public class SynchroDownloadHandler {
                 }
             }
         }
+        else if(sa.verb.compareTo("DEL")==0){
+            Log.d(TAG, "DELETE media: "+sa.toText());
+            if(sa.data != null) {
+
+                // 1. call the upload of this file
+                MediaDownloader mediaDownloader = new MediaDownloader(new XmlRpcAdapterFile(_xmlRpcAdapter));
+                Boolean success = mediaDownloader.deleteMedia(sa.name);
+
+                //TODO: handle result in "success"?
+                // 2. the end
+                _db.syncActionDao().deleteAll(sa);
+            }
+        }
         removeOneSyncOngoing(); // remove the synchro from GET media
     }
 

@@ -59,7 +59,7 @@ public class PageListRetrieveUnitTest {
         String content = pageListRetrieve.getPageList();
 
         //check the results
-        System.out.println(content);
+        //System.out.println(content);
         assert(content.compareTo(HTML_CONTENT) == 0);
     }
 }

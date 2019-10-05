@@ -61,7 +61,7 @@ public class UrlConverterUnitTest {
     public void UrlConverter_getFileName_special(){
         String filename = "My_File-name+%1.jpg";
         String newFilename = UrlConverter.getFileName(filename);
-        System.out.println(newFilename);
+        //System.out.println(newFilename);
         assert(newFilename.compareTo("my_file-name_1.jpg")==0);
     }
 

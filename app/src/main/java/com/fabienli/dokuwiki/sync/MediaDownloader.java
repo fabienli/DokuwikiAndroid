@@ -18,9 +18,16 @@ public class MediaDownloader {
         byte[] resultMedia = _xmlRpcAdapter.callMethodBinary("wiki.getAttachment", medianame);
         return resultMedia;
     }
+
     public boolean uploadMedia(String medianame, String filename){
         Log.d(TAG,"Put Media file "+filename);
         ArrayList<String> result = _xmlRpcAdapter.callMethod("wiki.putAttachment", medianame, "file://"+filename, "{}");
+        return (result!= null && result.size()>0);
+    }
+
+    public boolean deleteMedia(String medianame){
+        Log.d(TAG,"Delete Media file "+medianame);
+        ArrayList<String> result = _xmlRpcAdapter.callMethod("wiki.deleteAttachment", medianame);
         return (result!= null && result.size()>0);
     }
 }

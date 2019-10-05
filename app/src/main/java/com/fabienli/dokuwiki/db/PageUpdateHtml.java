@@ -4,11 +4,11 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 public class PageUpdateHtml extends AsyncTask<String, Void, String> {
-    AppDatabase _db = null;
-    String TAG = "PageUpdateHtml";
-    String _pagename;
-    String _html;
-    String _version;
+    private AppDatabase _db;
+    private String TAG = "PageUpdateHtml";
+    private String _pagename;
+    private String _html;
+    private String _version;
 
     public PageUpdateHtml(AppDatabase db, String pagename, String html, String version) {
         _db = db;

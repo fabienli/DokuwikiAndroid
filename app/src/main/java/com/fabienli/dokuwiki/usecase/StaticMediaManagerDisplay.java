@@ -84,6 +84,10 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
         // back link to upper folder
         if(_subfolder.length()>0){
             int endPath = _subfolder.lastIndexOf("/");
+            if(endPath > 0 && endPath == _subfolder.length()-1) {
+                _subfolder = _subfolder.substring(0, endPath - 1);
+                endPath = _subfolder.lastIndexOf("/", endPath - 1);
+            }
             if(endPath < 0) endPath=0;
             String parentFolder = _subfolder.substring(0, endPath);
             html += "<form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
@@ -267,12 +271,24 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
                 _db.syncActionDao().deleteAll(sa);
                 _db.syncActionDao().insertAll(sa);
 
-                //TODO: delete the orginal file from server?
+                SyncAction saDelete = new SyncAction();
+                saDelete.verb = "DEL";
+                saDelete.priority = "1";
+                saDelete.name = mediaId;
+                saDelete.rev = "";
+                saDelete.data = "";
+                Log.d(TAG, "Will sync: "+saDelete.toText());
+                _db.syncActionDao().deleteAll(saDelete);
+                _db.syncActionDao().insertAll(saDelete);
+
                 break;
             }
         }
 
-        return getMediaDetailPage(mediaId);
+        //return getMediaDetailPage(mediaId);
+        // redirect to the new folder's page:
+        setSubfolder(destNamespace.replace(":","/"));
+        return getSubfolderMediaPageHtml();
     }
     public void setMediaManagerParams(String args) {
         _mediaManagerParams = args;

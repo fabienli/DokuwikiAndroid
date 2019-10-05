@@ -3,11 +3,11 @@ package com.fabienli.dokuwiki.sync;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CookiesHolder {
-    static CookiesHolder instance = null;
+class CookiesHolder {
+    private static CookiesHolder instance = null;
     final List<String> cookies = new ArrayList<>();
 
-    public static CookiesHolder Instance() {
+    static CookiesHolder Instance() {
         if(instance == null){
             instance = new CookiesHolder();
         }
