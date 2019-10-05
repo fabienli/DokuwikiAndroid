@@ -6,8 +6,8 @@ android {
         applicationId "com.fabienli.dokuwiki"
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 41
-        versionName "alpha1.38"
+        versionCode 42
+        versionName "alpha1.39"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {
@@ -21,6 +21,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    lintOptions {
+        abortOnError false
     }
 
     compileOptions {

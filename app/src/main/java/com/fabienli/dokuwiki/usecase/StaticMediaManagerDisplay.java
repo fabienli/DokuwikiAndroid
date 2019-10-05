@@ -18,6 +18,7 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
      */
     String TAG = "StaticMediaManagerDisplay";
     String _mediaManagerParams = "";
+    WikiCacheUiOrchestrator mediaSynchronizer = null; // TODO: bad design: loop dependency
 
 
     public StaticMediaManagerDisplay(AppDatabase db, String mediaLocalDir) {
@@ -67,8 +68,14 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
         else if(action.compareTo("startmove") == 0){
             return getSelectMoveNamespacePageHtml(mediaName);
         }
+        else if(action.compareTo("startremove") == 0){
+            return getConfirmDeletePageHtml(mediaName);
+        }
         else if(action.compareTo("move") == 0){
             return getMoveNamespacePageHtml(mediaName, moveFolder);
+        }
+        else if(action.compareTo("remove") == 0){
+            return getDeletePageHtml(mediaName);
         }
 
         return getSubfolderMediaPageHtml();
@@ -109,7 +116,6 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
                 html += "<tr><td>" + a_link;
                 if (f.exists() && media.isImage())
                     html += "<img width=\"70\" src=\"" + _mediaLocalDir + "/" + localFileName + "\"/>";
-
                 else
                     html += ".";
                 html += "</a></td>";
@@ -181,7 +187,9 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
             //Log.d("StaticPagesDisplay","Media "+mediaName+" <?> "+media.id+" -"+localFileName+"-"+localFileName.startsWith(_subfolder));
             if(mediaName.compareTo(media.id)==0 && localFileName.startsWith(_subfolder)) {
                 // ensure the picture is downloaded
-                WikiCacheUiOrchestrator.instance().ensureMediaIsDownloaded( // TODO: back design: loop dependency
+                if(mediaSynchronizer == null)
+                    mediaSynchronizer = WikiCacheUiOrchestrator.instance(); // TODO: bad design: loop dependency
+                mediaSynchronizer.ensureMediaIsDownloaded(
                         media.id,
                         media.id.replaceAll(":","/"),
                         0, 0);
@@ -196,11 +204,20 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
                             "</a></td></tr>";
                 else
                     html += "<tr><td>missing image</td></tr>";
+                // action: move
                 html += "<tr><td><form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
                         "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+_subfolder+"\"/>" +
                         "<input type=\"hidden\" id=\"action\" name=\"action\" value=\"startmove\"/>" +
                         "<input type=\"hidden\" id=\"media\" name=\"media\" value=\""+media.id+"\"/>" +
                         "<input type=\"submit\" value=\"move\"/>" +
+                        "</form></td>" +
+                        "</tr>";
+                // action: delete
+                html += "<tr><td><form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
+                        "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+_subfolder+"\"/>" +
+                        "<input type=\"hidden\" id=\"action\" name=\"action\" value=\"startremove\"/>" +
+                        "<input type=\"hidden\" id=\"media\" name=\"media\" value=\""+media.id+"\"/>" +
+                        "<input type=\"submit\" value=\"delete\"/>" +
                         "</form></td>" +
                         "</tr>";
                 html += "<tr><td><form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
@@ -236,6 +253,7 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
         html+="</ul>";
         return html;
     }
+
     public String getMoveNamespacePageHtml(String mediaId, String destNamespace){
         String fromFileName = mediaId.replace(":", "/");
         for(Media media : _db.mediaDao().getAll()) {
@@ -285,11 +303,70 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
             }
         }
 
-        //return getMediaDetailPage(mediaId);
         // redirect to the new folder's page:
         setSubfolder(destNamespace.replace(":","/"));
         return getSubfolderMediaPageHtml();
     }
+
+    public String getConfirmDeletePageHtml(String mediaId){
+        // ask for confirmation to delete:
+        String html = "Do you confirm you want to delete + "+mediaId+"?";
+        String localFileName = mediaId.replace(":", "/");
+        File f = new File(_mediaLocalDir + "/" + localFileName);
+
+        if (f.exists())
+            html += "<tr><td><a href=\"file://" + _mediaLocalDir + "/" + localFileName + "\">" +
+                    "<img width=\"70\" src=\"" + _mediaLocalDir + "/" + localFileName + "\"/>" +
+                    "</a></td></tr>";
+        else
+            html += "<tr><td>missing image</td></tr>";
+
+        html += "<form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
+                "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+_subfolder+"\"/>" +
+                "<input type=\"hidden\" id=\"action\" name=\"action\" value=\"remove\"/>" +
+                "<input type=\"hidden\" id=\"media\" name=\"media\" value=\""+mediaId+"\"/>"  +
+                "<input style=\"float:right; height:8%\" type=\"submit\" value=\"YES, DELETE !\"/>" +
+                "</form>";
+        // cancel = back link to current folder
+        html += "<form action=\"http://dokuwiki_media_manager/\" method=\"GET\">" +
+                "<input type=\"hidden\" id=\"folder\" name=\"folder\" value=\""+_subfolder+"\"/><br/>" +
+                "<input type=\"submit\" value=\"cancel\"/>" +
+                "</form>";
+
+        return html;
+    }
+
+    public String getDeletePageHtml(String mediaId){
+        String deleteFileName = mediaId.replace(":", "/");
+        for(Media media : _db.mediaDao().getAll()) {
+            if(mediaId.compareTo(media.id)==0) {
+                // update local DB
+                _db.mediaDao().delete(media);
+
+                // remove file from cache folder
+                Log.d(TAG, "delete media: "+mediaId+"->"+media.id + " - " + deleteFileName);
+                File deleteFile = new File(_mediaLocalDir + "/" + deleteFileName);
+                deleteFile.delete();
+
+                // force update of this media in next synchro
+                SyncAction saDelete = new SyncAction();
+                saDelete.verb = "DEL";
+                saDelete.priority = "1";
+                saDelete.name = mediaId;
+                saDelete.rev = "";
+                saDelete.data = "";
+                Log.d(TAG, "Will sync: "+saDelete.toText());
+                _db.syncActionDao().deleteAll(saDelete);
+                _db.syncActionDao().insertAll(saDelete);
+
+                break;
+            }
+        }
+
+        // redirect to the current folder's page:
+        return getSubfolderMediaPageHtml();
+    }
+
     public void setMediaManagerParams(String args) {
         _mediaManagerParams = args;
     }
