@@ -181,6 +181,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("serverurl"));
             bindPreferenceSummaryToValue(findPreference("user"));
+            bindPreferenceSummaryToValue(findPreference("throttlingPerMin"));
             bindPreferenceSummaryToValue(findPreference("list_delay_sync"));
             bindPreferenceSummaryToValue(findPreference("list_type_sync"));
             bindPreferenceSummaryToValue(findPreference("max_page_sync"));

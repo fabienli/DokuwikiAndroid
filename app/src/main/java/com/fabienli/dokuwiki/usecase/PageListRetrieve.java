@@ -33,7 +33,7 @@ public class PageListRetrieve extends AsyncTask<String, Integer, String> {
 
     public void getPageListAsync(PageHtmlRetrieveCallback pageHtmlRetrieveCallback) {
         _pageHtmlRetrieveCallback = pageHtmlRetrieveCallback;
-        execute();
+        executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
 

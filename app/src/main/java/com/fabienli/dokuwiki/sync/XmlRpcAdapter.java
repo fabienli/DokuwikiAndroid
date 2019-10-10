@@ -50,6 +50,19 @@ public class XmlRpcAdapter {
         }
     }
 
+    Object clientCallExecution(String methodName, Vector parameters) throws XmlRpcException {
+        XmlRpcThrottler xmlRpcThrottler = XmlRpcThrottler.instance();
+        Object result = null;
+        try {
+            xmlRpcThrottler.waitIfNotInLimit();
+            result = client.execute(methodName, parameters);
+            xmlRpcThrottler.addCallNow();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
     public ArrayList<String> callMethod(String methodName, String... params) {
         ArrayList<String> results = new ArrayList<String>();
 
@@ -61,7 +74,7 @@ public class XmlRpcAdapter {
 
             Object result = "";
             try {
-                result = client.execute(methodName, parameters);
+                result = clientCallExecution(methodName, parameters);
             } catch (org.apache.xmlrpc.client.XmlRpcClientException exception) {
                 Logs.getInstance().add("XmlRpc decode " + methodName+ " response error: " + exception);
                 Log.e(TAG,"XmlRpc decode " + methodName+ " response error: " + exception);
@@ -109,7 +122,7 @@ public class XmlRpcAdapter {
             Log.d(TAG,"3 "+parameters.toString());
             Object result = "";
             try {
-                result = client.execute(methodName, parameters);
+                result = clientCallExecution(methodName, parameters);
             } catch (org.apache.xmlrpc.client.XmlRpcClientException exception) {
                 Logs.getInstance().add("XmlRpc decode " + methodName+ " response error: " + exception);
                 Log.e(TAG,"XmlRpc decode " + methodName+ " response error: " + exception);
@@ -135,11 +148,15 @@ public class XmlRpcAdapter {
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
             String password = settings.getString("password", "");
             String user = settings.getString("user", "");;
+            // ensure correct throttling
+            int throttlingLimit = Integer.parseInt(settings.getString("throttlingPerMin", "1000"));
+            XmlRpcThrottler xmlRpcThrottler = XmlRpcThrottler.instance();
+            xmlRpcThrottler.setLimit(throttlingLimit);
 
             Vector parametersLogin = new Vector();
             parametersLogin.addElement(user);
             parametersLogin.addElement(password);
-            Object result = client.execute("dokuwiki.login",parametersLogin);
+            Object result = clientCallExecution("dokuwiki.login",parametersLogin);
             Log.d(TAG,"The result login is: "+ result);
             Log.d(TAG,"The cookies size is: "+ CookiesHolder.Instance().cookies.size());
             if(! ((Boolean) result)) {

@@ -36,7 +36,7 @@ public class ActionListRetrieve extends AsyncTask<String, Integer, String> {
 
     public void getSyncActionListAsync(PageHtmlRetrieveCallback pageHtmlRetrieveCallback) {
         _pageHtmlRetrieveCallback = pageHtmlRetrieveCallback;
-        execute();
+        executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
 

@@ -56,7 +56,7 @@ public class PageHtmlRetrieveForceDownload extends AsyncTask<String, Integer, St
 
     public void retrievePageAsync(String pagename, PageHtmlRetrieveCallback pageHtmlRetrieveCallback) {
         _pageHtmlRetrieveCallback = pageHtmlRetrieveCallback;
-        execute(pagename);
+        executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, pagename);
     }
 
     @Override

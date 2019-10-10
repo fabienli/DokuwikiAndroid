@@ -22,6 +22,30 @@
     <string name="pref_default_display_name">John Smith</string>
 
     <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_throttling_list_titles">
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>30</item>
+        <item>50</item>
+        <item>100</item>
+        <item>200</item>
+        <item>500</item>
+        <item>1000</item>
+    </string-array>
+
+    <string-array name="pref_throttling_list_values">
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>30</item>
+        <item>50</item>
+        <item>100</item>
+        <item>200</item>
+        <item>500</item>
+        <item>1000</item>
+    </string-array>
+
     <string-array name="pref_delay_list_titles">
         <item>0s</item>
         <item>1s</item>

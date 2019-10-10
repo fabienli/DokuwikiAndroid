@@ -36,6 +36,12 @@
         android:title="Delay in sync" />
     <ListPreference
         android:defaultValue="0"
+        android:entries="@array/pref_throttling_list_titles"
+        android:entryValues="@array/pref_throttling_list_values"
+        android:key="throttlingPerMin"
+        android:title="Max request per minute" />
+    <ListPreference
+        android:defaultValue="0"
         android:entries="@array/pref_max_pages_list_titles"
         android:entryValues="@array/pref_max_pages_list_values"
         android:key="max_page_sync"

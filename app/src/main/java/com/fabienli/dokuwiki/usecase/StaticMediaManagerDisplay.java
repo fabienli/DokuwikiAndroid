@@ -1,5 +1,6 @@
 package com.fabienli.dokuwiki.usecase;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.fabienli.dokuwiki.WikiCacheUiOrchestrator;
@@ -27,7 +28,7 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
 
     public void getMediaPageHtmlAsync(PageHtmlRetrieveCallback pageHtmlRetrieveCallback) {
         _pageHtmlRetrieveCallback = pageHtmlRetrieveCallback;
-        execute();
+        executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
     @Override
     protected String doInBackground(String... params) {

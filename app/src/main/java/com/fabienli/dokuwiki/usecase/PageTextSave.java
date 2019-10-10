@@ -62,7 +62,7 @@ public class PageTextSave extends AsyncTask<String, Integer, String> {
 
     public void savePageTextAsync(String pagename, String newtext, WikiSynchroCallback wikiSynchroCallback) {
         _wikiSynchroCallback = wikiSynchroCallback;
-        execute(pagename, newtext);
+        executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, pagename, newtext);
     }
 
 

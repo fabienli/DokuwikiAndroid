@@ -87,7 +87,7 @@ public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
 
     public void getCreatePageHtmlAsync(PageHtmlRetrieveCallback pageHtmlRetrieveCallback) {
         _pageHtmlRetrieveCallback = pageHtmlRetrieveCallback;
-        execute();
+        executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override

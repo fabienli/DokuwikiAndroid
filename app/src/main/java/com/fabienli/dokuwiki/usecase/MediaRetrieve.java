@@ -142,7 +142,7 @@ public class MediaRetrieve extends AsyncTask<String, Integer, String> {
 
     public void getMediaAsync(String mediaId, String mediaLocalPath, int targetW, int targetH, MediaRetrieveCallback mediaRetrieveCallback) {
         _mediaRetrieveCallback = mediaRetrieveCallback;
-        execute(mediaId, mediaLocalPath, ""+targetW, ""+targetH);
+        executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,mediaId, mediaLocalPath, ""+targetW, ""+targetH);
     }
 
 

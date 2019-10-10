@@ -88,7 +88,7 @@ public class MediaImport extends AsyncTask<String, Integer, String> {
     public void importNewMediaAsync(String newFileName, InputStream imageStream, MediaRetrieveCallback mediaRetrieveCallback) {
         _inputStream = imageStream;
         _mediaRetrieveCallback = mediaRetrieveCallback;
-        execute(newFileName);
+        executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, newFileName);
     }
 
     @Override

@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.fabienli.dokuwiki.sync.XmlRpcThrottler;
 import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.UrlConverter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -141,6 +142,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onResume() {
         super.onResume();
+
+        //initiate throttling
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        int throttlingLimit = Integer.parseInt(settings.getString("throttlingPerMin", "1000"));
+        XmlRpcThrottler xmlRpcThrottler = XmlRpcThrottler.instance();
+        xmlRpcThrottler.setLimit(throttlingLimit);
 
         //ensure cache is initiated
         WikiCacheUiOrchestrator.instance(this);
