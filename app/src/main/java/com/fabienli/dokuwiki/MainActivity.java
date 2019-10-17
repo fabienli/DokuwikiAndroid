@@ -10,6 +10,7 @@ import android.os.Bundle;
 
 import com.fabienli.dokuwiki.sync.XmlRpcThrottler;
 import com.fabienli.dokuwiki.tools.Logs;
+import com.fabienli.dokuwiki.usecase.PoolAsyncTask;
 import com.fabienli.dokuwiki.usecase.UrlConverter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -164,6 +165,8 @@ public class MainActivity extends AppCompatActivity
         //} else if(_webView.canGoBack()) {
         //    _webView.goBack();
         } else {
+            // make sure we don't have pending request ongoing:
+            PoolAsyncTask.cleanPendingTasks();
             Boolean hadAPageBack = WikiCacheUiOrchestrator.instance(this).backHistory(_webView);
             if(!hadAPageBack)
                 super.onBackPressed();

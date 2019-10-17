@@ -7,7 +7,7 @@ import com.fabienli.dokuwiki.db.Page;
 import com.fabienli.dokuwiki.db.SyncAction;
 import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 
-public class ActionListRetrieve extends AsyncTask<String, Integer, String> {
+public class ActionListRetrieve extends PoolAsyncTask {
     protected AppDatabase _db;
     PageHtmlRetrieveCallback _pageHtmlRetrieveCallback = null;
     String _pageContent = "";

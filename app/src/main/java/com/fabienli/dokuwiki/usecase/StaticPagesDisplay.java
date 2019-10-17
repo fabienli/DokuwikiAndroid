@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class StaticPagesDisplay extends AsyncTask<String, Integer, String> {
+public class StaticPagesDisplay extends PoolAsyncTask {
     /**
      * aim of this class is to build a static html page to be displayed for various usecase
      */

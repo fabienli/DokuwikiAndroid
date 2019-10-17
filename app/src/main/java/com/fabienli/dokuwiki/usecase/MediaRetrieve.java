@@ -18,7 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class MediaRetrieve extends AsyncTask<String, Integer, String> {
+public class MediaRetrieve extends PoolAsyncTask {
     String TAG = "MediaRetrieve";
     protected AppDatabase _db;
     MediaRetrieveCallback _mediaRetrieveCallback = null;

@@ -14,7 +14,7 @@ import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 
 import java.util.List;
 
-public class PageHtmlRetrieveForceDownload extends AsyncTask<String, Integer, String> {
+public class PageHtmlRetrieveForceDownload extends PoolAsyncTask {
     AppDatabase _db = null;
     PageHtmlRetrieveCallback _pageHtmlRetrieveCallback = null;
     String _pageContent = "";

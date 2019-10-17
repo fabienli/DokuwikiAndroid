@@ -11,7 +11,7 @@ import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
 import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.callback.WikiSynchroCallback;
 
-public class PageTextSave extends AsyncTask<String, Integer, String> {
+public class PageTextSave extends PoolAsyncTask {
     String TAG = "PageTextSave";
     protected AppDatabase _db;
     WikiSynchroCallback _wikiSynchroCallback = null;
@@ -54,7 +54,7 @@ public class PageTextSave extends AsyncTask<String, Integer, String> {
         // 2. save also in local DB
         _db.pageDao().updateText(pagename, newtext);
 
-        // 3. call sync to uploac
+        // 3. call sync to upload
         SynchroDownloadHandler synchroDownloadHandler = new SynchroDownloadHandler(_settings, _db, _xmlRpcAdapter, "", null);
         Logs.getInstance().add("Retry the urgent items to be synced");
         synchroDownloadHandler.syncPrioZero();
