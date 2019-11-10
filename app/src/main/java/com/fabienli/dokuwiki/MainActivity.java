@@ -10,6 +10,7 @@ import android.os.Bundle;
 
 import com.fabienli.dokuwiki.sync.XmlRpcThrottler;
 import com.fabienli.dokuwiki.tools.Logs;
+import com.fabienli.dokuwiki.tools.WikiUtils;
 import com.fabienli.dokuwiki.usecase.PoolAsyncTask;
 import com.fabienli.dokuwiki.usecase.UrlConverter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -226,10 +227,8 @@ public class MainActivity extends AppCompatActivity
         else if (id == R.id.action_web_link) {
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
             String baseurl = settings.getString("serverurl", "");
-            if(!baseurl.startsWith("http"))
-                baseurl = "http://" + baseurl;
-            String url = baseurl.replace("lib/exe/xmlrpc.php", "doku.php?id=")
-                    + WikiCacheUiOrchestrator.instance(this)._currentPageName;
+            String url = WikiUtils.convertBaseUrlToMainWikiUrl(baseurl);
+            url += WikiCacheUiOrchestrator.instance(this)._currentPageName;
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
 
