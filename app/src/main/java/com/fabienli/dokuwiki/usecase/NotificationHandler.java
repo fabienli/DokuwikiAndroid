@@ -3,12 +3,15 @@ package com.fabienli.dokuwiki.usecase;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import com.fabienli.dokuwiki.MainActivity;
 import com.fabienli.dokuwiki.R;
 
 public class NotificationHandler {
@@ -31,6 +34,11 @@ public class NotificationHandler {
                 .setContentText(contentText)
                 .setContentInfo("sync'ing...")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        // when clicking, open main activity
+        PendingIntent contentIntent = PendingIntent.getActivity(_context, 0,
+                new Intent(_context, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        _notificationBuilder.setContentIntent(contentIntent);
 
         _notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
         _notificationManager.notify(0, _notificationBuilder.build());

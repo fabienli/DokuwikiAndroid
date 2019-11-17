@@ -31,6 +31,7 @@ public class SynchroDownloadHandler {
     protected int _syncOngoing = 0;
     protected int _level2ongoing = 0;
     protected int _level3ongoing = 0;
+    protected int _level5ongoing = 0;
     WikiSynchroCallback _wikiSynchroCallback = null;
 
     public SynchroDownloadHandler(SharedPreferences settings, AppDatabase db, XmlRpcAdapter xmlRpcAdapter, String mediaLocalPath, WikiSynchroCallback wikiSynchroCallback){
@@ -49,7 +50,7 @@ public class SynchroDownloadHandler {
             int max = saList.size();
             for (SyncAction sa : saList) {
                 if(_wikiSynchroCallback != null)
-                    _wikiSynchroCallback.progressUpdate("Step : 3/4 - Send pages", i, max);
+                    _wikiSynchroCallback.progressUpdate("" ,"Upload pages: " + (max - i), 3, 10);
                 executeAction(sa);
                 i++;
             }
@@ -70,7 +71,7 @@ public class SynchroDownloadHandler {
             int max = saList.size();
             for (SyncAction sa : saList) {
                 if(_wikiSynchroCallback != null)
-                    _wikiSynchroCallback.progressUpdate("Step : 3/4 - Send media", i, max);
+                    _wikiSynchroCallback.progressUpdate("" ,"Upload medias: "+i, 4, 10);
                 executeMediaAction(sa);
                 i++;
             }
@@ -84,6 +85,7 @@ public class SynchroDownloadHandler {
     }
 
     public void syncPage2(){
+        Log.d(TAG, "syncPage2");
         if(_syncOngoing == 0) {
             addOneSyncOngoing();
 
@@ -95,9 +97,11 @@ public class SynchroDownloadHandler {
             if(_level2ongoing == 0)
                 _level2ongoing = min(maxpages, saList.size());
 
+            Log.d(TAG, "syncPage2, items to sync: " + _level2ongoing);
+
             if(_level2ongoing > 0) {
                 if(_wikiSynchroCallback != null)
-                    _wikiSynchroCallback.progressUpdate("Step : 3/4 - Download pages", (maxpages - _level2ongoing), maxpages);
+                    _wikiSynchroCallback.progressUpdate("" ,"Download pages: "+_level2ongoing, 5, 10);
 
                 _level2ongoing--;
 
@@ -117,6 +121,7 @@ public class SynchroDownloadHandler {
     }
 
     public void syncMedia3(){//to be re-used for level 1?
+        Log.d(TAG, "syncMedia3");
         if(_syncOngoing == 0) {
             addOneSyncOngoing();
 
@@ -127,15 +132,53 @@ public class SynchroDownloadHandler {
             if(_level3ongoing == 0)
                 _level3ongoing = min(maxmedia, saList.size());
 
+            Log.d(TAG, "syncMedia3, items to sync: " + _level3ongoing);
+
             if(_level3ongoing > 0) {
                 if (_wikiSynchroCallback != null)
-                    _wikiSynchroCallback.progressUpdate("Step : 3/4 - Download medias", (maxmedia - _level3ongoing), maxmedia);
+                    _wikiSynchroCallback.progressUpdate("" ,"Download medias: "+_level3ongoing, 6, 10);
 
                 _level3ongoing--;
 
                 try {
                     for (SyncAction sa : saList) {
                         executeMediaAction(sa);
+                        break;
+                    }
+                } finally {
+                    removeOneSyncOngoing();
+                }
+            }
+            else {
+                removeOneSyncOngoing();
+            }
+        }
+    }
+
+    public void syncPage5(){
+        Log.d(TAG, "syncPage5");
+        if(_syncOngoing == 0) {
+            addOneSyncOngoing();
+
+            final int maxpages = Integer.parseInt(_settings.getString("max_page_sync", "2"));;
+
+            List<SyncAction> saList = _db.syncActionDao().getAllPriority("5");
+
+            // init the sync for requested level
+            if(_level5ongoing == 0)
+                _level5ongoing = min(maxpages, saList.size());
+
+            Log.d(TAG, "syncPage5, items to sync: " + _level5ongoing);
+
+            if(_level5ongoing > 0) {
+                if(_wikiSynchroCallback != null)
+                    _wikiSynchroCallback.progressUpdate("" ,"Update dynamic pages: "+_level5ongoing, 9, 10);
+
+                _level5ongoing--;
+
+                try {
+                    for (SyncAction sa : saList) {
+                        executeAction(sa);
                         break;
                     }
                 } finally {
@@ -161,7 +204,7 @@ public class SynchroDownloadHandler {
             // 2. ensure we are based on same version, or it's a conflict
             String textContent = sa.data;
             if(sa.rev.compareTo(server_rev) != 0) {
-                Log.d("DEBUG", "need a conflict handling: " + sa.rev + " - " + server_rev);
+                Log.d(TAG, "need a conflict handling: " + sa.rev + " - " + server_rev);
                 Logs.getInstance().add("conflict page " + sa.name + ": retrieve text from server to merge conflict");
 
                 textContent += "\n\n----\n\nconflict between versions "+sa.rev+" and "+server_rev+"\n\n----\n\n";
@@ -195,6 +238,9 @@ public class SynchroDownloadHandler {
             // 1. force the download of current's server version
             PageHtmlRetrieveForceDownload pageHtmlRetrieveForceDownload = new PageHtmlRetrieveForceDownload(_db, _xmlRpcAdapter);
             pageHtmlRetrieveForceDownload.retrievePage(sa.name);
+
+            PageTextRetrieveForceDownload pageTextRetrieveForceDownload = new PageTextRetrieveForceDownload(_db, _xmlRpcAdapter);
+            pageTextRetrieveForceDownload.retrievePage(sa.name);
 
             // 2. the end
             _db.syncActionDao().deleteAll(sa);
@@ -271,7 +317,7 @@ public class SynchroDownloadHandler {
             _syncToBePlanned = false;
             syncPrioZero();
         }
-        else if(_syncOngoing == 0 && _level2ongoing>0) { //some more items to be synced
+        else if(_syncOngoing == 0 && (_level2ongoing>0 || _level3ongoing>0 || _level5ongoing>0)) { //some more items to be synced
             final Integer urldelay = Integer.parseInt(_settings.getString("list_delay_sync", "0"));
             try {
                 TimeUnit.SECONDS.sleep(urldelay);
@@ -281,18 +327,12 @@ public class SynchroDownloadHandler {
             if(_syncOngoing == 0 && _level2ongoing>0) { //check again if some more items to be synced
                 syncPage2();
             }
-        }
-        else if(_syncOngoing == 0 && _level3ongoing>0) { //some more items to be synced
-            final Integer urldelay = Integer.parseInt(_settings.getString("list_delay_sync", "0"));
-            try {
-                TimeUnit.SECONDS.sleep(urldelay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if(_syncOngoing == 0 && _level3ongoing>0) { //check again if some more items to be synced
+            else if(_syncOngoing == 0 && _level3ongoing>0) { //check again if some more items to be synced
                 syncMedia3();
             }
+            else if(_syncOngoing == 0 && _level5ongoing>0) { //check again if some more items to be synced
+                syncPage5();
+            }
         }
-
     }
 }

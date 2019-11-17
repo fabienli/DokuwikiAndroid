@@ -22,7 +22,7 @@ public class ActionListRetrieveUnitTest {
     @Test
     public void ActionListRetrieve_emptylist(){
         // expected result
-        final String HTML_CONTENT = "<table>\n<tr><td>Prio 0: </td><td>0</td></tr>\n<tr><td>Prio 1: </td><td>0</td></tr>\n<tr><td>Prio 2: </td><td>0</td></tr>\n<tr><td>Prio 3: </td><td>0</td></tr>\n</table>\n<ul>\n</ul>";
+        final String HTML_CONTENT = "<table>\n<tr><td>Prio 0: </td><td>0</td></tr>\n<tr><td>Prio 1: </td><td>0</td></tr>\n<tr><td>Prio 2: </td><td>0</td></tr>\n<tr><td>Prio 3: </td><td>0</td></tr>\n<tr><td>Prio 5: </td><td>0</td></tr>\n</table>\n<ul>\n</ul>";
 
         // init the mocks
         AppDatabase appDatabase = mock(AppDatabase.class);
@@ -46,7 +46,7 @@ public class ActionListRetrieveUnitTest {
     @Test
     public void ActionListRetrieve_oneactionlist(){
         // expected result
-        final String HTML_CONTENT = "<table>\n<tr><td>Prio 0: </td><td>0</td></tr>\n<tr><td>Prio 1: </td><td>1</td></tr>\n<tr><td>Prio 2: </td><td>0</td></tr>\n<tr><td>Prio 3: </td><td>0</td></tr>\n</table>\n<ul>\n<li>1 - GET : ns:page1 (1234)</li>\n</ul>";
+        final String HTML_CONTENT = "<table>\n<tr><td>Prio 0: </td><td>0</td></tr>\n<tr><td>Prio 1: </td><td>1</td></tr>\n<tr><td>Prio 2: </td><td>0</td></tr>\n<tr><td>Prio 3: </td><td>0</td></tr>\n<tr><td>Prio 5: </td><td>0</td></tr>\n</table>\n<ul>\n<li>1 - GET : ns:page1 (1234)</li>\n</ul>";
 
         // init the mocks
         AppDatabase appDatabase = mock(AppDatabase.class);
@@ -76,7 +76,7 @@ public class ActionListRetrieveUnitTest {
     @Test
     public void ActionListRetrieve_treeactionlist(){
         // expected result
-        final String HTML_CONTENT = "<table>\n<tr><td>Prio 0: </td><td>1</td></tr>\n<tr><td>Prio 1: </td><td>0</td></tr>\n<tr><td>Prio 2: </td><td>1</td></tr>\n<tr><td>Prio 3: </td><td>1</td></tr>\n</table>\n<ul>\n<li>2 - GET : ns:page2 (123598)</li>\n<li>0 - PUT : ns:ns:my_page (3849043726)</li>\n<li>3 - GET : ns:page:image.jpg (346984)</li>\n</ul>";
+        final String HTML_CONTENT = "<table>\n<tr><td>Prio 0: </td><td>1</td></tr>\n<tr><td>Prio 1: </td><td>0</td></tr>\n<tr><td>Prio 2: </td><td>1</td></tr>\n<tr><td>Prio 3: </td><td>1</td></tr>\n<tr><td>Prio 5: </td><td>0</td></tr>\n</table>\n<ul>\n<li>2 - GET : ns:page2 (123598)</li>\n<li>0 - PUT : ns:ns:my_page (3849043726)</li>\n<li>3 - GET : ns:page:image.jpg (346984)</li>\n</ul>";
 
         // init the mocks
         AppDatabase appDatabase = mock(AppDatabase.class);

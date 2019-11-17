@@ -103,9 +103,19 @@ public class WikiCacheUiOrchestrator {
         wikiSynchronizer.retrieveDataFromServerAsync(new WikiSynchroCallback() {
 
             @Override
-            public void progressUpdate(String header, Integer... values) {
+            public void progressUpdate(String header, String footer, Integer... values) {
                 if(values.length>=2){
-                    notificationHandler.updateNotification(header +" : "+values[0]+"/"+values[1]);
+                    String realFooter = footer;
+                    if(footer.length()>0)
+                        realFooter= " "+footer;
+
+                    String realHeader = header;
+                    if(header.length()>0)
+                        realHeader= header + " : ";
+
+                    String notifTitle = realHeader + values[0]+"/"+values[1] + realFooter;
+                    notificationHandler.updateNotification(notifTitle);
+                    Log.d(TAG, notifTitle);
                 }
             }
 
@@ -196,6 +206,7 @@ public class WikiCacheUiOrchestrator {
     public String getLogsHtml() {
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_LOGS);
         String unencodedHtml = "<html><body><ul>";
+        Logs.getInstance().purgeToMax(); // ensure not too many items
         for (String a : Logs.getInstance()._data) {
             unencodedHtml += "\n<li>" + a + "</li>";
         }

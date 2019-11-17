@@ -2,6 +2,7 @@ package com.fabienli.dokuwiki.usecase;
 
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.db.Media;
@@ -35,21 +36,24 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
     public void retrieveDataFromServer() {
 
         // 1. pages
-        publishProgress(1, 4, 1, 1);
+        publishProgress(1, 10);
         retrievePagesDataFromServer();
 
         // 2. medias
-        publishProgress(2, 4, 1, 1);
+        publishProgress(2, 10);
         retrieveMediasDataFromServer();
 
         // 3. download synchro
-        publishProgress(3, 4, 0, 99999);
+        publishProgress(3, 10);
         runDownloadSynchro();
 
         // 4. wiki title
-        publishProgress(4, 4, 1, 1);
+        publishProgress(8, 10);
         retrieveTitleFromServer();
 
+        // 5. dynamic content'' page
+        publishProgress(9, 10);
+        runDownloadSynchroDynamicPges();
     }
 
     public void retrievePagesDataFromServer() {
@@ -70,6 +74,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
 
         // 3. remove all pending sync actions
         _db.syncActionDao().deleteLevel("2");
+        _db.syncActionDao().deleteLevel("5");
 
         // 4. update our db with the list of pages and their version
         for (String item : pagesList) {
@@ -113,6 +118,30 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
                 syncAction.rev = pageRevision;
                 _db.syncActionDao().insertAll(syncAction);
             }
+
+            // 4.5 force sync of page, if no-cache option, or if using a dynamic plugin (indexmenu, catlist)
+            else if(page != null && page.text != null) {
+                boolean forceSync = false;
+                // check nocache option
+                if (page.text.length() == 0)
+                    forceSync = true;
+                else if(page.text.contains("~~NOCACHE~~"))
+                    forceSync = true;
+                else if(page.text.contains("<catlist"))
+                    forceSync = true;
+                else if(page.text.contains("{{indexmenu"))
+                    forceSync = true;
+
+                if (forceSync) {
+                    Log.d("WikiSynchronizer", "page with dynamic content: " + pageName);
+                    syncAction = new SyncAction();
+                    syncAction.priority = "5";
+                    syncAction.verb = "GET";
+                    syncAction.name = pageName;
+                    syncAction.rev = pageRevision;
+                    _db.syncActionDao().insertAll(syncAction);
+                }
+            }
         }
 
         // 5. remove old pages not in server anymore
@@ -121,6 +150,12 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
             if (existingItem != null)
                 _db.pageDao().delete(existingItem);
         }
+
+        // 6. no dynamic update needed if no new page to sync
+        if(_db.syncActionDao().getAllPriority("2").size() == 0) {
+            _db.syncActionDao().deleteLevel("5");
+        }
+
     }
 
     public void retrieveMediasDataFromServer() {
@@ -240,6 +275,15 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
             synchroDownloadHandler.syncMedia3();
         }
     }
+    public void runDownloadSynchroDynamicPges() {
+        SynchroDownloadHandler synchroDownloadHandler = new SynchroDownloadHandler(_settings, _db, _xmlRpcAdapter, _mediaLocalPath, _wikiSynchroCallback);
+
+        Logs.getInstance().add("Download items level 5");
+        String typesync = _settings.getString("list_type_sync", "a");
+        if(typesync.compareTo("b")==0) {
+            synchroDownloadHandler.syncPage5();
+        }
+    }
 
     public void retrieveTitleFromServer() {
         WikiTitleRetriever wikiTitleRetriever = new WikiTitleRetriever(_xmlRpcAdapter);
@@ -261,8 +305,20 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
+        String footer = "";
+        if (values.length>=1)
+            if(values[0]==1)
+                footer = "Get pages list";
+            else if(values[0]==2)
+                footer = "Get medias list";
+            else if(values[0]==3)
+                footer = "Download updates";
+            else if(values[0]==8)
+                footer = "Sync meta data";
+            else if(values[0]==9)
+                footer = "Dynamic pages update";
         if(_wikiSynchroCallback!=null)
-            _wikiSynchroCallback.progressUpdate("Step", values);
+            _wikiSynchroCallback.progressUpdate("", footer, values);
 
     }
 

@@ -18,7 +18,7 @@ public class ActionListRetrieve extends PoolAsyncTask {
 
     public String getSyncActionList() {
         String itemsList = "<ul>";
-        int[] counter = {0,0,0,0};
+        int[] counter = {0,0,0,0,0,0};
         int priority = 0;
         for (SyncAction sa : _db.syncActionDao().getAll()) {
             itemsList += "\n<li>" + sa.toText() + "</li>";
@@ -30,7 +30,8 @@ public class ActionListRetrieve extends PoolAsyncTask {
                 "\n<tr><td>Prio 0: </td><td>"+counter[0]+"</td></tr>"+
                 "\n<tr><td>Prio 1: </td><td>"+counter[1]+"</td></tr>"+
                 "\n<tr><td>Prio 2: </td><td>"+counter[2]+"</td></tr>"+
-                "\n<tr><td>Prio 3: </td><td>"+counter[3]+"</td></tr>\n</table>\n"+itemsList;
+                "\n<tr><td>Prio 3: </td><td>"+counter[3]+"</td></tr>"+
+                "\n<tr><td>Prio 5: </td><td>"+counter[5]+"</td></tr>\n</table>\n"+itemsList;
         return htmlPage;
     }
 

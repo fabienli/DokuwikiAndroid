@@ -1,5 +1,7 @@
 package com.fabienli.dokuwiki.tools;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 public class Logs {
@@ -18,5 +20,12 @@ public class Logs {
 
     public void add(String data){
         _data.add(data);
+    }
+    public void purgeToMax(){
+        int l = _data.size();
+        Log.d("Logs", "currently "+l+" logs items");
+        if(l > 500) {
+            _data = new ArrayList<>(_data.subList(l-500, l));
+        }
     }
 }
