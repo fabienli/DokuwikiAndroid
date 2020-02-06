@@ -21,6 +21,8 @@ import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import java.util.List;
 
 /**
@@ -122,6 +124,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+        Preference serverurl = findPreference("serverurl");
+        String urlserver = this.getPreferences(MODE_PRIVATE).getString("serverurl", "");;
+        if(urlserver.length() == 0) {
+            Snackbar.make(this.getWindow().getDecorView(), "No server configured yet, please provide details in \"Syncrhonisation\" panel", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+        }
     }
 
     /**

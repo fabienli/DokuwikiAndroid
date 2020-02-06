@@ -58,7 +58,7 @@ public class XmlRpcThrottler {
     }
 
     public void setLimit(int i) {
-        _limit = i;
+        if(i>0) _limit = i;
     }
 
     public boolean isNextCallInLimit() {

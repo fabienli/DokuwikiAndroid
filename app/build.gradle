@@ -6,8 +6,8 @@ android {
         applicationId "com.fabienli.dokuwiki"
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 46
-        versionName "beta0.2"
+        versionCode 47
+        versionName "beta0.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {
@@ -87,6 +87,8 @@ android {
 }
 
 android {
+
+    buildToolsVersion = '28.0.3'
     defaultConfig {
         vectorDrawables.useSupportLibrary = true
     }

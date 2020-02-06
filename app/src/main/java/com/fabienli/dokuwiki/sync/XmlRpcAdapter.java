@@ -36,8 +36,8 @@ public class XmlRpcAdapter {
         _context = context;
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
         _password = settings.getString("password", "");
-        _user = settings.getString("user", "");;
-        _urlserver = settings.getString("serverurl", "");;
+        _user = settings.getString("user", "");
+        _urlserver = settings.getString("serverurl", "");
         _debug = settings.getBoolean("debuglogs", false);
         Log.d(TAG,"Connecting to server <"+_urlserver + "> with user <"+_user+">");
         _xmlConfig = new XmlRpcClientConfigImpl();

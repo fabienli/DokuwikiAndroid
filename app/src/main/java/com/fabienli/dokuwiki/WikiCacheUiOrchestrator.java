@@ -1,6 +1,7 @@
 package com.fabienli.dokuwiki;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.webkit.WebView;
@@ -8,6 +9,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.fabienli.dokuwiki.db.AppDatabase;
+import com.fabienli.dokuwiki.sync.StaticDownloader;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
 import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.usecase.ActionListRetrieve;
@@ -230,7 +232,23 @@ public class WikiCacheUiOrchestrator {
             }
         });
     }
+    public void ensureStaticIsDownloaded(String imageStr) {
+        Log.d(TAG, "Check if file "+imageStr+" needs to be downloaded");
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        String urlserver = settings.getString("serverurl", "");
+        StaticDownloader staticDownloader = new StaticDownloader(urlserver, context.getCacheDir().getAbsolutePath());
+        staticDownloader.getStaticAsync(imageStr, new MediaRetrieveCallback(){
+            @Override
+            public void mediaRetrieved(String mediaPathName) {
+                //refreshPage();
+                Toast.makeText(context,"Static downloaded, you can refresh the page", Toast.LENGTH_SHORT).show();
+            }
 
+            @Override
+            public void mediaWasAlreadyThere(String mediaPathName) {
+            }
+        });
+    }
 
     public void loadPage(String iPageData) {
         if(_webView == null) {
@@ -242,6 +260,9 @@ public class WikiCacheUiOrchestrator {
             String html = urlConverter.getHtmlContentConverted(iPageData);
             for(UrlConverter.ImageRefData img : urlConverter._imageList){
                 ensureMediaIsDownloaded(img.id, img.imageFilePath, img.width, img.height);
+            }
+            for(String imageUrlStr : urlConverter._staticImageList) {
+                ensureStaticIsDownloaded(imageUrlStr);
             }
             Log.d(TAG, "Display page: "+html);
             String aBaseUrl = "file://"+context.getCacheDir().getAbsolutePath();

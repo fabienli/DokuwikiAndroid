@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Dokuwiki.iml" filepath="$PROJECT_DIR$/Dokuwiki.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DokuwikiAndroid.iml" filepath="$PROJECT_DIR$/DokuwikiAndroid.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

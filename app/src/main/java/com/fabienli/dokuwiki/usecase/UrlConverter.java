@@ -15,18 +15,28 @@ import java.util.regex.Pattern;
 public class UrlConverter {
     protected String TAG = "UrlConverter";
     public static String WIKILINKURL = "http://dokuwiki/doku.php?id=";
-    public static String WIKILINKPATTERN = "href=\"(/[-~_:/a-zA-Z0-9]+)?/doku.php\\?id=";
+    public static String WIKIBASEPATTERN = "(/[-~_:/a-zA-Z0-9]+)";
+    public static String WIKILINKPATTERN = "href=\""+WIKIBASEPATTERN+"?/doku.php\\?id=";
     public static String WIKICREATEURL = "http://dokuwiki_create/?id=";
-    public static String WIKICREATEPATTERN = "src=\"(/[-~_:/a-zA-Z0-9]+)?/lib/exe/fetch.php\\?";
-    public static String WIKIMEDIALINKPATTERN = "href=\"(/[-~_:/a-zA-Z0-9]+)?/lib/exe/fetch.php\\?[^\"]*media=";
+    public static String WIKICREATEPATTERN = "src=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php\\?";
+    public static String WIKIMEDIALINKPATTERN = "href=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php\\?[^\"]*media=";
     public static String WIKIMEDIAMANAGERURL = "http://dokuwiki_media_manager/?";
     protected String _cacheDir;
     public List<ImageRefData> _imageList;
+    public List<String> _staticImageList;
 
     public UrlConverter(String cacheDir){
         _cacheDir = cacheDir;
         _imageList = new ArrayList<>();
+        _staticImageList = new ArrayList<>();
     }
+
+    public static boolean isPluginActionOnline(String url) {
+        if(url.contains("do=plugin_do"))
+            return true;
+        return false;
+    }
+
     public String getHtmlContentConverted(String htmlContent){
         String html = htmlContent
                 .replaceAll(WIKILINKPATTERN, "href=\""+WIKILINKURL);
@@ -86,6 +96,19 @@ public class UrlConverter {
                 html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\"file://" + _cacheDir + "/" + localFilename);
             }
         }
+
+        // update plugin images link
+        String PLUGINIMGPATTERN = "src=\""+WIKIBASEPATTERN+"?/lib/plugins/";
+        Pattern pluginDoPattern = Pattern.compile(PLUGINIMGPATTERN + "(\\S+)\"");
+        m = pluginDoPattern.matcher(html);
+        while(m.find())
+        {
+            Log.d(TAG, "Found plugin image: "+m.group(2));
+            String localFilename = m.group(2).replaceAll("%3A", ":").replaceAll("%2F", "/");
+            html = html.replaceAll(PLUGINIMGPATTERN + m.group(2), "src=\"" + _cacheDir + "/lib/plugins/" + localFilename + "\"");
+            _staticImageList.add("lib/plugins/" + m.group(2));
+        }
+
 
         html = addHeaders(html);
         return html;

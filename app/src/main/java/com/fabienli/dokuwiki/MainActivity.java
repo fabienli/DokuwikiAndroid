@@ -101,10 +101,17 @@ public class MainActivity extends AppCompatActivity
 
         displayHtml("Loading ...");
 
-        // first page initiate
-        String startpage = settings.getString("startpage", "start");
-        displayPage(startpage);
-
+        String urlserver = settings.getString("serverurl", "");;
+        if(urlserver.length() == 0)
+        {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivityForResult(intent, 0);
+        }
+        else {
+            // first page initiate
+            String startpage = settings.getString("startpage", "start");
+            displayPage(startpage);
+        }
     }
 
     protected void updateNavigationHeader() {
@@ -296,7 +303,12 @@ public class MainActivity extends AppCompatActivity
             Log.d("WebView", "link to: "+ url);
             Log.d("WebView", "link to: "+ Uri.parse(url));
             Log.d("WebView", "link to: "+ Uri.parse(url).getHost());
-            if(UrlConverter.isInternalPageLink(url)){
+            if(UrlConverter.isPluginActionOnline(url)){
+                Snackbar.make(view, "Unsupported action, please access the online page to do this!", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                return true;
+            }
+            else if(UrlConverter.isInternalPageLink(url)){
                 WebView myWebView = (WebView) findViewById(R.id.webview);
                 String pagename = UrlConverter.getPageName(url);
                 WikiCacheUiOrchestrator.instance(view.getContext()).retrievePageHTMLforDisplay(pagename, myWebView);
