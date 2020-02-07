@@ -127,8 +127,12 @@ public class UrlConverter {
 
     public static String getPageName(String url){
         String result = "";
-        if(isInternalPageLink(url))
+        if(isInternalPageLink(url)) {
             result = url.replace(WIKILINKURL, "");
+            if (result.contains("#")){
+                result = result.substring(0, result.indexOf("#"));
+            }
+        }
         else if(isCreatePageLink(url)) {
             result = url.replace(WIKICREATEURL, "");
             // convert url characters
