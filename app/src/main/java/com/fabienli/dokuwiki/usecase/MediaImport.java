@@ -44,7 +44,7 @@ public class MediaImport extends AsyncTask<String, Integer, String> {
             _db.mediaDao().insertAll(media);
             SyncAction sa = new SyncAction();
             sa.verb = "PUT";
-            sa.priority = "1";
+            sa.priority = SyncAction.LEVEL_UPLOAD_MEDIAS;
             sa.name = newFileName;
             sa.rev = "";
             sa.data = _mediaLocalDir + "/" + newFileName;

@@ -35,10 +35,10 @@ public class PageTextSave extends PoolAsyncTask {
             pageCurrentVersion = page.rev;
         }
 
-        SyncAction existingSyncAction = _db.syncActionDao().findUnique("0", "PUT", pagename);
+        SyncAction existingSyncAction = _db.syncActionDao().findUnique(SyncAction.LEVEL_UPLOAD_FILES, "PUT", pagename);
         if(existingSyncAction == null) {
             SyncAction syncAction = new SyncAction();
-            syncAction.priority = "0";
+            syncAction.priority = SyncAction.LEVEL_UPLOAD_FILES;
             syncAction.verb = "PUT";
             syncAction.name = pagename;
             syncAction.rev = pageCurrentVersion;

@@ -3,6 +3,7 @@ package com.fabienli.dokuwiki;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -124,8 +125,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
-        Preference serverurl = findPreference("serverurl");
-        String urlserver = this.getPreferences(MODE_PRIVATE).getString("serverurl", "");;
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        String urlserver = settings.getString("serverurl", "");
         if(urlserver.length() == 0) {
             Snackbar.make(this.getWindow().getDecorView(), "No server configured yet, please provide details in \"Syncrhonisation\" panel", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();

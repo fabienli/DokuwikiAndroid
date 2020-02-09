@@ -73,8 +73,8 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
         }
 
         // 3. remove all pending sync actions
-        _db.syncActionDao().deleteLevel("2");
-        _db.syncActionDao().deleteLevel("5");
+        _db.syncActionDao().deleteLevel(SyncAction.LEVEL_GET_FILES);
+        _db.syncActionDao().deleteLevel(SyncAction.LEVEL_GET_DYNAMICS);
 
         // 4. update our db with the list of pages and their version
         for (String item : pagesList) {
@@ -112,7 +112,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
             SyncAction syncAction = null;
             if (page.rev.compareTo(pageRevision) != 0 || page.isHtmlEmpty()) {
                 syncAction = new SyncAction();
-                syncAction.priority = "2";
+                syncAction.priority = SyncAction.LEVEL_GET_FILES;
                 syncAction.verb = "GET";
                 syncAction.name = pageName;
                 syncAction.rev = pageRevision;
@@ -135,7 +135,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
                 if (forceSync) {
                     Log.d("WikiSynchronizer", "page with dynamic content: " + pageName);
                     syncAction = new SyncAction();
-                    syncAction.priority = "5";
+                    syncAction.priority = SyncAction.LEVEL_GET_DYNAMICS;
                     syncAction.verb = "GET";
                     syncAction.name = pageName;
                     syncAction.rev = pageRevision;
@@ -152,8 +152,8 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
         }
 
         // 6. no dynamic update needed if no new page to sync
-        if(_db.syncActionDao().getAllPriority("2").size() == 0) {
-            _db.syncActionDao().deleteLevel("5");
+        if(_db.syncActionDao().getAllPriority(SyncAction.LEVEL_GET_FILES).size() == 0) {
+            _db.syncActionDao().deleteLevel(SyncAction.LEVEL_GET_DYNAMICS);
         }
 
     }
@@ -175,7 +175,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
         }
 
         // 3. remove all pending sync actions
-        _db.syncActionDao().deleteLevel("3");
+        _db.syncActionDao().deleteLevel(SyncAction.LEVEL_GET_MEDIAS);
 
 
         // 4. update our db with the list of medias and their version
@@ -241,7 +241,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
             // 4.4 check if synchro is need
             if (isDownloadNeeded) {
                 SyncAction syncAction = new SyncAction();
-                syncAction.priority = "3";
+                syncAction.priority = SyncAction.LEVEL_GET_MEDIAS;
                 syncAction.verb = "GET";
                 syncAction.name = mediaId;
                 syncAction.rev = mediaMTime;

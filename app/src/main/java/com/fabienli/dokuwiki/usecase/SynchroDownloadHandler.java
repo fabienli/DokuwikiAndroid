@@ -46,7 +46,7 @@ public class SynchroDownloadHandler {
         if(_syncOngoing == 0) {
             addOneSyncOngoing();
             int i=0;
-            List<SyncAction> saList = _db.syncActionDao().getAllPriority("0");
+            List<SyncAction> saList = _db.syncActionDao().getAllPriority(SyncAction.LEVEL_UPLOAD_FILES);
             int max = saList.size();
             for (SyncAction sa : saList) {
                 if(_wikiSynchroCallback != null)
@@ -67,7 +67,7 @@ public class SynchroDownloadHandler {
         if(_syncOngoing == 0) {
             addOneSyncOngoing();
             int i=0;
-            List<SyncAction> saList = _db.syncActionDao().getAllPriority("1");
+            List<SyncAction> saList = _db.syncActionDao().getAllPriority(SyncAction.LEVEL_UPLOAD_MEDIAS);
             int max = saList.size();
             for (SyncAction sa : saList) {
                 if(_wikiSynchroCallback != null)
@@ -89,9 +89,9 @@ public class SynchroDownloadHandler {
         if(_syncOngoing == 0) {
             addOneSyncOngoing();
 
-            final int maxpages = Integer.parseInt(_settings.getString("max_page_sync", "2"));;
+            final int maxpages = Integer.parseInt(_settings.getString("max_page_sync", "2"));
 
-            List<SyncAction> saList = _db.syncActionDao().getAllPriority("2");
+            List<SyncAction> saList = _db.syncActionDao().getAllPriority(SyncAction.LEVEL_GET_FILES);
 
             // init the sync for requested level
             if(_level2ongoing == 0)
@@ -127,7 +127,7 @@ public class SynchroDownloadHandler {
 
             final int maxmedia = Integer.parseInt(_settings.getString("max_media_sync", "2"));;
 
-            List<SyncAction> saList = _db.syncActionDao().getAllPriority("3");
+            List<SyncAction> saList = _db.syncActionDao().getAllPriority(SyncAction.LEVEL_GET_MEDIAS);
 
             if(_level3ongoing == 0)
                 _level3ongoing = min(maxmedia, saList.size());
@@ -162,7 +162,7 @@ public class SynchroDownloadHandler {
 
             final int maxpages = Integer.parseInt(_settings.getString("max_page_sync", "2"));;
 
-            List<SyncAction> saList = _db.syncActionDao().getAllPriority("5");
+            List<SyncAction> saList = _db.syncActionDao().getAllPriority(SyncAction.LEVEL_GET_DYNAMICS);
 
             // init the sync for requested level
             if(_level5ongoing == 0)
@@ -222,7 +222,7 @@ public class SynchroDownloadHandler {
             Logs.getInstance().add("page "+sa.name+" should be updated, get its HTML from server");
             _syncToBePlanned = true;
             SyncAction syncAction = new SyncAction();
-            syncAction.priority = "0";
+            syncAction.priority = SyncAction.LEVEL_UPLOAD_FILES;
             syncAction.verb = "GET";
             syncAction.name = sa.name;
             syncAction.rev = "0";

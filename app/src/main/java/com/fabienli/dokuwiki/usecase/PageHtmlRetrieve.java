@@ -42,7 +42,7 @@ public class PageHtmlRetrieve extends PoolAsyncTask {
             // Check if a more recent version exists:
             List<SyncAction> synActionItems = _db.syncActionDao().getAll();
             for (SyncAction sa : synActionItems ){
-                if(sa.name.compareTo(pagename) == 0 && sa.verb.compareTo("GET") == 0)
+                if(sa.name.compareTo(pagename) == 0 && sa.verb.compareTo("GET") == 0 && sa.priority.compareTo(SyncAction.LEVEL_GET_DYNAMICS) != 0)
                 {
                     syncActionRelated = sa;
                     pageVersion = sa.rev;

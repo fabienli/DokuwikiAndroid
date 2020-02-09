@@ -282,7 +282,7 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
                 // force update of this media in next synchro
                 SyncAction sa = new SyncAction();
                 sa.verb = "PUT";
-                sa.priority = "1";
+                sa.priority = SyncAction.LEVEL_UPLOAD_MEDIAS;
                 sa.name = media.id;
                 sa.rev = "";
                 sa.data = _mediaLocalDir + "/" + toFileName;
@@ -292,7 +292,7 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
 
                 SyncAction saDelete = new SyncAction();
                 saDelete.verb = "DEL";
-                saDelete.priority = "1";
+                saDelete.priority = SyncAction.LEVEL_UPLOAD_MEDIAS;
                 saDelete.name = mediaId;
                 saDelete.rev = "";
                 saDelete.data = "";
@@ -352,7 +352,7 @@ public class StaticMediaManagerDisplay extends StaticPagesDisplay{
                 // force update of this media in next synchro
                 SyncAction saDelete = new SyncAction();
                 saDelete.verb = "DEL";
-                saDelete.priority = "1";
+                saDelete.priority = SyncAction.LEVEL_UPLOAD_MEDIAS;
                 saDelete.name = mediaId;
                 saDelete.rev = "";
                 saDelete.data = "";

@@ -6,6 +6,11 @@ import androidx.room.Entity;
 
 @Entity(primaryKeys = {"priority", "verb", "name"})
 public class SyncAction {
+    public static final String LEVEL_UPLOAD_FILES = "0";
+    public static final String LEVEL_UPLOAD_MEDIAS = "1";
+    public static final String LEVEL_GET_FILES = "2";
+    public static final String LEVEL_GET_MEDIAS = "3";
+    public static final String LEVEL_GET_DYNAMICS = "5";
 
     @NonNull
     @ColumnInfo(name = "priority")
