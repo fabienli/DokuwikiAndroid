@@ -116,6 +116,7 @@ public class PageHtmlRetrieveUnitTest {
         syncAction.verb = "GET";
         syncAction.name = "start";
         syncAction.rev = "9123456780";
+        syncAction.priority = SyncAction.LEVEL_GET_FILES;
         saList.add(syncAction);
         when(syncActionDao.getAll()).thenReturn(saList);
 
@@ -138,6 +139,49 @@ public class PageHtmlRetrieveUnitTest {
         verify(pageDao, times(1)).updateVersion(any(String.class), eq("9123456780"));
     }
 
+    /**
+     * test that when a page is in DB with a level 5 DYNAMIC we default to local version
+     */
+    @Test
+    public void PageHtmlRetrieve_retrievePageLocal_updateSyncAction() {
+        // test the basic call is getting into the callback
+        final String HTML_CONTENT = "test content";
+        final String HTML_CONTENT_LOCAL = "test content local";
+        AppDatabase appDatabase = mock(AppDatabase.class);
+        PageDao pageDao = mock(PageDao.class);
+        when(appDatabase.pageDao()).thenReturn(pageDao);
+        Page page = new Page();
+        page.html = HTML_CONTENT_LOCAL;
+        when(pageDao.findByName(any(String.class))).thenReturn(page);
+
+        SyncActionDao syncActionDao = mock(SyncActionDao.class);
+        when(appDatabase.syncActionDao()).thenReturn(syncActionDao);
+        List<SyncAction> saList = new ArrayList<>();
+        SyncAction syncAction = new SyncAction();
+        syncAction.verb = "GET";
+        syncAction.name = "start";
+        syncAction.rev = "9123456780";
+        syncAction.priority = SyncAction.LEVEL_GET_DYNAMICS;
+        saList.add(syncAction);
+        when(syncActionDao.getAll()).thenReturn(saList);
+
+        XmlRpcAdapter xmlRpcAdapter = mock(XmlRpcAdapter.class);
+        ArrayList<String> results = new ArrayList<String>();
+        results.add(HTML_CONTENT);
+        when(xmlRpcAdapter.callMethod(eq("wiki.getPageHTML"), any(String.class))).thenReturn(results);
+
+        // test the usecase:
+        PageHtmlRetrieve aPageHtmlRetrieve = new PageHtmlRetrieve(appDatabase, xmlRpcAdapter);
+        String content = aPageHtmlRetrieve.retrievePage("start");
+        // check that returned page content is the correct one
+        assert(content.compareTo(HTML_CONTENT_LOCAL) == 0);
+        // ensure we didn't call the server
+        verify(xmlRpcAdapter, times(0)).callMethod(eq("wiki.getPageHTML"), any(String.class));
+        // ensure we didn't retrieve the useless info version
+        verify(xmlRpcAdapter, times(0)).callMethod(eq("wiki.getPageInfo"), any(String.class));
+        // ensure we didn't touch the content in our DB cache
+        verify(pageDao, times(0)).updateHtml(any(String.class), any(String.class));
+    }
 
     /**
      * test that when a page is not in DB (not found) we try to retrieve it from server
