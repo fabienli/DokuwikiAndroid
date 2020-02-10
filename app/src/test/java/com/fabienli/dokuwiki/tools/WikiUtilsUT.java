@@ -70,4 +70,5 @@ public class WikiUtilsUT {
         System.out.println(newUrl);
         assert(newUrl.compareTo(URL_EXPECTED) == 0);
     }
+
 }
