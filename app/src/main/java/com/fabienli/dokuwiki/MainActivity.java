@@ -107,6 +107,12 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivityForResult(intent, 0);
         }
+        // any page currently shown?
+        else if(WikiCacheUiOrchestrator.instance(this).showLastHistory(_webView))
+        {
+            // display done in showLastHistory(...)
+        }
+        // show default page
         else {
             // first page initiate
             String startpage = settings.getString("startpage", "start");

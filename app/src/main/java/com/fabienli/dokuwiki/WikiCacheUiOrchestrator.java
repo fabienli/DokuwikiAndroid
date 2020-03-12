@@ -353,11 +353,9 @@ public class WikiCacheUiOrchestrator {
         retrievePageHTMLforDisplay(_pageHistory.lastElement(), this._webView);
     }
 
-    public boolean backHistory(WebView webView) {
-        Logs.getInstance().add("Back one page in history");
-        if(_pageHistory.size()>1) {
-            // remove current item
-            _pageHistory.pop();
+    public boolean showLastHistory(WebView webView) {
+        Logs.getInstance().add("Show last page in history");
+        if(_pageHistory.size()>0) {
             if(_pageHistory.lastElement().startsWith(APP_INTERNAL_PAGE_PREFIX)){
                 String page = _pageHistory.lastElement().substring(APP_INTERNAL_PAGE_PREFIX.length());
                 switch (page){
@@ -381,6 +379,16 @@ public class WikiCacheUiOrchestrator {
             else
                 retrievePageHTMLforDisplay(_pageHistory.lastElement(), webView);
             return true;
+        }
+        return false;
+    }
+
+    public boolean backHistory(WebView webView) {
+        Logs.getInstance().add("Back one page in history");
+        if(_pageHistory.size()>1) {
+            // remove current item
+            _pageHistory.pop();
+            return showLastHistory(webView);
         }
         return false;
     }
