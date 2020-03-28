@@ -9,6 +9,10 @@
             android:icon="@drawable/ic_menu_send"
             android:title="Start page" />
         <item
+            android:id="@+id/search"
+            android:icon="@drawable/ic_search_black_24dp"
+            android:title="Search" />
+        <item
             android:id="@+id/pagelist"
             android:icon="@drawable/ic_menu_gallery"
             android:title="All Pages List" />

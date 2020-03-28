@@ -1,5 +1,6 @@
 package com.fabienli.dokuwiki;
 
+import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -49,6 +50,8 @@ public class MainActivity extends AppCompatActivity
     private WebView _webView;
     protected Context context;
     private final int SELECT_PHOTO = 1;
+    protected String _ongoingSearch = "";
+    protected FloatingActionButton _fabSearchWiki;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,21 +65,18 @@ public class MainActivity extends AppCompatActivity
         else
             setContentView(R.layout.activity_main);
 
-
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // floating action: to be deleted?
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        _fabSearchWiki = (FloatingActionButton) findViewById(R.id.fab);
+        _fabSearchWiki.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                onSearchRequested();
             }
         });
-        fab.hide();
+        _fabSearchWiki.hide();
 
         // navigation drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -99,24 +99,34 @@ public class MainActivity extends AppCompatActivity
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
 
-        displayHtml("Loading ...");
-
-        String urlserver = settings.getString("serverurl", "");;
-        if(urlserver.length() == 0)
-        {
-            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-            startActivityForResult(intent, 0);
+        // Get the intent, verify the action and get the query
+        Intent intentSearch = getIntent();
+        if (intentSearch != null && Intent.ACTION_SEARCH.equals(intentSearch.getAction()) && !WikiCacheUiOrchestrator.instance(this)._isSearchDone) {
+            _ongoingSearch = intentSearch.getStringExtra(SearchManager.QUERY);
+            Log.d("Search", "query search: " + _ongoingSearch);
+            searchResultsPage(_ongoingSearch);
+            _fabSearchWiki.show();
         }
-        // any page currently shown?
-        else if(WikiCacheUiOrchestrator.instance(this).showLastHistory(_webView))
-        {
-            // display done in showLastHistory(...)
-        }
-        // show default page
         else {
-            // first page initiate
-            String startpage = settings.getString("startpage", "start");
-            displayPage(startpage);
+            _ongoingSearch = "";
+            displayHtml("Loading ...");
+
+            String urlserver = settings.getString("serverurl", "");
+            ;
+            if (urlserver.length() == 0) {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivityForResult(intent, 0);
+            }
+            // any page currently shown?
+            else if (WikiCacheUiOrchestrator.instance(this).showLastHistory(_webView)) {
+                // display done in showLastHistory(...)
+            }
+            // show default page
+            else {
+                // first page initiate
+                String startpage = settings.getString("startpage", "start");
+                displayPage(startpage);
+            }
         }
     }
 
@@ -206,7 +216,6 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-
         return true;
     }
 
@@ -283,8 +292,9 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(photoPickerIntent, SELECT_PHOTO);
         } else if (id == R.id.mediamanager) {
             WikiCacheUiOrchestrator.instance(this).mediaManagerPageHtml(_webView, "");
-        }
-        else { // shortcuts to a page
+        } else if (id == R.id.search) {
+            onSearchRequested();
+        } else { // shortcuts to a page
             Log.d("Menu", String.valueOf(item));
             displayPage(String.valueOf(item));
         }
@@ -298,17 +308,42 @@ public class MainActivity extends AppCompatActivity
         WikiCacheUiOrchestrator.instance(this).retrievePageHTMLforDisplay(pagename, _webView);
     }
 
+    public void searchResultsPage(String searchLine){
+        WikiCacheUiOrchestrator.instance(this).retrieveSearchResultsforDisplay(searchLine, _webView);
+    }
+
     public void displayHtml(String html){
         String encodedHtml = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
         _webView.loadData(encodedHtml, "text/html", "base64");
     }
 
-    private class MyWebViewClient extends WebViewClient {
+    @Override
+    public boolean onSearchRequested() {
+        WikiCacheUiOrchestrator.instance(this)._isSearchDone = false;
+        startSearch(_ongoingSearch, false, null, false);
+        return true;
+    }
+
+    public void preventSearch() {
+        // used to prevent search to popup again; execept if explicitely called
+        WikiCacheUiOrchestrator.instance(this)._isSearchDone = true;
+    }
+
+    public void enableSearchButton(Boolean doit){
+        if(doit) {
+            _fabSearchWiki.show();
+        }
+        else
+            _fabSearchWiki.hide();
+    }
+
+    protected class MyWebViewClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             Log.d("WebView", "link to: "+ url);
             Log.d("WebView", "link to: "+ Uri.parse(url));
             Log.d("WebView", "link to: "+ Uri.parse(url).getHost());
+
             if(UrlConverter.isPluginActionOnline(url)){
                 Snackbar.make(view, "Unsupported action, please access the online page to do this!", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();

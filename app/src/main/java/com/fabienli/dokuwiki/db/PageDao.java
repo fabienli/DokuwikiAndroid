@@ -20,7 +20,7 @@ public interface PageDao {
     @Query("SELECT * FROM page ORDER by pagename")
     List<Page> selectAll();
 
-    @Query("SELECT * FROM page WHERE text LIKE :search")
+    @Query("SELECT * FROM page WHERE text LIKE :search or html LIKE :search")
     List<Page> search(String search);
 
     @Query("UPDATE page SET html=:html WHERE pagename IN (:pagename)")

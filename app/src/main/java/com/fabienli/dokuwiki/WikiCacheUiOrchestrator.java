@@ -22,6 +22,7 @@ import com.fabienli.dokuwiki.usecase.PageListRetrieve;
 import com.fabienli.dokuwiki.usecase.PageTextRetrieve;
 import com.fabienli.dokuwiki.usecase.PageTextRetrieveForceDownload;
 import com.fabienli.dokuwiki.usecase.PageTextSave;
+import com.fabienli.dokuwiki.usecase.SearchWikiListRetrieve;
 import com.fabienli.dokuwiki.usecase.StaticMediaManagerDisplay;
 import com.fabienli.dokuwiki.usecase.StaticPagesDisplay;
 import com.fabienli.dokuwiki.usecase.UrlConverter;
@@ -53,6 +54,8 @@ public class WikiCacheUiOrchestrator {
     protected AppDatabase _db;
     // ongoing status
     public String _currentPageName = "";
+    // Status on current Search
+    public boolean _isSearchDone = false;
     // UI access
     protected WebView _webView = null;
     protected EditText _editTextView = null;
@@ -65,6 +68,7 @@ public class WikiCacheUiOrchestrator {
     final String PAGE_ACTION_LIST = "PAGE_ACTION_LIST";
     final String PAGE_PAGES_LIST = "PAGE_PAGES_LIST";
     final String PAGE_LOGS = "PAGE_LOGS";
+    private static final String SEARCH_QUERY = "SEARCH_QUERY";
 
     // initialisation
     public static WikiCacheUiOrchestrator instance(Context ictx){
@@ -205,6 +209,24 @@ public class WikiCacheUiOrchestrator {
         this.loadPage("<html><body>Please wait ...</body></html>");
     }
 
+    public void retrieveSearchResultsforDisplay(String searchData, WebView webview) {
+        this._webView = webview;
+        addPageToHistory(SEARCH_QUERY + searchData);
+        SearchWikiListRetrieve searchWikiResultPage = new SearchWikiListRetrieve(_db);
+        searchWikiResultPage.setSearchData("%"+searchData+"%");
+        searchWikiResultPage.getPageResultsListAsync(new PageHtmlRetrieveCallback() {
+            @Override
+            public void pageRetrieved(String content){
+                loadPage(content);
+                ((MainActivity)context).enableSearchButton(true);
+                // we block further random popup of the search box with a reset search indicators:
+                ((MainActivity)context).preventSearch();
+            }
+        });
+        // workaround to avoid intermediate error page
+        this.loadPage("<html><body>Please wait while searching for '"+searchData+"'...</body></html>");
+    }
+
     public String getLogsHtml() {
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_LOGS);
         String unencodedHtml = "<html><body><ul>";
@@ -269,10 +291,9 @@ public class WikiCacheUiOrchestrator {
             Log.d(TAG, "Base Url: "+aBaseUrl);
             _webView.loadDataWithBaseURL(aBaseUrl, html, "text/html", "UTF-8", null);
             Log.d(TAG, "Loaded page ");
+            ((MainActivity)context).enableSearchButton(false);
         }
     }
-
-
 
     private void writeDefaultCss() {
         // ugly copy paste of a few CSS properties
@@ -375,6 +396,10 @@ public class WikiCacheUiOrchestrator {
                         getLogsHtml(); // TODO: have a real method to display logs
                         break;
                 }
+            }
+            else if(_pageHistory.lastElement().startsWith(SEARCH_QUERY)) {
+                String searchData = _pageHistory.lastElement().substring(SEARCH_QUERY.length());
+                retrieveSearchResultsforDisplay(searchData, _webView);
             }
             else
                 retrievePageHTMLforDisplay(_pageHistory.lastElement(), webView);
