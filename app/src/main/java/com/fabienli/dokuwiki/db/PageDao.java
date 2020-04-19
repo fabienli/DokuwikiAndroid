@@ -7,7 +7,9 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.RawQuery;
 import androidx.room.Update;
+import androidx.sqlite.db.SupportSQLiteQuery;
 
 @Dao
 public interface PageDao {
@@ -22,6 +24,9 @@ public interface PageDao {
 
     @Query("SELECT * FROM page WHERE text LIKE :search or html LIKE :search")
     List<Page> search(String search);
+
+    @RawQuery
+    List<Page> search(SupportSQLiteQuery query);
 
     @Query("UPDATE page SET html=:html WHERE pagename IN (:pagename)")
     void updateHtml(String pagename, String html);

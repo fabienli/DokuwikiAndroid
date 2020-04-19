@@ -213,7 +213,7 @@ public class WikiCacheUiOrchestrator {
         this._webView = webview;
         addPageToHistory(SEARCH_QUERY + searchData);
         SearchWikiListRetrieve searchWikiResultPage = new SearchWikiListRetrieve(_db);
-        searchWikiResultPage.setSearchData("%"+searchData+"%");
+        searchWikiResultPage.setSearchData(searchData);
         searchWikiResultPage.getPageResultsListAsync(new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content){
