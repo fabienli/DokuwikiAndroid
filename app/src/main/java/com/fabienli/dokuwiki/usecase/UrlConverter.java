@@ -17,7 +17,7 @@ public class UrlConverter {
     public static String WIKILINKURL = "http://dokuwiki/doku.php?id=";
     public static String WIKIBASEPATTERN = "(/[-~_:/a-zA-Z0-9]+)";
     public static String WIKILINKPATTERN = "href=\""+WIKIBASEPATTERN+"?/doku.php\\?id=";
-    public static String WIKILINKPATTERN_NICEURL = "href=\""+WIKIBASEPATTERN+"?/doku.php/";
+    public static String WIKILINKPATTERN_NICEURL = "href=\""+WIKIBASEPATTERN+"?(/doku.php)?/";
     public static String WIKICREATEURL = "http://dokuwiki_create/?id=";
     public static String WIKIMEDIAPATTERN = "src=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php\\?";
     public static String WIKIMEDIAPATTERN_NICEURL = "src=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php/(\\S+)\"";
