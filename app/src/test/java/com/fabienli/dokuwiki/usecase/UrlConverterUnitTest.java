@@ -114,6 +114,28 @@ public class UrlConverterUnitTest {
     }
 
     /**
+     * Test the html conversion to local html, adding nice url only
+     */
+    @Test
+
+    public void UrlConverter_htmlConversion_folderniceurl_onSubdomain(){
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        String htmlContent = "<a href=\"/somepage1\">page1 link</p>";
+        String newContent = urlConverter.getHtmlContentConverted(htmlContent);
+        assert(newContent.contains(UrlConverter.WIKILINKURL+"somepage1"));
+    }
+    /**
+     * Test the html conversion to local html, adding nice url with namespaces
+     */
+    @Test
+
+    public void UrlConverter_htmlConversion_folderniceurl_onSubdomain_withnamespace(){
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        String htmlContent = "<a href=\"/some:page1:start\">page1 link</p>";
+        String newContent = urlConverter.getHtmlContentConverted(htmlContent);
+        assert(newContent.contains(UrlConverter.WIKILINKURL+"some:page1:start"));
+    }
+    /**
      * Test the html conversion to local html, image url
      */
     @Test
