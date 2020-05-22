@@ -17,10 +17,15 @@ public class UrlConverter {
     public static String WIKILINKURL = "http://dokuwiki/doku.php?id=";
     public static String WIKIBASEPATTERN = "(/[-~_:/a-zA-Z0-9]+)";
     public static String WIKILINKPATTERN = "href=\""+WIKIBASEPATTERN+"?/doku.php\\?id=";
+    public static String WIKILINKPATTERN_NICEURL = "href=\""+WIKIBASEPATTERN+"?/doku.php/";
     public static String WIKICREATEURL = "http://dokuwiki_create/?id=";
-    public static String WIKICREATEPATTERN = "src=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php\\?";
-    public static String WIKIMEDIALINKPATTERN = "href=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php\\?[^\"]*media=";
+    public static String WIKIMEDIAPATTERN = "src=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php\\?";
+    public static String WIKIMEDIAPATTERN_NICEURL = "src=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php/(\\S+)\"";
+    public static String WIKIMEDIALINKPATTERN = "href=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php\\?[^\"]*media=(\\S+)\"";
+    public static String WIKIMEDIALINKPATTERN_NICEURL = "href=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php/(\\S+)\"";
     public static String WIKIMEDIAMANAGERURL = "http://dokuwiki_media_manager/?";
+    //TODO: hanle link detail to media manager
+    // format is: /lib/exe/detail.php/(\\S+)
     protected String _cacheDir;
     public List<ImageRefData> _imageList;
     public List<String> _staticImageList;
@@ -40,8 +45,9 @@ public class UrlConverter {
     public String getHtmlContentConverted(String htmlContent){
         String html = htmlContent
                 .replaceAll(WIKILINKPATTERN, "href=\""+WIKILINKURL);
+        html = html.replaceAll(WIKILINKPATTERN_NICEURL, "href=\""+WIKILINKURL);
         // find the list of media, to ensure they're here
-        Pattern mediaPattern = Pattern.compile(WIKICREATEPATTERN+"(\\S+)\"");
+        Pattern mediaPattern = Pattern.compile(WIKIMEDIAPATTERN +"(\\S+)\"");
         Matcher m = mediaPattern.matcher(htmlContent);
         while (m.find()) {
             ImageRefData imageData = new ImageRefData();
@@ -64,7 +70,7 @@ public class UrlConverter {
             if(imageData.id.startsWith("http%3A%2F%2F") || imageData.id.startsWith("https%3A%2F%2F"))
             {
                 String mediaUrl = imageData.id.replaceAll("%3A",":").replaceAll("%2F","/");
-                html = html.replaceAll(WIKICREATEPATTERN + m.group(2) + "\"", "src=\"" + mediaUrl + "\"");
+                html = html.replaceAll(WIKIMEDIAPATTERN + m.group(2) + "\"", "src=\"" + mediaUrl + "\"");
             }
             else {
                 // id now contains <namespace:file.ext>
@@ -72,12 +78,54 @@ public class UrlConverter {
                 _imageList.add(imageData);
 
                 String localFilename = getLocalFileName(imageData.imageFilePath, imageData.width, imageData.height);
-                html = html.replaceAll(WIKICREATEPATTERN + m.group(2) + "\"", "src=\"" + _cacheDir + "/" + localFilename + "\"");
+                html = html.replaceAll(WIKIMEDIAPATTERN + m.group(2) + "\"", "src=\"" + _cacheDir + "/" + localFilename + "\"");
+            }
+        }
+
+        mediaPattern = Pattern.compile(WIKIMEDIAPATTERN_NICEURL);
+        m = mediaPattern.matcher(htmlContent);
+        while (m.find()) {
+            Log.d(TAG, "Found image nice url: "+m.group(2));
+            ImageRefData imageData = new ImageRefData();
+            imageData.width = 0;
+            imageData.height = 0;
+            imageData.id = m.group(2);
+            if(m.group(2).contains("?")) {
+                String[] mediaargs = m.group(2).split("\\?");
+                imageData.id = mediaargs[0];
+                String[] args = mediaargs[1].split("&amp;");
+                for (String v : args) {
+                    String[] opt = v.split("=");
+                    if (opt.length == 2) {
+                        if (opt[0].compareTo("w") == 0)
+                            imageData.width = Integer.parseInt(opt[1]);
+                        else if (opt[0].compareTo("h") == 0)
+                            imageData.height = Integer.parseInt(opt[1]);
+                    }
+                }
+            }
+            Log.d(TAG, "Found image nice url: "+imageData.toString());
+            String replacementString = m.group().replace("?","\\?");
+            if(imageData.id.startsWith("http%3A%2F%2F") || imageData.id.startsWith("https%3A%2F%2F"))
+            {
+                String mediaUrl = imageData.id.replaceAll("%3A",":").replaceAll("%2F","/");
+                html = html.replaceAll(replacementString, "src=\"" + mediaUrl + "\"");
+            }
+            else {
+                // id now contains <namespace:file.ext>
+                imageData.imageFilePath = imageData.id.replaceAll(":", "/");
+                _imageList.add(imageData);
+
+                String localFilename = getLocalFileName(imageData.imageFilePath, imageData.width, imageData.height);
+                Log.d(TAG, "html avant:"+html);
+                Log.d(TAG, "html replace:"+replacementString);
+                html = html.replaceAll(replacementString , "src=\"" + _cacheDir + "/" + localFilename + "\"");
+                Log.d(TAG, "html apres:"+html);
             }
         }
 
         // update internal links
-        Pattern linkPattern = Pattern.compile(WIKIMEDIALINKPATTERN+"(\\S+)\"");
+        Pattern linkPattern = Pattern.compile(WIKIMEDIALINKPATTERN);
         m = linkPattern.matcher(html);
         while (m.find())
         {
@@ -95,6 +143,28 @@ public class UrlConverter {
                 //html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\"file://" + _cacheDir + "/" + newUrl);
                 html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\"file://" + _cacheDir + "/" + localFilename);
             }
+        }
+
+        // internal links with nice URLs:
+        linkPattern = Pattern.compile(WIKIMEDIALINKPATTERN_NICEURL);
+        m = linkPattern.matcher(html);
+        while (m.find()) {
+            Log.d(TAG, "Found nice url link: "+m.group(2));
+            String replacementString = m.group().replace("?","\\?");
+            if(m.group(2).startsWith("http%3A%2F%2F") || m.group(2).startsWith("https%3A%2F%2F"))
+            {
+                String newUrl = m.group(2).replaceAll("%3A", ":").replaceAll("%2F", "/");
+                html = html.replaceAll(replacementString, "href=\"" + newUrl+"\"");
+            }
+            else
+            {
+                //String newUrl = m.group(2).replaceAll("%3A", ":").replaceAll(":", "/").replaceAll("%2F", "/");
+                String localFilename = getLocalFileName(m.group(2).replaceAll("%3A", ":"), 0, 0);
+                localFilename = m.group(2).replaceAll("%3A", ":").replaceAll(":", "/").replaceAll("%2F", "/");
+                //html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\"file://" + _cacheDir + "/" + newUrl);
+                html = html.replaceAll(replacementString, "href=\"file://" + _cacheDir + "/" + localFilename+"\"");
+            }
+
         }
 
         // update plugin images link
