@@ -124,6 +124,7 @@ public class UrlConverterUnitTest {
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         assert(newContent.contains(UrlConverter.WIKILINKURL+"somepage1"));
     }
+
     /**
      * Test the html conversion to local html, adding nice url with namespaces
      */
@@ -135,6 +136,7 @@ public class UrlConverterUnitTest {
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         assert(newContent.contains(UrlConverter.WIKILINKURL+"some:page1:start"));
     }
+
     /**
      * Test the html conversion to local html, image url
      */
@@ -279,5 +281,17 @@ public class UrlConverterUnitTest {
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
         assert(newContent.contains("<img src=\"/cache/dir//wiki/private/image3.png_250_300\" />"));
+    }
+
+    /**
+     * Test the html conversion to local html, image url rewrite from https://www.dokuwiki.org/rewrite
+     */
+    @Test
+    public void UrlConverter_htmlConversion_imagenamespace_niceurl_rewrite(){
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        String htmlContent = "<img src=\"/my/server/_media/wiki:private:image3.png\" />";
+        String newContent = urlConverter.getHtmlContentConverted(htmlContent);
+        System.out.println(newContent);
+        assert(newContent.contains("<img src=\"/cache/dir//wiki/private/image3.png\" />"));
     }
 }
