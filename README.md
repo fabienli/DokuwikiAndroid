@@ -4,9 +4,9 @@
 Android application to access a dokuwiki
 
 # Version:
-The application is currently on version alpha.
+The application is currently on version beta.
 
-This means that not all features are delivered for the application to work correctly, and stability is not guaranteed.
+This means that delivered features may have a lack of stability.
 
 # Prerequisite
 - a dokuwiki instance with api XML-RPC installed (https://www.dokuwiki.org/xmlrpc)
@@ -18,11 +18,10 @@ This means that not all features are delivered for the application to work corre
 - view a page (text content only, no media)
 - follow links inside dokuwiki's intance within the application
 - edit a page, new content is then pushed to the dokuwiki server
-- local cache of pages
+- local cache of pages, manualy synchronized when you request it
 - synchro if not local page in cache (version not handled)
 
 # What is not yet covered:
-- any media
 - smart synchro
 - error handling
 
@@ -33,3 +32,6 @@ when opening the application for the first time, no dokuwiki url is found and an
 1. install the application (with direct download link, from Play Store, or build it yourself)
 2. open the application on your phone, and update the settings with: dokuwiki api’s url, user and password
 3. click on home link to display the first page
+
+# Download
+You can find latest delivery of this application on F-Droid: https://f-droid.org/en/packages/com.fabienli.dokuwiki/
