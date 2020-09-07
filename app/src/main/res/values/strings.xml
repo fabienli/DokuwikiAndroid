@@ -69,6 +69,10 @@
         <item>20</item>
         <item>50</item>
         <item>100</item>
+        <item>150</item>
+        <item>200</item>
+        <item>250</item>
+        <item>500</item>
         <item>9999</item>
     </string-array>
     <string-array name="pref_max_pages_list_values">
@@ -80,6 +84,10 @@
         <item>20</item>
         <item>50</item>
         <item>100</item>
+        <item>150</item>
+        <item>200</item>
+        <item>250</item>
+        <item>500</item>
         <item>9999</item>
     </string-array>
     <string-array name="pref_typesync_list_titles">
