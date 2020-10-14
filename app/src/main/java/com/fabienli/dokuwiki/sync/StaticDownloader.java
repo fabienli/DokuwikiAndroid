@@ -73,9 +73,9 @@ public class StaticDownloader extends PoolAsyncTask {
                 conn.setInstanceFollowRedirects(true);
                 InputStream is;
                 if ("gzip".equals(conn.getContentEncoding())) {
-                    is = new GZIPInputStream(conn.getInputStream());
+                    is = new BufferedInputStream(new GZIPInputStream(conn.getInputStream()));
                 } else {
-                    is = conn.getInputStream();
+                    is = new BufferedInputStream(conn.getInputStream());
                 }
                 //String filePath = "file://" + _mediaLocalDir + imageUrlStr;
                 File parent = file.getParentFile();
