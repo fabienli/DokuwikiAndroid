@@ -22,6 +22,10 @@
         android:singleLine="true"
         android:title="Password"
         android:hint="Password" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="basicauth"
+        android:title="Use Basic Auth (usually controled via .htaccess)" />
     <ListPreference
         android:defaultValue="a"
         android:entries="@array/pref_typesync_list_titles"

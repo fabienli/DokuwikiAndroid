@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/DokuwikiAndroid.iml" filepath="$PROJECT_DIR$/DokuwikiAndroid.iml" group="DokuwikiAndroid" />
-      <module fileurl="file://$PROJECT_DIR$/app/DokuwikiAndroid-app.iml" filepath="$PROJECT_DIR$/app/DokuwikiAndroid-app.iml" group="DokuwikiAndroid/app" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Repositories-DokuwikiAndroid.iml" filepath="$PROJECT_DIR$/.idea/modules/Repositories-DokuwikiAndroid.iml" group="DokuwikiAndroid" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Repositories-DokuwikiAndroid-app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Repositories-DokuwikiAndroid-app.iml" group="DokuwikiAndroid/app" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
 </project>

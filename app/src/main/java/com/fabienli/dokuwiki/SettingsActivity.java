@@ -128,7 +128,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         String urlserver = settings.getString("serverurl", "");
         if(urlserver.length() == 0) {
-            Snackbar.make(this.getWindow().getDecorView(), "No server configured yet, please provide details in \"Syncrhonisation\" panel", Snackbar.LENGTH_LONG)
+            Snackbar.make(this.getWindow().getDecorView(), "No server configured yet, please provide details in \"Synchronisation\" panel", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
         }
     }

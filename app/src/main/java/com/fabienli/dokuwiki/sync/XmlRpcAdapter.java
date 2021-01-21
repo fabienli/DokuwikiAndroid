@@ -43,6 +43,13 @@ public class XmlRpcAdapter {
         _xmlConfig = new XmlRpcClientConfigImpl();
         try {
             _xmlConfig.setServerURL(new URL(_urlserver));
+            Boolean isBasicAuth = settings.getBoolean("basicauth", false);
+            if(isBasicAuth) {
+                String password = settings.getString("password", "");
+                String user = settings.getString("user", "");;
+                _xmlConfig.setBasicUserName(user);
+                _xmlConfig.setBasicPassword(password);
+            }
             //_xmlConfig.setUserAgent("Mozilla/5.0 (Android 9; Mobile; rv:67.0) Gecko/67.0 Firefox/67.0");
             client.setConfig(_xmlConfig);
         } catch (MalformedURLException e) {
