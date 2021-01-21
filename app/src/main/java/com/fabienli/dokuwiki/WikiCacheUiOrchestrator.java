@@ -139,7 +139,13 @@ public class WikiCacheUiOrchestrator {
         pageHtmlRetrieveForceDownload.retrievePageAsync(_currentPageName, new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content){
-                loadPage(content);
+                PageTextRetrieve pageTextRetrieve = new PageTextRetrieveForceDownload(_db, new XmlRpcAdapter(context));
+                pageTextRetrieve.retrievePageAsync(_currentPageName, new PageHtmlRetrieveCallback() {
+                    @Override
+                    public void pageRetrieved(String content) {
+                        loadPage(content);
+                    }
+                });
             }
         });
     }
