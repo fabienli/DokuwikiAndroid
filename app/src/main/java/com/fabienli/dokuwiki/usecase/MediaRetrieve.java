@@ -18,6 +18,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import static java.lang.Math.max;
+
 public class MediaRetrieve extends PoolAsyncTask {
     String TAG = "MediaRetrieve";
     protected AppDatabase _db;
@@ -124,7 +126,15 @@ public class MediaRetrieve extends PoolAsyncTask {
             Log.d(TAG, "targetW:"+targetW+" targetH:"+targetH+" to w:"+newBitmap.getWidth()+ " h:"+newBitmap.getHeight());
             // should be cropped to ensure width and height
             int startX = (newBitmap.getWidth() - targetW) / 2;
+            if(startX < 0) {
+                startX = 0;
+                targetW = newBitmap.getWidth();
+            }
             int startY = (newBitmap.getHeight() - targetH) / 2;
+            if(startY < 0) {
+                startY = 0;
+                targetH = newBitmap.getHeight();
+            }
             newBitmap = Bitmap.createBitmap(newBitmap, startX, startY , targetW , targetH);
         }
         try {

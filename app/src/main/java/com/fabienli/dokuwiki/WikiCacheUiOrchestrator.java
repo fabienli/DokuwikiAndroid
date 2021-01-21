@@ -142,7 +142,7 @@ public class WikiCacheUiOrchestrator {
                 PageTextRetrieve pageTextRetrieve = new PageTextRetrieveForceDownload(_db, new XmlRpcAdapter(context));
                 pageTextRetrieve.retrievePageAsync(_currentPageName, new PageHtmlRetrieveCallback() {
                     @Override
-                    public void pageRetrieved(String content) {
+                    public void pageRetrieved(String content2) {
                         loadPage(content);
                     }
                 });
