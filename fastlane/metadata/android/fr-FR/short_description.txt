@@ -1,0 +1,1 @@
+Accédez en local aux pages synchronisées de votre Dokuwiki.

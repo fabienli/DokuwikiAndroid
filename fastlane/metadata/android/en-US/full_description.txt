@@ -1,0 +1,3 @@
+This is an application to access a dokuwiki.
+You'll need to have a dokuwiki instance running on a server.
+Then you can keep the locally cached version in sync with the server's version of dokuwiki !

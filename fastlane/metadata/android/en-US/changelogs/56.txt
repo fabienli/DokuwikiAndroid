@@ -1,0 +1,1 @@
+support basic auth: for example if your server is setup to request user/password authentication from an .htaccess in dokuwiki's folder.
