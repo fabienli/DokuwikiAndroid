@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.zip.GZIPInputStream;
 
 public class StaticDownloader extends PoolAsyncTask {
 
@@ -66,10 +67,16 @@ public class StaticDownloader extends PoolAsyncTask {
                 Log.d(TAG, "From server url: " + imageUrl);
                 HttpURLConnection conn = (HttpURLConnection) imageUrl
                         .openConnection();
+                conn.setRequestProperty("Accept-Encoding", "gzip");
                 conn.setConnectTimeout(30000);
                 conn.setReadTimeout(30000);
                 conn.setInstanceFollowRedirects(true);
-                InputStream is = new BufferedInputStream(conn.getInputStream());
+                InputStream is;
+                if ("gzip".equals(conn.getContentEncoding())) {
+                    is = new BufferedInputStream(new GZIPInputStream(conn.getInputStream()));
+                } else {
+                    is = new BufferedInputStream(conn.getInputStream());
+                }
                 //String filePath = "file://" + _mediaLocalDir + imageUrlStr;
                 File parent = file.getParentFile();
                 if (!parent.exists()) {
