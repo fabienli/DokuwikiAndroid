@@ -8,7 +8,9 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.text.Editable;
 import android.text.Html;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,6 +45,34 @@ public class EditActivity extends AppCompatActivity {
 
         setTitle("Edit: "+_pagename);
         resetPage(false);
+
+        _EditTextView.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence cs, int start, int before, int count) {
+                if(count==1 && cs.charAt(start)=='\n') {
+                    // get the previous line
+                    String[] lines = cs.subSequence(0, start).toString().split("\n");
+                    if(lines.length > 0){
+                        //Log.d("keycode","previous line:"+lines[lines.length-1]);
+                        String previousLine = lines[lines.length-1];
+                        // check if the line starts with a list char:
+                        if (previousLine.startsWith("  * ") && previousLine.length()>4) {
+                            int index = _EditTextView.getSelectionStart();
+                            Editable editable = _EditTextView.getText();
+                            editable.insert(index, "  * ");
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) { }
+
+            @Override
+            public void afterTextChanged(Editable arg0) { }
+
+        });
     }
 
     @Override
