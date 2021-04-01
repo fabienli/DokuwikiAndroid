@@ -2,6 +2,7 @@ package com.fabienli.dokuwiki;
 
 import android.os.Bundle;
 
+import com.fabienli.dokuwiki.tools.WikiUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -50,19 +51,11 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence cs, int start, int before, int count) {
-                if(count==1 && cs.charAt(start)=='\n') {
-                    // get the previous line
-                    String[] lines = cs.subSequence(0, start).toString().split("\n");
-                    if(lines.length > 0){
-                        //Log.d("keycode","previous line:"+lines[lines.length-1]);
-                        String previousLine = lines[lines.length-1];
-                        // check if the line starts with a list char:
-                        if (previousLine.startsWith("  * ") && previousLine.length()>4) {
-                            int index = _EditTextView.getSelectionStart();
-                            Editable editable = _EditTextView.getText();
-                            editable.insert(index, "  * ");
-                        }
-                    }
+                WikiUtils.EditedText newText = WikiUtils.autoIndentLists(cs, start, count);
+                if(newText != null)
+                {
+                    _EditTextView.setText(newText.text);
+                    _EditTextView.setSelection(newText.cursorPosition);
                 }
             }
 
