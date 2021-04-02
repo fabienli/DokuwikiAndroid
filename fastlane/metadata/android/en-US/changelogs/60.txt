@@ -1,0 +1,2 @@
+handle automatic indent when editing lists
+minor bug fixing

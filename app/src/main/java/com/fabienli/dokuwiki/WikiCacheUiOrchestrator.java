@@ -377,7 +377,8 @@ public class WikiCacheUiOrchestrator {
         Log.d(TAG, "refreshing the page");
         //_webView.clearView();
         //_webView.reload();
-        retrievePageHTMLforDisplay(_pageHistory.lastElement(), this._webView);
+        if(! _pageHistory.empty())
+            retrievePageHTMLforDisplay(_pageHistory.lastElement(), this._webView);
     }
 
     public boolean showLastHistory(WebView webView) {

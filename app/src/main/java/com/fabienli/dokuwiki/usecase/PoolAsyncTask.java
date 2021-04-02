@@ -17,9 +17,11 @@ public abstract class PoolAsyncTask extends AsyncTask<String, Integer, String> {
     }
 
     public static void cleanPendingTasks(){
-        for(PoolAsyncTask p : _poolAsyncTask){
-            p.cancel(true);
-            Log.d(TAG, "cancel from pool: "+p);
+        if(_poolAsyncTask != null) {
+            for (PoolAsyncTask p : _poolAsyncTask) {
+                p.cancel(true);
+                Log.d(TAG, "cancel from pool: " + p);
+            }
         }
     }
 
