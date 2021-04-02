@@ -75,11 +75,28 @@ public class WikiUtilsUT {
      * Test autoIndent new list level 1 with *
      */
     @Test
-    public void test_autoindent_level1_newline(){
+    public void test_autoindent_unordered_level1_newline(){
         CharSequence updatedText = "  * line 1\n";
         int position = 10;
         WikiUtils.EditedText newText = WikiUtils.autoIndentLists(updatedText, position, 1);
         String NEW_TEXT_EXPECTED = "  * line 1\n  * ";
+        int NEW_POSITION = 15;
+        assert(newText != null);
+        //System.out.println(newText.text.replace("\n","\\n"));
+        assert(newText.text.compareTo(NEW_TEXT_EXPECTED) == 0);
+        assert (newText.cursorPosition == NEW_POSITION);
+    }
+
+
+    /**
+     * Test autoIndent new list level 1 with -
+     */
+    @Test
+    public void test_autoindent_orderer_level1_newline(){
+        CharSequence updatedText = "  - line 1\n";
+        int position = 10;
+        WikiUtils.EditedText newText = WikiUtils.autoIndentLists(updatedText, position, 1);
+        String NEW_TEXT_EXPECTED = "  - line 1\n  - ";
         int NEW_POSITION = 15;
         assert(newText != null);
         //System.out.println(newText.text.replace("\n","\\n"));
@@ -271,8 +288,7 @@ public class WikiUtilsUT {
     /**
      * Test autoIndent remove list level 2 as entered empty
      */
-    //TODO: code this:
-    /*@Test
+    @Test
     public void test_autoindent_level2_remove_line(){
         CharSequence updatedText = "  * line 1\n    * \n";
         int position = 17;
@@ -284,7 +300,7 @@ public class WikiUtilsUT {
         //System.out.println(newText.cursorPosition);
         assert(newText.text.compareTo(NEW_TEXT_EXPECTED) == 0);
         assert (newText.cursorPosition == NEW_POSITION);
-    }*/
+    }
 
 
     /**

@@ -41,11 +41,11 @@ public class WikiUtils {
                 //Log.d("keycode","previous line:"+lines[lines.length-1]);
                 String previousLine = lines[lines.length-1];
                 // check if the line starts with a list char:
-                Pattern listPattern = Pattern.compile("^([ ]+)(\\*) (.*)");
+                Pattern listPattern = Pattern.compile("^([ ]+)([\\*-]) (.*)");
                 Matcher m = listPattern.matcher(previousLine);
                 if (m.matches()) {
                     // previous list item is filled; we go on with a new item
-                    if(previousLine.length()>4) {
+                    if(m.group(3).length()>0) {
                         aNewText.text = cs.subSequence(0, start+1).toString();
                         aNewText.text += m.group(1)+m.group(2)+" ";
                         aNewText.text += cs.subSequence(start+1, cs.length());
@@ -53,10 +53,10 @@ public class WikiUtils {
                         return aNewText;
                     }
                     // previous list item is empty, so we remove it
-                    else if (m.matches() && m.group(3).length()==0) {
-                        aNewText.text = cs.subSequence(0, start-4).toString();
+                    else {
+                        aNewText.text = cs.subSequence(0, start-m.group(1).length()-2).toString();
                         aNewText.text += cs.subSequence(start, cs.length());
-                        aNewText.cursorPosition = start - 3;
+                        aNewText.cursorPosition = start - m.group(1).length() - 1;
                         return aNewText;
                     }
                 }
@@ -68,7 +68,7 @@ public class WikiUtils {
             int lineStart = cs.subSequence(0, start).toString().lastIndexOf("\n");
             String currentLine = cs.subSequence(lineStart+1, start+1).toString();
             // check if the line starts with a list char:
-            Pattern listPattern = Pattern.compile("^([ ]+)(\\*)  ");
+            Pattern listPattern = Pattern.compile("^([ ]+)([\\*-])  ");
             Matcher m = listPattern.matcher(currentLine);
             if (m.matches()) {
                 aNewText.text = cs.subSequence(0, lineStart+1).toString();
@@ -85,7 +85,7 @@ public class WikiUtils {
             int lineStart = cs.subSequence(0, start).toString().lastIndexOf("\n");
             String currentLine = cs.subSequence(lineStart+1, start).toString();
             // check if the line starts with a list char:
-            Pattern listPattern = Pattern.compile("^([ ]+)(\\*)");
+            Pattern listPattern = Pattern.compile("^([ ]+)([\\*-])");
             Matcher m = listPattern.matcher(currentLine);
             if (m.matches() && m.group(1).length()>2) {
                 aNewText.text = cs.subSequence(0, lineStart+1).toString();

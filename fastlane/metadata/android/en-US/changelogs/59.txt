@@ -1,0 +1,1 @@
+handle automatic indent when editing lists
