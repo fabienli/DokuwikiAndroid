@@ -302,74 +302,21 @@ public class WikiCacheUiOrchestrator {
     }
 
     private void writeDefaultCss() {
-        // ugly copy paste of a few CSS properties
-        // to be put in a real file
-        // or to be downloaded from server
         if (context != null) {
-            File cssFile = new File(context.getCacheDir(), "default.css");
-            Log.d(TAG, "writing css: " +cssFile.getAbsolutePath());
-            try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(cssFile.getAbsolutePath()), "utf-8"))) {
-                writer.write("html,\n" +
-                        " body {\n" +
-                        "  color:#331;\n" +
-                        "  background:#fbfaf9;\n" +
-
-                        " }\n" +
-                        " body {\n" +
-                        "  font:normal 87.5%/1.4 Arial,sans-serif;\n" +
-                        "  -webkit-text-size-adjust:100%;\n" +
-                        " }\n" +
-                        " h1,\n" +
-                        " h2,\n" +
-                        " h3,\n" +
-                        " h4,\n" +
-                        " h5,\n" +
-                        " h6 {\n" +
-                        "  font-weight:bold;\n" +
-                        "  padding:0;\n" +
-                        "  line-height:1.2;\n" +
-                        "  clear:left;\n" +
-                        " }\n" +
-                        " [dir=rtl] h1,\n" +
-                        " [dir=rtl] h2,\n" +
-                        " [dir=rtl] h3,\n" +
-                        " [dir=rtl] h4,\n" +
-                        " [dir=rtl] h5,\n" +
-                        " [dir=rtl] h6 {\n" +
-                        "  clear:right;\n" +
-                        " }\n" +
-                        " h1 {\n" +
-                        "  font-size:2em;\n" +
-                        "  margin:0 0 .444em;\n" +
-                        " }\n" +
-                        " h2 {\n" +
-                        "  font-size:1.5em;\n" +
-                        "  margin:0 0 .666em;\n" +
-                        " }\n" +
-                        " h3 {\n" +
-                        "  font-size:1.125em;\n" +
-                        "  margin:0 0 .888em;\n" +
-                        " }\n" +
-                        " h4 {\n" +
-                        "  font-size:1em;\n" +
-                        "  margin:0 0 1em;\n" +
-                        " }\n" +
-                        " h5 {\n" +
-                        "  font-size:.875em;\n" +
-                        "  margin:0 0 1.1428em;\n" +
-                        " }\n" +
-                        " h6 {\n" +
-                        "  font-size:.75em;\n" +
-                        "  margin:0 0 1.333em;\n" +
-                        " }\n");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+            InputStream is = context.getResources().openRawResource(R.raw.default_css);
+            try {
+                File cssFile = new File(context.getCacheDir().getAbsolutePath(), "default_css.css");
+                FileOutputStream fos = new FileOutputStream(cssFile);
+                byte[] buffer = new byte[is.available()];
+                is.read(buffer);
+                fos.write(buffer);
+                fos.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            // other css files ?
         }
     }
 

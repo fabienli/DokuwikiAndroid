@@ -1,0 +1,52 @@
+html,
+body {
+ color:#331;
+ background:#fbfaf9;
+}
+body {
+ font:normal 87.5%/1.4 Arial,sans-serif;
+ -webkit-text-size-adjust:100%;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+ font-weight:bold;
+ padding:0;
+ line-height:1.2;
+ clear:left;
+}
+[dir=rtl] h1,
+[dir=rtl] h2,
+[dir=rtl] h3,
+[dir=rtl] h4,
+[dir=rtl] h5,
+[dir=rtl] h6 {
+ clear:right;
+}
+h1 {
+ font-size:2em;
+ margin:0 0 .444em;
+}
+h2 {
+ font-size:1.5em;
+ margin:0 0 .666em;
+}
+h3 {
+ font-size:1.125em;
+ margin:0 0 .888em;
+}
+h4 {
+ font-size:1em;
+ margin:0 0 1em;
+}
+h5 {
+ font-size:.875em;
+ margin:0 0 1.1428em;
+}
+h6 {
+ font-size:.75em;
+ margin:0 0 1.333em;
+}

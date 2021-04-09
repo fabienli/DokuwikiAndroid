@@ -1,9 +1,11 @@
 package com.fabienli.dokuwiki.usecase;
 
+import android.content.res.AssetManager;
 import android.os.Build;
 import android.util.Log;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -249,7 +251,8 @@ public class UrlConverter {
     }
 
     private String addHeaders(String html) {
-        File cssFile = new File(_cacheDir, "default.css");
+        // use default css :
+        File cssFile = new File(_cacheDir, "default_css.css");
         final String START_HEADERS = "<html>\n<head>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssFile.getAbsolutePath() +"\">\n</head>\n<body>\n";
         final String END_HEADERS = "\n</body>\n</html>";
         return START_HEADERS + html + END_HEADERS;
