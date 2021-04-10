@@ -70,7 +70,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_basicurl(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<a href=\"/doku.php?id=page1\">page1 link</p>";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -82,7 +82,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_folderurl(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<a href=\"/my/wiki/subfolder/doku.php?id=page1\">page1 link</p>";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -94,7 +94,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_basicniceurl(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<a href=\"/doku.php/page1\">page1 link</p>";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -106,7 +106,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_folderniceurl(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<a href=\"/my/wiki/subfolder/doku.php/page1\">page1 link</p>";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -119,7 +119,7 @@ public class UrlConverterUnitTest {
     @Test
 
     public void UrlConverter_htmlConversion_folderniceurl_onSubdomain(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<a href=\"/somepage1\">page1 link</p>";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         assert(newContent.contains(UrlConverter.WIKILINKURL+"somepage1"));
@@ -131,7 +131,7 @@ public class UrlConverterUnitTest {
     @Test
 
     public void UrlConverter_htmlConversion_folderniceurl_onSubdomain_withnamespace(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<a href=\"/some:page1:start\">page1 link</p>";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         assert(newContent.contains(UrlConverter.WIKILINKURL+"some:page1:start"));
@@ -142,7 +142,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_basicimage(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/lib/exe/fetch.php?media=image.png\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -154,7 +154,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_folderimage(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/my/server/lib/exe/fetch.php?media=image2.jpg\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -167,7 +167,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_imagenamespace(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/my/server/lib/exe/fetch.php?media=wiki:private:image3.png\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -179,7 +179,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_imagedetailsw(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/my/server/lib/exe/fetch.php?w=200&amp;tok=8712f5&amp;media=wiki:private:image3.png\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -191,7 +191,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_imagedetailsh(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/my/server/lib/exe/fetch.php?h=300&amp;tok=8712f5&amp;media=wiki:private:image3.png\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -203,7 +203,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_imagedetailswh(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/my/server/lib/exe/fetch.php?w=250&amp;tok=8712f5&amp;h=300&amp;media=wiki:private:image3.png\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -215,7 +215,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_basicimage_niceurl(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/lib/exe/fetch.php/image.png\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -227,7 +227,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_folderimage_niceurl(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/my/server/lib/exe/fetch.php/image2.jpg\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -240,7 +240,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_imagenamespace_niceurl(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/my/server/lib/exe/fetch.php/wiki:private:image3.png\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -252,7 +252,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_imagedetailsw_niceurl(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/my/server/lib/exe/fetch.php/wiki:private:image3.png?w=200&amp;tok=8712f5\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -264,7 +264,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_imagedetailsh_niceurl(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/my/server/lib/exe/fetch.php/wiki:private:image3.png?h=300&amp;tok=8712f5\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -276,7 +276,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_imagedetailswh_niceurl(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/my/server/lib/exe/fetch.php/wiki:private:image3.png?w=250&amp;tok=8712f5&amp;h=300\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println(newContent);
@@ -288,7 +288,7 @@ public class UrlConverterUnitTest {
      */
     @Test
     public void UrlConverter_htmlConversion_imagenamespace_niceurl_rewrite(){
-        UrlConverter urlConverter =  new UrlConverter("/cache/dir/");
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
         String htmlContent = "<img src=\"/my/server/_media/wiki:private:image3.png\" />";
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         System.out.println(newContent);
