@@ -30,17 +30,14 @@ import com.fabienli.dokuwiki.usecase.WikiSynchronizer;
 import com.fabienli.dokuwiki.usecase.callback.MediaRetrieveCallback;
 import com.fabienli.dokuwiki.usecase.callback.PageHtmlRetrieveCallback;
 import com.fabienli.dokuwiki.usecase.callback.WikiSynchroCallback;
-
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.util.Stack;
+
+import androidx.collection.ArrayMap;
 import androidx.room.Room;
 
 public class WikiCacheUiOrchestrator {
@@ -98,7 +95,7 @@ public class WikiCacheUiOrchestrator {
                 .addMigrations(AppDatabase.MIGRATION_2_3)
                 .addMigrations(AppDatabase.MIGRATION_3_4)
                 .build();
-        writeDefaultCss();
+        writeAllCss();
     }
 
     void updatePageListFromServer(){
@@ -284,7 +281,9 @@ public class WikiCacheUiOrchestrator {
             _webView = (WebView) ((MainActivity)context).findViewById(R.id.webview);
         }
         if(_webView != null) {
-            UrlConverter urlConverter = new UrlConverter(context.getCacheDir().getAbsolutePath());
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+            String cssStyle = settings.getString("css_style", "default_css");
+            UrlConverter urlConverter = new UrlConverter(context.getCacheDir().getAbsolutePath(), cssStyle);
             String html = urlConverter.getHtmlContentConverted(iPageData);
             for(UrlConverter.ImageRefData img : urlConverter._imageList){
                 ensureMediaIsDownloaded(img.id, img.imageFilePath, img.width, img.height);
@@ -301,22 +300,27 @@ public class WikiCacheUiOrchestrator {
         }
     }
 
-    private void writeDefaultCss() {
+    private void writeAllCss() {
         if (context != null) {
-            InputStream is = context.getResources().openRawResource(R.raw.default_css);
-            try {
-                File cssFile = new File(context.getCacheDir().getAbsolutePath(), "default_css.css");
-                FileOutputStream fos = new FileOutputStream(cssFile);
-                byte[] buffer = new byte[is.available()];
-                is.read(buffer);
-                fos.write(buffer);
-                fos.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+            ArrayMap<String, Integer> cssFiles = new ArrayMap<String, Integer>();
+            cssFiles.put("default_css.css", R.raw.default_css);
+            cssFiles.put("default_dark_css.css", R.raw.default_dark_css);
+            for(int i=0; i<cssFiles.size(); i++) {
+                InputStream is = context.getResources().openRawResource(cssFiles.valueAt(i));
+                try {
+                    File cssFile = new File(context.getCacheDir().getAbsolutePath(), cssFiles.keyAt(i));
+                    FileOutputStream fos = new FileOutputStream(cssFile);
+                    byte[] buffer = new byte[is.available()];
+                    is.read(buffer);
+                    fos.write(buffer);
+                    fos.close();
+                    String str = new String(buffer);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-            // other css files ?
         }
     }
 

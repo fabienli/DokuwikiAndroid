@@ -1,11 +1,11 @@
 package com.fabienli.dokuwiki.usecase;
 
-import android.content.res.AssetManager;
 import android.os.Build;
 import android.util.Log;
 
 import java.io.File;
-import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -32,11 +32,13 @@ public class UrlConverter {
     protected String _cacheDir;
     public List<ImageRefData> _imageList;
     public List<String> _staticImageList;
+    protected String _cssFile;
 
-    public UrlConverter(String cacheDir){
+    public UrlConverter(String cacheDir, String cssFile){
         _cacheDir = cacheDir;
         _imageList = new ArrayList<>();
         _staticImageList = new ArrayList<>();
+        _cssFile = cssFile;
     }
 
     public static boolean isPluginActionOnline(String url) {
@@ -251,9 +253,18 @@ public class UrlConverter {
     }
 
     private String addHeaders(String html) {
-        // use default css :
-        File cssFile = new File(_cacheDir, "default_css.css");
-        final String START_HEADERS = "<html>\n<head>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssFile.getAbsolutePath() +"\">\n</head>\n<body>\n";
+        File cssFile = new File(_cacheDir, _cssFile);
+        String START_HEADERS = "<html>\n<head>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssFile.getAbsolutePath() +"\">\n</head>\n<body>\n";
+        // style linked is not working ? trying to embed it directly in page
+        try {
+            FileInputStream fis = new FileInputStream(cssFile);
+            byte[] buffer = new byte[fis.available()];
+            fis.read(buffer);
+            String str = new String(buffer);
+            START_HEADERS = "<html>\n<head>\n<style>"+str+"</style>\n</head>\n<body>\n";
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         final String END_HEADERS = "\n</body>\n</html>";
         return START_HEADERS + html + END_HEADERS;
     }

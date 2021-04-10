@@ -13,15 +13,15 @@
     <!-- Example General settings -->
     <string name="pref_header_general">General</string>
 
-    <string name="pref_title_social_recommendations">Enable social recommendations</string>
-    <string name="pref_description_social_recommendations">Recommendations for people to contact
-        based on your message history
-    </string>
+    <string-array name="pref_css_list_titles">
+        <item>Default light</item>
+        <item>Default dark</item>
+    </string-array>
+    <string-array name="pref_css_list_values">
+        <item>default_css.css</item>
+        <item>default_dark_css.css</item>
+    </string-array>
 
-    <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
-
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
     <string-array name="pref_throttling_list_titles">
         <item>10</item>
         <item>15</item>
