@@ -5,7 +5,7 @@ android {
     defaultConfig {
         applicationId "com.fabienli.dokuwiki"
         minSdkVersion 15
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 63
         versionName "v0.19"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
