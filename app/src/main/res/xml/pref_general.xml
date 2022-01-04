@@ -13,7 +13,7 @@
         android:key="toplogo"
         android:title="Show your dokuwiki's logo and title" />
     <ListPreference
-        android:defaultValue="a"
+        android:defaultValue="default_css.css"
         android:entries="@array/pref_css_list_titles"
         android:entryValues="@array/pref_css_list_values"
         android:key="css_style"
