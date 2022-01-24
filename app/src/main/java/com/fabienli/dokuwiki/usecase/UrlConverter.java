@@ -47,10 +47,39 @@ public class UrlConverter {
         return false;
     }
 
+    public String fixVShareStrangeUrl(String htmlContent){
+        String html=htmlContent;
+        Log.i("VSHARE1",html);
+        List<String> convertTable =  new ArrayList<String>();
+        // list from: https://github.com/splitbrain/dokuwiki-plugin-vshare/blob/master/sites.conf
+        convertTable.add("www.youtube-nocookie.com");
+        convertTable.add("player.vimeo.com");
+        convertTable.add("www.viddler.com");
+        convertTable.add("www.slideshare.net");
+        convertTable.add("www.dailymotion.com");
+        convertTable.add("blip.tv");
+        convertTable.add("www.break.com");
+        convertTable.add("web.microsoftstream.com");
+        convertTable.add("archive.org");
+        convertTable.add("www.bitchute.com");
+        convertTable.add("coub.com");
+        convertTable.add("www.clipfish.de");
+        convertTable.add("www.scivee.tv");
+        convertTable.add("www.veoh.com");
+        for(String e : convertTable) {
+
+            Log.i("VSHARE","replace: "+"src=\"//"+e);
+            html=html.replaceAll("src=\"//"+e, "src=\"https://"+e);
+        }
+        Log.i("VSHARE2",html);
+       return html;
+    }
+
     public String getHtmlContentConverted(String htmlContent){
-        String html = htmlContent
-                .replaceAll(WIKILINKPATTERN, "href=\""+WIKILINKURL);
+        String html = fixVShareStrangeUrl(htmlContent);
+        html = html.replaceAll(WIKILINKPATTERN, "href=\""+WIKILINKURL);
         html = html.replaceAll(WIKILINKPATTERN_NICEURL, "href=\""+WIKILINKURL);
+
         // find the list of media, to ensure they're here
         Pattern mediaPattern = Pattern.compile(WIKIMEDIAPATTERN +"(\\S+)\"");
         Matcher m = mediaPattern.matcher(htmlContent);
@@ -181,7 +210,6 @@ public class UrlConverter {
             html = html.replaceAll(PLUGINIMGPATTERN + m.group(2), "src=\"" + _cacheDir + "/lib/plugins/" + localFilename + "\"");
             _staticImageList.add("lib/plugins/" + m.group(2));
         }
-
 
         html = addHeaders(html);
         return html;
