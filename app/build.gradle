@@ -6,8 +6,8 @@ android {
         applicationId "com.fabienli.dokuwiki"
         minSdkVersion 15
         targetSdkVersion 31
-        versionCode 63
-        versionName "v0.19"
+        versionCode 64
+        versionName "v0.20"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {
