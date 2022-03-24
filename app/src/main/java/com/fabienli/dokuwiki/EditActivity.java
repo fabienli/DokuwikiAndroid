@@ -6,9 +6,12 @@ import com.fabienli.dokuwiki.tools.WikiUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.os.PersistableBundle;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
@@ -45,7 +48,9 @@ public class EditActivity extends AppCompatActivity {
         });
 
         setTitle("Edit: "+_pagename);
-        resetPage(false);
+        if(savedInstanceState == null || !savedInstanceState.containsKey("editText")) {
+            resetPage(false);
+        }
 
         _EditTextView.addTextChangedListener(new TextWatcher() {
 
@@ -69,10 +74,23 @@ public class EditActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.d("Edit Rotate","restoring");
+        _EditTextView.onRestoreInstanceState(savedInstanceState.getParcelable("editText"));
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("editText", _EditTextView.onSaveInstanceState());
+        Log.d("Edit Rotate","saved ");
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.edit, menu);
-
         return true;
     }
 
@@ -123,4 +141,5 @@ public class EditActivity extends AppCompatActivity {
     {
         onBackPressed();
     }
+
 }
