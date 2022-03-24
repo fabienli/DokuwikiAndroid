@@ -1,0 +1,1 @@
+save edit state in screen rotation
