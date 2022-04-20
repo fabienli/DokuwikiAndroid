@@ -1,0 +1,2 @@
+save edit state in screen rotation
+minor deps upgrade
