@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     defaultConfig {
         applicationId "com.fabienli.dokuwiki"
         minSdkVersion 15
-        targetSdkVersion 31
-        versionCode 66
-        versionName "v0.31"
+        targetSdkVersion 32
+        versionCode 67
+        versionName "v0.32"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {

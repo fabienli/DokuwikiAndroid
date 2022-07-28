@@ -36,8 +36,16 @@ public class NotificationHandler {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         // when clicking, open main activity
-        PendingIntent contentIntent = PendingIntent.getActivity(_context, 0,
-                new Intent(_context, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent contentIntent;
+        if (Build.VERSION.SDK_INT >= 23) {
+            // Create a PendingIntent using FLAG_IMMUTABLE.
+            contentIntent = PendingIntent.getActivity(_context, 0,
+                    new Intent(_context, MainActivity.class), (PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE));
+        } else {
+            // Existing legacy code that creates a PendingIntent.
+            contentIntent = PendingIntent.getActivity(_context, 0,
+                    new Intent(_context, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        }
         _notificationBuilder.setContentIntent(contentIntent);
 
         _notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
