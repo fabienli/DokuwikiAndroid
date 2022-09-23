@@ -5,6 +5,8 @@
       <map>
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.20677083333333332" />
         <entry key="app/src/main/res/layout/content_main.xml" value="0.19739583333333333" />
+        <entry key="app/src/main/res/menu/main.xml" value="0.2526041666666667" />
+        <entry key="app/src/main/res/xml/pref_dev.xml" value="0.18125" />
       </map>
     </option>
   </component>

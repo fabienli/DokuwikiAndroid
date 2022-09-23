@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.fabienli.dokuwiki.sync.XmlRpcThrottler;
@@ -17,6 +18,7 @@ import com.fabienli.dokuwiki.usecase.UrlConverter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Base64;
@@ -338,6 +340,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected class MyWebViewClient extends WebViewClient {
+        public String _javascriptToLoadOnceFinished = "";
+        private String _refreshUrlAfterJavascript = "";
+
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             Log.d("WebView", "link to: "+ url);
@@ -345,8 +350,47 @@ public class MainActivity extends AppCompatActivity
             Log.d("WebView", "link to: "+ Uri.parse(url).getHost());
 
             if(UrlConverter.isPluginActionOnline(url)){
-                Snackbar.make(view, "Unsupported action, please access the online page to do this!", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                String baseurl = settings.getString("serverurl", "");
+                String url_server = WikiUtils.convertBaseUrlToMainWikiUrl(baseurl);
+                String plugin_url = UrlConverter.redirectPluginActionOnline(url, url_server);
+                if(plugin_url.length() > 0) {
+                    Log.d("WebView", "call plugin to: "+ plugin_url);
+                    Snackbar.make(view, "Calling plugin DO!", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    // call external browser
+                    //Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(plugin_url));
+                    //startActivity(intent);
+                    // call internal browser
+
+                    WebView myWebView = (WebView) findViewById(R.id.webview);
+                    MyWebViewClient myWebViewClient = (MyWebViewClient) myWebView.getWebViewClient();
+                    String user = settings.getString("user","");
+                    String pwd = settings.getString("password","");
+                    myWebViewClient._javascriptToLoadOnceFinished =  "function setField(nam, val) {" +
+                            "  var namField = document.getElementsByName(nam)[0];" +
+                            "  if (namField != null) {" +
+                            "    namField.value=val;" +
+                            "    console.log(\" field updated : \" + nam + \" = \" + val);" +
+                            "    return true;" +
+                            "  }" +
+                            "  return false;" +
+                            "}" +
+                            "setField(\"u\", '"+user+"');" +
+                            "setField(\"p\", '"+pwd+"');" +
+                            "console.log(\" hello : \" + ocument.getElementById('dw__login').action);" +
+                            "document.getElementById('dw__login').submit();" +
+                            "";
+                    myWebViewClient._refreshUrlAfterJavascript = myWebView.getUrl();
+                    myWebView.loadUrl(plugin_url);
+
+                    // TODO: do this call in background
+                    // TODO: initiate a force sync of the page
+                }
+                else {
+                    Snackbar.make(view, "Unsupported action, please access the online page to do this!", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                }
                 return true;
             }
             else if(UrlConverter.isInternalPageLink(url)){
@@ -405,6 +449,27 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
             return true;
+        }
+
+        @Override
+        public void onPageFinished(final WebView view, String url) {
+            super.onPageFinished(view, url);
+            Log.d("WebView", "onPageFinished: " + url);
+            if(_javascriptToLoadOnceFinished.length() > 0) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+                    view.evaluateJavascript(_javascriptToLoadOnceFinished, null);
+                _javascriptToLoadOnceFinished = "";
+                // refresh the page
+                if(_refreshUrlAfterJavascript.length() > 0) {
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        public void run() {
+                            _refreshUrlAfterJavascript = "";
+                            WikiCacheUiOrchestrator.instance().forceDownloadPageHTMLforDisplay(_webView);
+                        }
+                    }, 1500); //1500 = 1.5 seconds, time in milli before it happens.
+                }
+            }
         }
     }
 

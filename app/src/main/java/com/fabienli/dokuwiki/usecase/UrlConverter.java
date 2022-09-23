@@ -46,6 +46,14 @@ public class UrlConverter {
             return true;
         return false;
     }
+    public static String redirectPluginActionOnline(String url, String baseServerUrl){
+        if(url.contains("do=plugin_do")){
+            Log.d("redirectPluginActionOnline", "Convert URL to call server: "+url);
+            Log.d("redirectPluginActionOnline", "Convert URL using server: "+baseServerUrl);
+            return url.replace(WIKILINKURL, baseServerUrl);
+        }
+        return "";
+    }
 
     public String fixVShareStrangeUrl(String htmlContent){
         String html=htmlContent;
