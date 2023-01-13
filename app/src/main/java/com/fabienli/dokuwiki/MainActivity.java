@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity
         WebSettings webSettings = _webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
-        webSettings.setAppCachePath(context.getCacheDir().getAbsolutePath());
+        //webSettings.setAppCachePath(context.getCacheDir().getAbsolutePath());
         webSettings.setSupportZoom(true);
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
