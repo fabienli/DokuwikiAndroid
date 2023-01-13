@@ -6,7 +6,7 @@ android {
         applicationId "com.fabienli.dokuwiki"
         minSdkVersion 15
         targetSdkVersion 33
-        versionCode 68
+        versionCode 69
         versionName "v0.34"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
