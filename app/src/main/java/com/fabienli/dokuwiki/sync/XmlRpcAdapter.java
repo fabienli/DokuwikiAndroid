@@ -70,12 +70,20 @@ public class XmlRpcAdapter {
         return result;
     }
 
+    public ArrayList<String> callMethod(String methodName, Vector<String> extraParams, String... params) {
+        Vector parameters = getParametersVector(params);
+        parameters.addElement(extraParams);
+        return callMethod(methodName, parameters);
+    }
     public ArrayList<String> callMethod(String methodName, String... params) {
+        Vector parameters = getParametersVector(params);
+        return callMethod(methodName, parameters);
+    }
+    public ArrayList<String> callMethod(String methodName, Vector parameters) {
         ArrayList<String> results = new ArrayList<String>();
 
         try {
             client.setTransportFactory(getXmlRpcSunHttpTransportFactoryInstance(false, _debug));
-            Vector parameters = getParametersVector(params);
 
             ensureLogin();
 
@@ -88,7 +96,7 @@ public class XmlRpcAdapter {
                 return null;
             }
 
-            Log.d(TAG,"type:" + result.getClass());
+            //Log.d(TAG,"type:" + result.getClass());
             if(result.getClass().isArray())
             {
                 //Log.d(TAG,"The result is a list: "+ result);
@@ -98,10 +106,10 @@ public class XmlRpcAdapter {
                     //Log.d(TAG,"The result list#"+i+": "+ aRestIt[i]);
                     results.add(aRestIt[i].toString());
                 }
-                Log.d(TAG,"The result size: "+ results.size());
+                //Log.d(TAG,"The result size: "+ aRestIt.length);
             }
             else {
-                Log.d(TAG,"The result is: "+ result);
+                //Log.d(TAG,"The result is: "+ result);
                 results.add(result.toString());
             }
 
