@@ -20,7 +20,6 @@ However, the application is already useable in the current state; considering th
 
 # What is already possible with the Application:
 - setup one dokuwiki to be accessed with a user and password to login
-- view a page (text content only, no media)
 - follow links inside dokuwiki's intance within the application
 - edit a page, new content is then pushed to the dokuwiki server
 - local cache of pages, manualy synchronized when you request it
