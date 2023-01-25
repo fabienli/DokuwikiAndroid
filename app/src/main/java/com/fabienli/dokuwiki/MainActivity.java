@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -46,6 +47,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+import android.Manifest;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -128,6 +130,16 @@ public class MainActivity extends AppCompatActivity
                 // first page initiate
                 String startpage = settings.getString("startpage", "start");
                 displayPage(startpage);
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                // fine, nothing to be done here
+                System.out.println("SDK > BuildVersion TRUE");
+            } else {
+                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 10100);
+                System.out.println("go to requestPermissions");
             }
         }
     }

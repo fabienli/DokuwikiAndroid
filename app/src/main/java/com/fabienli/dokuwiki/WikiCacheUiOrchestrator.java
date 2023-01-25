@@ -315,6 +315,7 @@ public class WikiCacheUiOrchestrator {
                     is.read(buffer);
                     fos.write(buffer);
                     fos.close();
+                    is.close();
                     String str = new String(buffer);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();

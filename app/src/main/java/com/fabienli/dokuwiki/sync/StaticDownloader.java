@@ -85,6 +85,7 @@ public class StaticDownloader extends PoolAsyncTask {
                 }
                 OutputStream os = new FileOutputStream(file);
                 Utils.CopyStream(is, os);
+                is.close();
                 os.close();
 
             } catch (Exception ex) {

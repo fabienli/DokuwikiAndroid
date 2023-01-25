@@ -48,8 +48,8 @@ public class UrlConverter {
     }
     public static String redirectPluginActionOnline(String url, String baseServerUrl){
         if(url.contains("do=plugin_do")){
-            Log.d("redirectPluginActionOnline", "Convert URL to call server: "+url);
-            Log.d("redirectPluginActionOnline", "Convert URL using server: "+baseServerUrl);
+            Log.d("redirectPluginActionOn", "Convert URL to call server: "+url);
+            Log.d("redirectPluginActionOn", "Convert URL using server: "+baseServerUrl);
             return url.replace(WIKILINKURL, baseServerUrl);
         }
         return "";
@@ -298,6 +298,7 @@ public class UrlConverter {
             fis.read(buffer);
             String str = new String(buffer);
             START_HEADERS = "<html>\n<head>\n<style>"+str+"</style>\n</head>\n<body>\n";
+            fis.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

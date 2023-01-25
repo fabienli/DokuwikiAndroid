@@ -88,8 +88,16 @@ class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
     @Override
     protected Object readResponse(XmlRpcStreamRequestConfig pConfig, InputStream pStream) throws XmlRpcException {
         // if Binary is expected, don't try to alter it
-        if(_isBinaryExpected)
-            return super.readResponse(pConfig, pStream);
+        if(_isBinaryExpected) {
+            Object result = super.readResponse(pConfig, pStream);
+            try {
+                pStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e(TAG, "While reading server response" + e.toString());
+            }
+            return result;
+        }
         // not Binary, so we can adapt a few things:
         final StringBuffer sb = new StringBuffer();
         try {
@@ -109,14 +117,21 @@ class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
                     sb.append("\n");
                 line = reader.readLine();
             }
+            pStream.close();
         } catch (final IOException e) {
-            Log.d(TAG, "While reading server response" + e.toString());
+            Log.e(TAG, "While reading server response" + e.toString());
         }
-        //Log.d(TAG, sb.toString());
-        //System.out.println(sb.toString());
 
         final ByteArrayInputStream bais = new ByteArrayInputStream(sb.toString().getBytes());
-        return super.readResponse(pConfig, bais);
+
+        Object result = super.readResponse(pConfig, bais);
+        try {
+            bais.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "While reading server response" + e.toString());
+        }
+        return result;
     }
 
     private void getCookies(URLConnection conn) {
