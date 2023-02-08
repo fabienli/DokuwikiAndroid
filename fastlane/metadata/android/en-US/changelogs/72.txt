@@ -1,0 +1,2 @@
+fix upload of page when server is using php8
+request notification permission
