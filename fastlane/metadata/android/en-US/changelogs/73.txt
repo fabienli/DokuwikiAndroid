@@ -1,0 +1,1 @@
+fix accessing attached file from a page's link, e.g. a pdf
