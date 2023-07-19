@@ -1,6 +1,11 @@
 package com.fabienli.dokuwiki.usecase;
 
+import android.util.Log;
+
 import org.junit.Test;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UrlConverterUnitTest {
     /**
@@ -293,5 +298,30 @@ public class UrlConverterUnitTest {
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         System.out.println(newContent);
         assert(newContent.contains("<img src=\"/cache/dir//wiki/private/image3.png\" />"));
+    }
+
+
+    /**
+     * Test the html conversion to local html, file dowload link with server's folder
+     */
+    @Test
+    public void UrlConverter_htmlConversion_pdfFile(){
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
+        String htmlContent = "<a href=\"/my/server/lib/exe/fetch.php?media=notes:test.pdf\" />";
+        String newContent = urlConverter.getHtmlContentConverted(htmlContent);
+        //System.out.println("output: "+newContent);
+        assert(newContent.contains("<a href=\"file:///cache/dir//notes/test.pdf\" />"));
+    }
+
+    /**
+     * Test the html conversion to local html, file dowload link with server's folder and nice urls
+     */
+    @Test
+    public void UrlConverter_htmlConversion_pdfFile_niceurls(){
+        UrlConverter urlConverter =  new UrlConverter("/cache/dir/", "default_css.css");
+        String htmlContent = "<a href=\"//my/server/lib/exe/fetch.php/notes/test.pdf\" />";
+        String newContent = urlConverter.getHtmlContentConverted(htmlContent);
+        System.out.println("output: "+newContent);
+        assert(newContent.contains("<a href=\"file:///cache/dir//notes/test.pdf\" />"));
     }
 }

@@ -23,8 +23,10 @@ public class UrlConverter {
     public static String WIKICREATEURL = "http://dokuwiki_create/?id=";
     public static String WIKIMEDIAPATTERN = "src=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php\\?";
     public static String WIKIMEDIAPATTERN_NICEURL = "src=\""+WIKIBASEPATTERN+"?/(lib/exe/fetch.php|_media)/(\\S+)\"";
-    public static String WIKIMEDIALINKPATTERN = "href=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php\\?[^\"]*media=(\\S+)\"";
-    public static String WIKIMEDIALINKPATTERN_NICEURL = "href=\""+WIKIBASEPATTERN+"?/(lib/exe/fetch.php|_media)/(\\S+)\"";
+    public static String WIKIMEDIALINKPATTERN_BASEREPLACE = "href=\""+WIKIBASEPATTERN+"?/lib/exe/fetch.php\\?[^\"]*media=";
+    public static String WIKIMEDIALINKPATTERN = WIKIMEDIALINKPATTERN_BASEREPLACE+"(\\S+)\"";
+    public static String WIKIMEDIALINKPATTERN_NICEURL_BASEREPLACE = "href=\""+WIKIBASEPATTERN+"?/(lib/exe/fetch.php|_media)/";
+    public static String WIKIMEDIALINKPATTERN_NICEURL = WIKIMEDIALINKPATTERN_NICEURL_BASEREPLACE+"(\\S+)\"";
     public static String WIKIMEDIAMANAGERURL = "http://dokuwiki_media_manager/?";
     //TODO: handle link detail to media manager
     // format is: /lib/exe/detail.php?(\\S+)
@@ -85,12 +87,12 @@ public class UrlConverter {
 
     public String getHtmlContentConverted(String htmlContent){
         String html = fixVShareStrangeUrl(htmlContent);
-        html = html.replaceAll(WIKILINKPATTERN, "href=\""+WIKILINKURL);
-        html = html.replaceAll(WIKILINKPATTERN_NICEURL, "href=\""+WIKILINKURL);
+
+        Log.d(TAG, "new html code: "+html);
 
         // find the list of media, to ensure they're here
         Pattern mediaPattern = Pattern.compile(WIKIMEDIAPATTERN +"(\\S+)\"");
-        Matcher m = mediaPattern.matcher(htmlContent);
+        Matcher m = mediaPattern.matcher(html);
         while (m.find()) {
             ImageRefData imageData = new ImageRefData();
             imageData.width = 0;
@@ -125,7 +127,7 @@ public class UrlConverter {
         }
 
         mediaPattern = Pattern.compile(WIKIMEDIAPATTERN_NICEURL);
-        m = mediaPattern.matcher(htmlContent);
+        m = mediaPattern.matcher(html);
         while (m.find()) {
             Log.d(TAG, "Found image nice url: "+m.group(2));
             ImageRefData imageData = new ImageRefData();
@@ -175,15 +177,12 @@ public class UrlConverter {
             if(m.group(2).startsWith("http%3A%2F%2F") || m.group(2).startsWith("https%3A%2F%2F"))
             {
                 String newUrl = m.group(2).replaceAll("%3A", ":").replaceAll("%2F", "/");
-                html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\"" + newUrl);
+                html = html.replaceAll(WIKIMEDIALINKPATTERN_BASEREPLACE + m.group(2), "href=\"" + newUrl);
             }
             else
             {
-                //String newUrl = m.group(2).replaceAll("%3A", ":").replaceAll(":", "/").replaceAll("%2F", "/");
-                String localFilename = getLocalFileName(m.group(2).replaceAll("%3A", ":"), 0, 0);
-                localFilename = m.group(2).replaceAll("%3A", ":").replaceAll(":", "/").replaceAll("%2F", "/");
-                //html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\"file://" + _cacheDir + "/" + newUrl);
-                html = html.replaceAll(WIKIMEDIALINKPATTERN + m.group(2), "href=\"file://" + _cacheDir + "/" + localFilename);
+                String localFilename =  m.group(2).replaceAll("%3A", ":").replaceAll(":", "/").replaceAll("%2F", "/");
+                html = html.replaceAll(WIKIMEDIALINKPATTERN_BASEREPLACE + m.group(2), "href=\"file://" + _cacheDir + "/" + localFilename);
             }
         }
 
@@ -200,8 +199,7 @@ public class UrlConverter {
             }
             else
             {
-                String localFilename = getLocalFileName(m.group(3).replaceAll("%3A", ":"), 0, 0);
-                localFilename = m.group(3).replaceAll("%3A", ":").replaceAll(":", "/").replaceAll("%2F", "/");
+                String localFilename = m.group(3).replaceAll("%3A", ":").replaceAll(":", "/").replaceAll("%2F", "/");
                 html = html.replaceAll(replacementString, "href=\"file://" + _cacheDir + "/" + localFilename+"\"");
             }
 
@@ -218,6 +216,9 @@ public class UrlConverter {
             html = html.replaceAll(PLUGINIMGPATTERN + m.group(2), "src=\"" + _cacheDir + "/lib/plugins/" + localFilename + "\"");
             _staticImageList.add("lib/plugins/" + m.group(2));
         }
+
+        html = html.replaceAll(WIKILINKPATTERN, "href=\""+WIKILINKURL);
+        html = html.replaceAll(WIKILINKPATTERN_NICEURL, "href=\""+WIKILINKURL);
 
         html = addHeaders(html);
         return html;
