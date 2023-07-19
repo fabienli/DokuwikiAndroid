@@ -9,6 +9,7 @@ android {
         versionCode 73
         versionName "v0.38"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
 
         javaCompileOptions {
             annotationProcessorOptions {
