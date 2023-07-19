@@ -80,6 +80,7 @@ android {
     lint {
         abortOnError false
     }
+    namespace 'com.fabienli.dokuwiki'
     defaultConfig {
         vectorDrawables.useSupportLibrary = true
     }
