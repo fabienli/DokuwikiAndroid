@@ -91,6 +91,7 @@ public class StaticDownloader extends PoolAsyncTask {
             } catch (Exception ex) {
                 Log.e(TAG, "Could not download image " + imageUrlStr);
                 Log.e(TAG, ex.getMessage());
+                ex.printStackTrace();
             }
             _mediaDownloaded = true;
         }

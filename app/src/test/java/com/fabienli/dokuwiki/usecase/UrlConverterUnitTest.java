@@ -311,6 +311,9 @@ public class UrlConverterUnitTest {
         String newContent = urlConverter.getHtmlContentConverted(htmlContent);
         //System.out.println("output: "+newContent);
         assert(newContent.contains("<a href=\"file:///cache/dir//notes/test.pdf\" />"));
+        //System.out.println(urlConverter._imageList);
+        assert(urlConverter._imageList.size() == 1);
+        assert(urlConverter._imageList.get(0).imageFilePath.equals("notes/test.pdf"));
     }
 
     /**

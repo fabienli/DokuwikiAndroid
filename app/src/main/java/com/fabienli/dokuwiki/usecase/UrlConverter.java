@@ -161,10 +161,7 @@ public class UrlConverter {
                 _imageList.add(imageData);
 
                 String localFilename = getLocalFileName(imageData.imageFilePath, imageData.width, imageData.height);
-                Log.d(TAG, "html avant:"+html);
-                Log.d(TAG, "html replace:"+replacementString);
                 html = html.replaceAll(replacementString , "src=\"" + _cacheDir + "/" + localFilename + "\"");
-                Log.d(TAG, "html apres:"+html);
             }
         }
 
@@ -183,6 +180,13 @@ public class UrlConverter {
             {
                 String localFilename =  m.group(2).replaceAll("%3A", ":").replaceAll(":", "/").replaceAll("%2F", "/");
                 html = html.replaceAll(WIKIMEDIALINKPATTERN_BASEREPLACE + m.group(2), "href=\"file://" + _cacheDir + "/" + localFilename);
+                ImageRefData imageData = new ImageRefData();
+                imageData.width = 0;
+                imageData.height = 0;
+                imageData.id=m.group(2);
+                imageData.imageFilePath = imageData.id.replaceAll(":", "/");
+                _imageList.add(imageData);
+                //_staticImageList.add("lib/exe/fetch.php?media=" + m.group(2)); // if logging is needed; it will fail !!!
             }
         }
 
