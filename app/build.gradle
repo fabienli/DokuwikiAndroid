@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 34
     defaultConfig {
         applicationId "com.fabienli.dokuwiki"
         minSdkVersion 21
         targetSdkVersion 34
-        versionCode 73
-        versionName "v0.38"
+        versionCode 74
+        versionName "v0.39"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
 
@@ -73,6 +72,7 @@ dependencies {
 android {
 
 
+    compileSdk 34
     packagingOptions {
         resources {
             excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/ASL2.0']
