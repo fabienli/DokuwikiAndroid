@@ -5,8 +5,8 @@ android {
         applicationId "com.fabienli.dokuwiki"
         minSdkVersion 21
         targetSdkVersion 34
-        versionCode 74
-        versionName "v0.39"
+        versionCode 75
+        versionName "v0.40"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
 

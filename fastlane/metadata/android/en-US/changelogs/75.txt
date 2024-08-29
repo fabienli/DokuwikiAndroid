@@ -1,0 +1,2 @@
+enable usage of users certifcates for wikis security
+
