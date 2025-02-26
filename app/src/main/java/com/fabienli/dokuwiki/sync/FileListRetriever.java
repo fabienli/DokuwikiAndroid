@@ -13,6 +13,13 @@ public class FileListRetriever {
     }
 
     public ArrayList<String> retrievePagesList(String namespace){
+        if(!_xmlRpcAdapter._newApi)
+            return retrievePagesListDeprecated(namespace);
+        Log.d(TAG,"Looking for pages in "+namespace);
+        ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.listPages", namespace,"{}");
+        return resultList;
+    }
+    public ArrayList<String> retrievePagesListDeprecated(String namespace){
         Log.d(TAG,"Looking for pages in "+namespace);
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("dokuwiki.getPagelist", namespace,"{}");
 
@@ -20,7 +27,15 @@ public class FileListRetriever {
     }
 
     public ArrayList<String> retrieveMediasList(String namespace){
-        Log.d(TAG,"Looking for pages in "+namespace);
+        if(!_xmlRpcAdapter._newApi)
+            return retrieveMediasListDeprecated(namespace);
+        Log.d(TAG,"Looking for medias in "+namespace);
+        ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.listMedia", namespace);
+
+        return resultList;
+    }
+    public ArrayList<String> retrieveMediasListDeprecated(String namespace){
+        Log.d(TAG,"Looking for medias in "+namespace);
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("wiki.getAttachments", namespace);
 
         return resultList;

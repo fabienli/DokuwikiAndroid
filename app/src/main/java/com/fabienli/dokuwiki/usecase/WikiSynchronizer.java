@@ -87,11 +87,13 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
             for (String a : parts) {
                 if (a.startsWith("id=")) {
                     pageName = a.substring(3);
-                } else if (a.startsWith("rev=")) {
+                } else if (a.startsWith("rev=")) { //deprecated
                     pageRevision = a.substring(4);
+                } else if (a.startsWith("revision=")) { //new API
+                    pageRevision = a.substring(9);
                 }
             }
-
+            Log.d(TAG,"Pages found: "+pageName+" / "+pageRevision);
             // 4.2 this page is not to be removed from db
             oldPagesToRemove.remove(pageName);
 
@@ -186,7 +188,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
             // TODO: use MediaInfoRetriever here
             String pageinfo = item.replace("{","").replace("}","").replace(", ",",");
             String[] parts = pageinfo.split(",");
-            String mediaFile = "";
+            String mediaFile = "";//deprecated
             String mediaId = "";
             String mediaSize = "";
             String mediaMTime = "";
@@ -196,20 +198,26 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
                 if(a.startsWith("id=")){
                     mediaId = a.substring(3);
                 }
-                else if(a.startsWith("file=")){
+                else if(a.startsWith("file=")){ //deprecated
                     mediaFile = a.substring(5);
                 }
                 else if(a.startsWith("size=")){
                     mediaSize = a.substring(5);
                 }
-                else if(a.startsWith("isimg=")){
+                else if(a.startsWith("isimg=")){ //deprecated
                     mediaIsImg = a.substring(6);
                 }
-                else if(a.startsWith("mtime=")){
+                else if(a.startsWith("isimage=")){
+                    mediaIsImg = a.substring(8);
+                }
+                else if(a.startsWith("mtime=")){ //deprecated
                     mediaMTime = a.substring(6);
                 }
-                else if(a.startsWith("lastModified=")){
+                else if(a.startsWith("lastModified=")){ //deprecated
                     mediaLastModified = a.substring(13);
+                }
+                else if(a.startsWith("revision=")){ //deprecated
+                    mediaLastModified = a.substring(9);
                 }
             }
 

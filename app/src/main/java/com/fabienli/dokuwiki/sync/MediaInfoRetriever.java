@@ -16,7 +16,13 @@ public class MediaInfoRetriever {
 
     public Media retrieveMediaInfo(String mediaId){
         Log.d(TAG,"GetMedia info "+mediaId);
-        ArrayList<String> resultList = _xmlRpcAdapter.callMethod("wiki.getAttachmentInfo", mediaId);
+        ArrayList<String> resultList;
+        if (!_xmlRpcAdapter._newApi) {
+            resultList = _xmlRpcAdapter.callMethod("wiki.getAttachmentInfo", mediaId);
+        }
+        else {
+            resultList = _xmlRpcAdapter.callMethod("core.getMediaInfo", mediaId);
+        }
 
         if(resultList == null)
             resultList = new ArrayList<>();
@@ -38,14 +44,20 @@ public class MediaInfoRetriever {
                 else if(a.startsWith("size=")){
                     media.size = a.substring(5);
                 }
-                else if(a.startsWith("isimg=")){
+                else if(a.startsWith("isimg=")){ // deprecated
                     media.isimg = a.substring(6);
                 }
-                else if(a.startsWith("mtime=")){
+                else if(a.startsWith("isimage=")){
+                    media.isimg = a.substring(8);
+                }
+                else if(a.startsWith("mtime=")){ // deprecated
                     media.mtime = a.substring(6);
                 }
-                else if(a.startsWith("lastModified=")){
+                else if(a.startsWith("lastModified=")){ // deprecated
                     media.lastModified = a.substring(13);
+                }
+                else if(a.startsWith("revision=")){
+                    media.lastModified = a.substring(9);
                 }
             }
         }

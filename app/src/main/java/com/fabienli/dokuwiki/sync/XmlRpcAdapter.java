@@ -195,6 +195,7 @@ public class XmlRpcAdapter {
         }
 
     }
+
     protected void ensureLogin() throws XmlRpcException {
         Log.d(TAG, "using the new API: "+_newApi);
         //Force reset login: CookiesHolder.Instance().cookies.clear();
@@ -211,14 +212,22 @@ public class XmlRpcAdapter {
             XmlRpcThrottler xmlRpcThrottler = XmlRpcThrottler.instance();
             xmlRpcThrottler.setLimit(throttlingLimit);
 
-            // login
-            Vector parametersLogin = new Vector();
-            parametersLogin.addElement(user);
-            parametersLogin.addElement(password);
-            Object result = clientCallExecution("dokuwiki.login",parametersLogin);
-            Log.d(TAG,"The result login is: "+ result);
-            Log.d(TAG,"The cookies size is: "+ CookiesHolder.Instance().cookies.size());
-            if(! ((Boolean) result)) {
+            Boolean loginResult;
+            if(!_newApi) {
+                loginResult = loginDeprecatad(user, password);
+            }
+            else {
+                // login
+                Vector parametersLogin = new Vector();
+                parametersLogin.addElement(user);
+                parametersLogin.addElement(password);
+                Object result = clientCallExecution("core.login", parametersLogin);
+                Log.d(TAG,"The result login is: "+ result);
+                Log.d(TAG,"The cookies size is: "+ CookiesHolder.Instance().cookies.size());
+                loginResult = (Boolean) result;
+            }
+
+            if(! loginResult) {
                 View toastView = ((AppCompatActivity) _context).findViewById(R.id.view_content);
                 if (toastView == null) {
                     toastView = ((AppCompatActivity) _context).findViewById(R.id.webview);
@@ -231,6 +240,18 @@ public class XmlRpcAdapter {
             Log.d(TAG,"No API version checked as already logged in, ensure we check");
             updateNewApiVersion();
         }
+    }
+
+    private Boolean loginDeprecatad(String user, String password) throws XmlRpcException {
+
+        Vector parametersLogin = new Vector();
+        parametersLogin.addElement(user);
+        parametersLogin.addElement(password);
+        Object result = clientCallExecution("dokuwiki.login", parametersLogin);
+        Log.d(TAG,"The result login is: "+ result);
+        Log.d(TAG,"The cookies size is: "+ CookiesHolder.Instance().cookies.size());
+
+        return (Boolean) result;
     }
 
     protected Vector getParametersVector(String... params){
