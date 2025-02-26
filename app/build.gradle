@@ -48,7 +48,7 @@ dependencies {
 
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.multidex:multidex:2.0.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
 
     // excluding junit from xmlrpc, as an older version is linked here
     implementation('org.apache.xmlrpc:xmlrpc-client:3.1.3'){
