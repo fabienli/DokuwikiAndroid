@@ -17,10 +17,10 @@ public class MediaInfoRetriever {
     public Media retrieveMediaInfo(String mediaId){
         Log.d(TAG,"GetMedia info "+mediaId);
         ArrayList<String> resultList;
-        if (!_xmlRpcAdapter._newApi) {
+        if (true || !_xmlRpcAdapter._newApi) {
             resultList = _xmlRpcAdapter.callMethod("wiki.getAttachmentInfo", mediaId);
         }
-        else {
+        else { //TODO fix: not mediaid but file -> wiki:image.png
             resultList = _xmlRpcAdapter.callMethod("core.getMediaInfo", mediaId);
         }
 
