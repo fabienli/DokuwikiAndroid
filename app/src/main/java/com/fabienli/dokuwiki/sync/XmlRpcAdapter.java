@@ -2,7 +2,7 @@ package com.fabienli.dokuwiki.sync;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 
@@ -26,19 +26,20 @@ public class XmlRpcAdapter {
     protected String TAG = "XmlRpcAdapter";
     final XmlRpcClient client = new XmlRpcClient();
     protected Context _context;
-    private String _password;
     private String _user;
     private String _urlserver;
     private boolean _debug = false;
     protected XmlRpcClientConfigImpl _xmlConfig;
+    protected Boolean _newApi;
 
     public XmlRpcAdapter(Context context){
         _context = context;
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
-        _password = settings.getString("password", "");
         _user = settings.getString("user", "");
         _urlserver = settings.getString("serverurl", "");
         _debug = settings.getBoolean("debuglogs", false);
+        _newApi = settings.getBoolean("newApi", false);
+        Log.d(TAG,"New API setting from prefs: "+_newApi);
         Log.d(TAG,"Connecting to server <"+_urlserver + "> with user <"+_user+">");
         _xmlConfig = new XmlRpcClientConfigImpl();
         try {
@@ -89,7 +90,9 @@ public class XmlRpcAdapter {
 
             Object result = "";
             try {
+                Log.d(TAG,"Calling method: "+methodName);
                 result = clientCallExecution(methodName, parameters);
+                Log.d(TAG,"Called OK method: "+methodName);
             } catch (org.apache.xmlrpc.client.XmlRpcClientException exception) {
                 Logs.getInstance().add("XmlRpc decode " + methodName+ " response error: " + exception);
                 Log.e(TAG,"XmlRpc decode " + methodName+ " response error: " + exception);
@@ -158,16 +161,57 @@ public class XmlRpcAdapter {
         return results;
     }
 
+    public Boolean useNewApi() {
+        return _newApi;
+    }
+
+    protected void updateNewApiVersion() {
+        try {
+            // check API version
+            Vector noParameter = new Vector();
+            Object resultApiVersion = clientCallExecution("core.getAPIVersion", noParameter);
+            Log.d(TAG, "The API version is: " + resultApiVersion);
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
+            SharedPreferences.Editor editor = settings.edit();
+            int apiVersion = Integer.parseInt((String) resultApiVersion.toString());
+            if(apiVersion>10){
+                Log.d(TAG, "Using new API version !");
+                editor.putBoolean("newApi", true);
+                editor.apply();
+                _newApi = true;
+            }
+            else {
+                Log.w(TAG, "Using old API version ... update your server!");
+                editor.putBoolean("newApi", false);
+                editor.apply();
+                _newApi = false;
+
+            }
+        } catch (XmlRpcException e) {
+            Log.d(TAG, "Error while getting API version: " + e);
+        } catch (Exception exception) {
+            Log.e(TAG,"API call version error: " + exception);
+            Logs.getInstance().add("API call versionerror: " + exception);
+        }
+
+    }
     protected void ensureLogin() throws XmlRpcException {
+        Log.d(TAG, "using the new API: "+_newApi);
+        //Force reset login: CookiesHolder.Instance().cookies.clear();
         if(CookiesHolder.Instance().cookies.size() == 0) {
+            //ensure we use the new API if available:
+            updateNewApiVersion();
+
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
             String password = settings.getString("password", "");
-            String user = settings.getString("user", "");;
+            String user = settings.getString("user", "");
+
             // ensure correct throttling
             int throttlingLimit = Integer.parseInt(settings.getString("throttlingPerMin", "1000"));
             XmlRpcThrottler xmlRpcThrottler = XmlRpcThrottler.instance();
             xmlRpcThrottler.setLimit(throttlingLimit);
 
+            // login
             Vector parametersLogin = new Vector();
             parametersLogin.addElement(user);
             parametersLogin.addElement(password);
@@ -182,6 +226,10 @@ public class XmlRpcAdapter {
                 Snackbar.make(toastView, "Login error ! please check user/password", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
+        }
+        else if (! _newApi){
+            Log.d(TAG,"No API version checked as already logged in, ensure we check");
+            updateNewApiVersion();
         }
     }
 

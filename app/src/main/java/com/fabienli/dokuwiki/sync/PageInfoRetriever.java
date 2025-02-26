@@ -14,6 +14,32 @@ public class PageInfoRetriever {
 
     public String retrievePageVersion(String pagename){
         Log.d(TAG,"GetPage info "+pagename);
+        if (!_xmlRpcAdapter.useNewApi())
+            return retrievePageVersionDeprecated(pagename);
+
+        ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.getPageInfo", pagename);
+
+        Log.d(TAG,"GetPage info result = "+resultList);
+        if(resultList == null)
+            resultList = new ArrayList<>();
+
+        String pageVersion = "";
+        for (String r : resultList) {
+            String pageinfo = r.replace("{", "").replace("}", "").replace(", ", ",");
+            String[] parts = pageinfo.split(",");
+            for (String a : parts) {
+                if (a.startsWith("revision=")) {
+                    pageVersion = a.substring(8);
+                }
+            }
+        }
+
+        return pageVersion;
+    }
+
+    public String retrievePageVersionDeprecated(String pagename){
+        Log.d(TAG,"GetPage info "+pagename);
+
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("wiki.getPageInfo", pagename);
 
         if(resultList == null)
