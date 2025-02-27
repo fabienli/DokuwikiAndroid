@@ -45,7 +45,11 @@ public class MediaRetrieve extends PoolAsyncTask {
             media = mediaInfoRetriever.retrieveMediaInfo(mediaId);
             media.id = mediaId;
             media.file = mediaRelativePathname;
-            _db.mediaDao().insertAll(media);
+            try {
+                _db.mediaDao().insertAll(media);//catch already there ???
+            } catch (android.database.sqlite.SQLiteConstraintException e) {
+                Log.d(TAG, "media already added: "+mediaId+" ?");
+            }
         }
 
         // check if media is in local folder

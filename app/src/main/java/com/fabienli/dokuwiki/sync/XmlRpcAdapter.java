@@ -202,7 +202,7 @@ public class XmlRpcAdapter {
     protected void ensureLogin() throws XmlRpcException {
         Log.d(TAG, "using the new API: "+_newApi);
         //Force reset login: CookiesHolder.Instance().cookies.clear();
-        if(CookiesHolder.Instance().cookies.size() == 0) {
+        if(CookiesHolder.Instance().cookies.size() < 2) {
             //ensure we use the new API if available:
             updateNewApiVersion();
 
@@ -221,11 +221,13 @@ public class XmlRpcAdapter {
             }
             else { // use New API
                 // login
+                Log.d(TAG, "Login in with core.login to get cookies");
                 Vector parametersLogin = new Vector();
                 parametersLogin.addElement(user);
                 parametersLogin.addElement(password);
                 Object result = clientCallExecution("core.login", parametersLogin);
                 Log.d(TAG,"The result login is: "+ result);
+                Logs.getInstance().add("Login: "+result);
                 Log.d(TAG,"The cookies size is: "+ CookiesHolder.Instance().cookies.size());
                 loginResult = (Boolean) result;
             }

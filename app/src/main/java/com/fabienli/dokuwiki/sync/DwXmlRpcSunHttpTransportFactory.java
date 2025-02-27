@@ -135,31 +135,33 @@ class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
     }
 
     private void getCookies(URLConnection conn) {
-        if (CookiesHolder.Instance().cookies.size() == 0) {
-            Map<String, List<String>> headers = conn.getHeaderFields();
-            if (// avoid NPE
-                    headers.containsKey(// avoid NPE
-                            "Set-Cookie")) {
-                List<String> vals = headers.get("Set-Cookie");
-                for (String str : vals) {
-                    Log.d(TAG, "Cookie origin: " + str);
-                    String[] cookieslice = str.split(";");
-                    if (cookieslice.length > 0) {
-                        String cookiemain = cookieslice[0];
-                        if (cookiemain.startsWith("DokuWiki")) {
+        Map<String, List<String>> headers = conn.getHeaderFields();
+        if (// avoid NPE
+                headers.containsKey(// avoid NPE
+                        "Set-Cookie")) {
+            List<String> vals = headers.get("Set-Cookie");
+            for (String str : vals) {
+                Log.d(TAG, "Cookie origin: " + str);
+                String[] cookieslice = str.split(";");
+                if (cookieslice.length > 0) {
+                    String cookiemain = cookieslice[0];
+                    if (cookiemain.startsWith("DokuWiki")) {
+                        if(!CookiesHolder.Instance().cookies.contains(cookiemain))
                             CookiesHolder.Instance().cookies.add(cookiemain);
-                            Log.d(TAG, "Cookie used: " + cookiemain);
-                        } else if (cookiemain.endsWith("deleted")) {
-                            Log.d(TAG, "Cookie ignored");
-                        } else if (cookiemain.startsWith("DW")) {
+                        Log.d(TAG, "Cookie used: " + cookiemain);
+                    } else if (cookiemain.endsWith("deleted")) {
+                        Log.d(TAG, "Cookie deleted");
+                        CookiesHolder.Instance().cookies.remove(cookiemain);
+                    } else if (cookiemain.startsWith("DW")) {
+                        if(!CookiesHolder.Instance().cookies.contains(cookiemain))
                             CookiesHolder.Instance().cookies.add(cookiemain);
-                            Log.d(TAG, "Cookie used: " + cookiemain);
-                        } else {
-                            Log.d(TAG, "Cookie ignored");
-                        }
+                        Log.d(TAG, "Cookie used: " + cookiemain);
+                    } else {
+                        Log.d(TAG, "Cookie ignored");
                     }
                 }
             }
         }
+
     }
 }
