@@ -298,7 +298,8 @@ public class SynchroDownloadHandler {
                 // 1. call the upload of this file
                 MediaDownloader mediaDownloader = new MediaDownloader(new XmlRpcAdapterFile(_xmlRpcAdapter));
                 Boolean success = mediaDownloader.deleteMedia(sa.name);
-
+                if(!success)
+                    Logs.getInstance().add("Error trying to delete "+sa.name);
                 //TODO: handle result in "success"?
                 // 2. the end
                 _db.syncActionDao().deleteAll(sa);

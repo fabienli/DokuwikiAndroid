@@ -216,10 +216,10 @@ public class XmlRpcAdapter {
             xmlRpcThrottler.setLimit(throttlingLimit);
 
             Boolean loginResult;
-            if(!_newApi) {
+            if(useOldApi()) {
                 loginResult = loginDeprecatad(user, password);
             }
-            else {
+            else { // use New API
                 // login
                 Vector parametersLogin = new Vector();
                 parametersLogin.addElement(user);

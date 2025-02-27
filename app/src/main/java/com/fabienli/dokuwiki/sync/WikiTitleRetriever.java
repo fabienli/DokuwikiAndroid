@@ -26,12 +26,11 @@ public class WikiTitleRetriever {
             return "";
     }
     public String retrieveTitleNew() {
-        Log.d(TAG, "Looking for wiki title new");
+        //Log.d(TAG, "Looking for wiki title new");
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.getWikiTitle");
 
-        Log.d(TAG, "Looking for wiki title new"+resultList);
         if (resultList != null && resultList.size() > 0) {
-            Log.d(TAG, "Looking for wiki title new: " + resultList.get(0));
+            Log.d(TAG, "Found wiki title: " + resultList.get(0));
             return resultList.get(0);
         }
         else
