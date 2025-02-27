@@ -13,7 +13,7 @@ public class FileListRetriever {
     }
 
     public ArrayList<String> retrievePagesList(String namespace){
-        if(!_xmlRpcAdapter._newApi)
+        if(_xmlRpcAdapter.useOldApi())
             return retrievePagesListDeprecated(namespace);
         Log.d(TAG,"Looking for pages in "+namespace);
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.listPages", namespace,"{}");
@@ -27,7 +27,7 @@ public class FileListRetriever {
     }
 
     public ArrayList<String> retrieveMediasList(String namespace){
-        if(!_xmlRpcAdapter._newApi)
+        if(_xmlRpcAdapter.useOldApi())
             return retrieveMediasListDeprecated(namespace);
         Log.d(TAG,"Looking for medias in "+namespace);
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.listMedia", namespace);

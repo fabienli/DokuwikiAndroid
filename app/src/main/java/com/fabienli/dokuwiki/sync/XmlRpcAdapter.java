@@ -164,6 +164,9 @@ public class XmlRpcAdapter {
     public Boolean useNewApi() {
         return _newApi;
     }
+    public Boolean useOldApi() {
+        return !_newApi;
+    }
 
     protected void updateNewApiVersion() {
         try {

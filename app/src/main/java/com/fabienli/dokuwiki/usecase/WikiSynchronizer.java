@@ -216,7 +216,7 @@ public class WikiSynchronizer extends AsyncTask<String, Integer, String> {
                 else if(a.startsWith("lastModified=")){ //deprecated
                     mediaLastModified = a.substring(13);
                 }
-                else if(a.startsWith("revision=")){ //deprecated
+                else if(a.startsWith("revision=")){
                     mediaLastModified = a.substring(9);
                 }
             }

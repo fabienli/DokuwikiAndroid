@@ -16,7 +16,7 @@ public class MediaDownloader {
     }
 
     public byte[] retrieveMedia(String medianame){
-        if(!_xmlRpcAdapter._newApi)
+        if(_xmlRpcAdapter.useOldApi())
             return retrieveMediaDeprecated(medianame);
         Log.d(TAG,"Get Media file "+medianame);
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.getMedia", medianame);
@@ -30,7 +30,7 @@ public class MediaDownloader {
     }
 
     public boolean uploadMedia(String medianame, String filename){
-        if(true || !_xmlRpcAdapter._newApi) // to be implemented
+        if(true || _xmlRpcAdapter.useOldApi()) // to be implemented
             return uploadMediaDeprecated(medianame, filename);
         Log.d(TAG,"Put Media file "+filename);
         ArrayList<String> result = _xmlRpcAdapter.callMethod("core.saveMedia", medianame, "file://"+filename, "{}");
@@ -38,7 +38,7 @@ public class MediaDownloader {
     }
 
     public boolean deleteMedia(String medianame){
-        if(true || !_xmlRpcAdapter._newApi) // to be implemented
+        if(true || _xmlRpcAdapter.useOldApi()) // to be implemented
             return deleteMediaDeprecated(medianame);
         Log.d(TAG,"Delete Media file "+medianame);
         ArrayList<String> result = _xmlRpcAdapter.callMethod("core.deleteMedia", medianame);

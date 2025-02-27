@@ -13,7 +13,7 @@ public class WikiTitleRetriever {
     }
 
     public String retrieveTitle() {
-        if (!_xmlRpcAdapter.useNewApi())
+        if (_xmlRpcAdapter.useOldApi())
             return retrieveTitleDeprecated();
         return retrieveTitleNew();
     }

@@ -14,7 +14,7 @@ public class PageTextDownUpLoader {
     }
 
     public String retrievePageText(String pagename){
-        if(!_xmlRpcAdapter._newApi)
+        if(_xmlRpcAdapter.useOldApi())
             return retrievePageTextDeprecated(pagename);
         Log.d(TAG,"GetPage TEXT "+pagename);
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.getPage", pagename);
@@ -33,7 +33,7 @@ public class PageTextDownUpLoader {
     }
 
     public String sendPageText(String pagename, String textcontent){
-        if(!_xmlRpcAdapter._newApi)
+        if(_xmlRpcAdapter.useOldApi())
             return sendPageTextDeprecated(pagename, textcontent);
         Log.d(TAG,"savePage TEXT "+pagename);
         Vector params = new Vector();

@@ -13,7 +13,7 @@ public class PageHtmlDownloader {
     }
 
     public String retrievePageHTML(String pagename){
-        if(!_xmlRpcAdapter._newApi)
+        if(_xmlRpcAdapter.useOldApi())
             return retrievePageHTMLDeprecated(pagename);
         Log.d(TAG,"GetPage HTML "+pagename);
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.getPageHTML", pagename);

@@ -14,7 +14,7 @@ public class PageInfoRetriever {
 
     public String retrievePageVersion(String pagename){
         Log.d(TAG,"GetPage info "+pagename);
-        if (!_xmlRpcAdapter.useNewApi())
+        if (_xmlRpcAdapter.useOldApi())
             return retrievePageVersionDeprecated(pagename);
 
         ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.getPageInfo", pagename);
@@ -29,7 +29,7 @@ public class PageInfoRetriever {
             String[] parts = pageinfo.split(",");
             for (String a : parts) {
                 if (a.startsWith("revision=")) {
-                    pageVersion = a.substring(8);
+                    pageVersion = a.substring(9);
                 }
             }
         }
