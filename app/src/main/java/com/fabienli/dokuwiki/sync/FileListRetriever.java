@@ -15,8 +15,10 @@ public class FileListRetriever {
     public ArrayList<String> retrievePagesList(String namespace){
         if(_xmlRpcAdapter.useOldApi())
             return retrievePagesListDeprecated(namespace);
+        if(namespace.isEmpty())
+            namespace = ".";
         Log.d(TAG,"Looking for pages in "+namespace);
-        ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.listPages", namespace,"{}");
+        ArrayList<String> resultList = _xmlRpcAdapter.callMethod("core.listPages", namespace, "0");
         return resultList;
     }
     public ArrayList<String> retrievePagesListDeprecated(String namespace){
