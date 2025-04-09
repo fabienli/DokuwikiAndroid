@@ -56,7 +56,7 @@ dependencies {
     }
 
     // room on sqlite
-    def room_version = "2.6.1"
+    def room_version = "2.7.0"
     api "androidx.room:room-runtime:$room_version"
     implementation 'androidx.vectordrawable:vectordrawable:1.2.0'
     annotationProcessor "androidx.room:room-compiler:$room_version"
