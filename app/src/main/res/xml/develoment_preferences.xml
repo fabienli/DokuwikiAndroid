@@ -1,0 +1,16 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <SwitchPreference
+        app:defaultValue="true"
+        app:key="debugpanel"
+        app:title="Display Debug Panel"
+        app:summaryOff="No debug panel"
+        app:summaryOn="Debug panel is available" />
+    <SwitchPreference
+        app:dependency="debugpanel"
+        app:defaultValue="false"
+        app:key="debuglogs"
+        app:title="Full Debug Logs"
+        app:summaryOff="Only basic logs"
+        app:summaryOn="Verbose logs are generated" />
+
+</PreferenceScreen>

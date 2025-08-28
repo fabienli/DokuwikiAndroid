@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity
             ;
             if (urlserver.length() == 0) {
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-                startActivityForResult(intent, 0);
+                startActivity(intent);
             }
             // any page currently shown?
             else if (WikiCacheUiOrchestrator.instance(this).showLastHistory(_webView)) {
@@ -240,10 +240,9 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-            startActivityForResult(intent, 0);
+            startActivity(intent);
             return true;
         }
         else if (id == R.id.action_edit) {

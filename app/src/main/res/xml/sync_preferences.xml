@@ -1,0 +1,65 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <EditTextPreference
+        app:defaultValue="https://mydokuwiki/lib/exe/xmlrpc.php"
+        app:key="serverurl"
+        app:maxLines="1"
+        app:singleLine="true"
+        app:title="server URL"
+        app:useSimpleSummaryProvider="true"  />
+    <EditTextPreference
+        app:key="user"
+        app:maxLines="1"
+        app:singleLine="true"
+        app:title="User"
+        app:useSimpleSummaryProvider="true"  />
+    <EditTextPreference
+        app:key="password"
+        app:maxLines="1"
+        app:singleLine="true"
+        app:title="Password" />
+
+    <SwitchPreference
+        app:defaultValue="false"
+        app:key="basicauth"
+        app:title="Use Basic Auth (usually controled via .htaccess)"
+        app:summaryOff="Rely on API's authentication"
+        app:summaryOn="Rely on .htaccess authentication" />
+    <ListPreference
+        app:defaultValue="a"
+        app:entries="@array/pref_typesync_list_titles"
+        app:entryValues="@array/pref_typesync_list_values"
+        app:key="list_type_sync"
+        app:title="Type of sync"
+        app:useSimpleSummaryProvider="true" />
+    <ListPreference
+        app:defaultValue="0"
+        app:entries="@array/pref_delay_list_titles"
+        app:entryValues="@array/pref_delay_list_values"
+        app:key="list_delay_sync"
+        app:title="Delay in sync"
+        app:useSimpleSummaryProvider="true" />
+    <ListPreference
+        app:defaultValue="0"
+        app:entries="@array/pref_throttling_list_titles"
+        app:entryValues="@array/pref_throttling_list_values"
+        app:key="throttlingPerMin"
+        app:title="Max request per minute"
+        app:useSimpleSummaryProvider="true" />
+    <ListPreference
+        app:defaultValue="0"
+        app:entries="@array/pref_max_pages_list_titles"
+        app:entryValues="@array/pref_max_pages_list_values"
+        app:key="max_page_sync"
+        app:title="Max pages retrieved per sync"
+        app:useSimpleSummaryProvider="true"  />
+    <ListPreference
+        app:defaultValue="0"
+        app:entries="@array/pref_max_pages_list_titles"
+        app:entryValues="@array/pref_max_pages_list_values"
+        app:key="max_media_sync"
+        app:title="Max medias retrieved per sync"
+        app:useSimpleSummaryProvider="true" />
+
+</PreferenceScreen>

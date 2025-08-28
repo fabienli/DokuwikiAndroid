@@ -120,4 +120,6 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="title_activity_edit">EditActivity</string>
+    <string name="title_activity_settings2">Settings</string>
+
 </resources>

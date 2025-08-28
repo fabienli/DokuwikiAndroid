@@ -1,0 +1,25 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <EditTextPreference
+        app:defaultValue="start"
+        app:key="startpage"
+        app:maxLines="1"
+        app:singleLine="true"
+        app:title="Start page's name"
+        app:useSimpleSummaryProvider="true" />
+
+    <SwitchPreference
+        app:defaultValue="false"
+        app:key="toplogo"
+        app:title="Show your dokuwiki's logo and title" />
+    <ListPreference
+        app:defaultValue="default_css.css"
+        app:entries="@array/pref_css_list_titles"
+        app:entryValues="@array/pref_css_list_values"
+        app:key="css_style"
+        app:title="Pages layout style"
+        app:useSimpleSummaryProvider="true" />
+
+
+</PreferenceScreen>
