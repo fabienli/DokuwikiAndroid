@@ -458,7 +458,12 @@ public class MainActivity extends AppCompatActivity
 
             // Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            startActivity(intent);
+            try {
+                startActivity(intent);
+            } catch (ActivityNotFoundException e) {
+                Snackbar.make(view, "No application found to open " + url, Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
             return true;
         }
 
