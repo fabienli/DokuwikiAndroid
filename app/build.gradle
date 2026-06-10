@@ -3,10 +3,10 @@ apply plugin: 'com.android.application'
 android {
     defaultConfig {
         applicationId "com.fabienli.dokuwiki"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 35
-        versionCode 81
-        versionName "v1.3.0"
+        versionCode 82
+        versionName "v1.4.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
 
@@ -39,9 +39,9 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation "androidx.preference:preference-ktx:1.2.1"
     implementation "androidx.legacy:legacy-preference-v14:1.0.0"
@@ -68,14 +68,14 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     // https://site.mockito.org/
-    testImplementation "org.mockito:mockito-core:5.18.0"
+    testImplementation "org.mockito:mockito-core:5.23.0"
 }
 
 
 android {
 
 
-    compileSdk 35
+    compileSdk 37
     packagingOptions {
         resources {
             excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/ASL2.0']
