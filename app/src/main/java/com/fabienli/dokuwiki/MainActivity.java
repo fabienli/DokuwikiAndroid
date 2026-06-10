@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.fabienli.dokuwiki.sync.XmlRpcThrottler;
+import com.fabienli.dokuwiki.tools.InsetsUtils;
 import com.fabienli.dokuwiki.tools.Logs;
 import com.fabienli.dokuwiki.tools.WikiUtils;
 import com.fabienli.dokuwiki.usecase.PoolAsyncTask;
@@ -81,6 +82,9 @@ public class MainActivity extends AppCompatActivity
             }
         });
         _fabSearchWiki.hide();
+        // keep the search button clear of the system navigation bar under
+        // edge-to-edge display (enforced from Android 15 / API 35)
+        InsetsUtils.applyBottomMarginInset(_fabSearchWiki);
 
         // navigation drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -94,6 +98,8 @@ public class MainActivity extends AppCompatActivity
 
         // the main web page
         _webView = (WebView) findViewById(R.id.webview);
+        // let the page content scroll clear of the system navigation bar
+        InsetsUtils.applyBottomPaddingInset(_webView);
         _webView.setWebViewClient(new MyWebViewClient());
         WebSettings webSettings = _webView.getSettings();
         webSettings.setJavaScriptEnabled(true);

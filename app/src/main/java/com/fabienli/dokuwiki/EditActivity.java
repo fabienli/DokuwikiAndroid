@@ -2,6 +2,7 @@ package com.fabienli.dokuwiki;
 
 import android.os.Bundle;
 
+import com.fabienli.dokuwiki.tools.InsetsUtils;
 import com.fabienli.dokuwiki.tools.WikiUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -46,6 +47,10 @@ public class EditActivity extends AppCompatActivity {
                 savePage();
             }
         });
+        // keep the save button and the editor clear of the system navigation bar
+        // under edge-to-edge display (enforced from Android 15 / API 35)
+        InsetsUtils.applyBottomMarginInset(fab);
+        InsetsUtils.applyBottomPaddingInset(_EditTextView);
 
         setTitle("Edit: "+_pagename);
         if(savedInstanceState == null || !savedInstanceState.containsKey("editText")) {

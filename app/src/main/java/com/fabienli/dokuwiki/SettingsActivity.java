@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.widget.EditText;
 
+import com.fabienli.dokuwiki.tools.InsetsUtils;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,6 +25,9 @@ public class SettingsActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
+        // let the settings content scroll clear of the system navigation bar
+        // under edge-to-edge display (enforced from Android 15 / API 35)
+        InsetsUtils.applyBottomPaddingInset(findViewById(R.id.settings));
         if (savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()
