@@ -174,7 +174,7 @@ public class XmlRpcAdapter {
         return !_apiToken.isEmpty();
     }
 
-    protected void updateNewApiVersion() {
+    protected boolean updateNewApiVersion() {
         try {
             // check API version
             Vector noParameter = new Vector();
@@ -196,12 +196,14 @@ public class XmlRpcAdapter {
                 _newApi = false;
 
             }
+            return true;
         } catch (XmlRpcException e) {
             Log.d(TAG, "Error while getting API version: " + e);
         } catch (Exception exception) {
             Log.e(TAG,"API call version error: " + exception);
             Logs.getInstance().add("API call versionerror: " + exception);
         }
+        return false;
 
     }
 
@@ -210,9 +212,8 @@ public class XmlRpcAdapter {
         if(useTokenAuth()) {
             // the token is sent with every request, no login call nor cookies needed
             if(!_tokenSessionInitialized) {
-                updateNewApiVersion();
                 updateThrottlingLimit();
-                _tokenSessionInitialized = true;
+                _tokenSessionInitialized = updateNewApiVersion();
             }
             return;
         }
