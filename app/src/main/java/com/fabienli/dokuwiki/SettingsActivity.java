@@ -105,13 +105,18 @@ public class SettingsActivity extends AppCompatActivity implements
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.sync_preferences, rootKey);
-            final EditTextPreference preference = findPreference("password");
+            hideSecretValue("password");
+            hideSecretValue("apitoken");
+        }
+
+        private void hideSecretValue(final String key) {
+            final EditTextPreference preference = findPreference(key);
             if (preference != null) {
                 preference.setSummaryProvider(new Preference.SummaryProvider() {
                     @Override
                     public CharSequence provideSummary(Preference preference) {
 
-                        String getPassword = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("password", "not set");
+                        String getPassword = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(key, "not set");
 
                         //we assume getPassword is not null
                         assert getPassword != null;

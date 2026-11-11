@@ -31,6 +31,8 @@ public class XmlRpcAdapter {
     private boolean _debug = false;
     protected XmlRpcClientConfigImpl _xmlConfig;
     protected Boolean _newApi;
+    private String _apiToken;
+    private boolean _tokenSessionInitialized = false;
 
     public XmlRpcAdapter(Context context){
         _context = context;
@@ -39,13 +41,14 @@ public class XmlRpcAdapter {
         _urlserver = settings.getString("serverurl", "");
         _debug = settings.getBoolean("debuglogs", false);
         _newApi = settings.getBoolean("newApi", false);
+        _apiToken = settings.getString("apitoken", "").trim();
         Log.d(TAG,"New API setting from prefs: "+_newApi);
         Log.d(TAG,"Connecting to server <"+_urlserver + "> with user <"+_user+">");
         _xmlConfig = new XmlRpcClientConfigImpl();
         try {
             _xmlConfig.setServerURL(new URL(_urlserver));
             Boolean isBasicAuth = settings.getBoolean("basicauth", false);
-            if(isBasicAuth) {
+            if(isBasicAuth && !useTokenAuth()) {
                 String password = settings.getString("password", "");
                 String user = settings.getString("user", "");;
                 _xmlConfig.setBasicUserName(user);
@@ -167,6 +170,9 @@ public class XmlRpcAdapter {
     public Boolean useOldApi() {
         return !_newApi;
     }
+    public boolean useTokenAuth() {
+        return !_apiToken.isEmpty();
+    }
 
     protected void updateNewApiVersion() {
         try {
@@ -201,6 +207,15 @@ public class XmlRpcAdapter {
 
     protected void ensureLogin() throws XmlRpcException {
         Log.d(TAG, "using the new API: "+_newApi);
+        if(useTokenAuth()) {
+            // the token is sent with every request, no login call nor cookies needed
+            if(!_tokenSessionInitialized) {
+                updateNewApiVersion();
+                updateThrottlingLimit();
+                _tokenSessionInitialized = true;
+            }
+            return;
+        }
         //Force reset login: CookiesHolder.Instance().cookies.clear();
         if(CookiesHolder.Instance().cookies.size() < 2) {
             //ensure we use the new API if available:
@@ -210,10 +225,7 @@ public class XmlRpcAdapter {
             String password = settings.getString("password", "");
             String user = settings.getString("user", "");
 
-            // ensure correct throttling
-            int throttlingLimit = Integer.parseInt(settings.getString("throttlingPerMin", "1000"));
-            XmlRpcThrottler xmlRpcThrottler = XmlRpcThrottler.instance();
-            xmlRpcThrottler.setLimit(throttlingLimit);
+            updateThrottlingLimit();
 
             Boolean loginResult;
             if(useOldApi()) {
@@ -247,6 +259,12 @@ public class XmlRpcAdapter {
         }
     }
 
+    private void updateThrottlingLimit() {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
+        int throttlingLimit = Integer.parseInt(settings.getString("throttlingPerMin", "1000"));
+        XmlRpcThrottler.instance().setLimit(throttlingLimit);
+    }
+
     private Boolean loginDeprecatad(String user, String password) throws XmlRpcException {
 
         Vector parametersLogin = new Vector();
@@ -269,6 +287,6 @@ public class XmlRpcAdapter {
 
     public XmlRpcSunHttpTransportFactory getXmlRpcSunHttpTransportFactoryInstance(Boolean isBinaryExpected, Boolean debug)
     {
-        return new DwXmlRpcSunHttpTransportFactory(client, isBinaryExpected, debug);
+        return new DwXmlRpcSunHttpTransportFactory(client, isBinaryExpected, debug, _apiToken);
     }
 }
