@@ -15,17 +15,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Android Build
-      # You may pin to the exact commit or the version.
-      # uses: vgaidarji/android-github-actions-build@0888eff41ad409a802aa4ccd7790a91891da9056
-      uses: vgaidarji/android-github-actions-build@v1.0.1
+    - uses: actions/checkout@v7
     - name: Set up JDK 17
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v6
       with:
         java-version: '17'
-        distribution: 'adopt'
-        
+        distribution: 'temurin'
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
       
