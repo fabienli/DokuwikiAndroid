@@ -30,30 +30,42 @@ public class DwXmlRpcSunHttpTransportFactory extends XmlRpcSunHttpTransportFacto
 
     private Boolean isBinaryExpected;
     private Boolean _debug;
+    private String _apiToken;
     private XmlRpcClient client;
     public DwXmlRpcSunHttpTransportFactory(XmlRpcClient client, Boolean isBinaryExpected, Boolean debug) {
+        this(client, isBinaryExpected, debug, "");
+    }
+
+    public DwXmlRpcSunHttpTransportFactory(XmlRpcClient client, Boolean isBinaryExpected, Boolean debug, String apiToken) {
         super(client);
         this.client = client;
         this.isBinaryExpected = isBinaryExpected;
         this._debug = debug;
+        this._apiToken = apiToken;
     }
 
     public XmlRpcTransport getTransport() {
-        return new DwXmlRpcSunHttpTransport(client, isBinaryExpected, _debug);
+        return new DwXmlRpcSunHttpTransport(client, isBinaryExpected, _debug, _apiToken);
     }
 }
 
 class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
     private Boolean _isBinaryExpected;
     private Boolean _debug;
+    private String _apiToken;
     private URLConnection conn;
     private String TAG = "DwXmlRpcSunHttpTransport";
 
 
     public DwXmlRpcSunHttpTransport(XmlRpcClient pClient, Boolean _isBinaryExpected, Boolean debug) {
+        this(pClient, _isBinaryExpected, debug, "");
+    }
+
+    public DwXmlRpcSunHttpTransport(XmlRpcClient pClient, Boolean _isBinaryExpected, Boolean debug, String apiToken) {
         super(pClient);
         this._isBinaryExpected = _isBinaryExpected;
         this._debug = debug;
+        this._apiToken = apiToken;
     }
 
     @Override
@@ -65,6 +77,10 @@ class DwXmlRpcSunHttpTransport extends XmlRpcSunHttpTransport {
     @Override
     protected void initHttpHeaders(XmlRpcRequest request) throws XmlRpcClientException {
         super.initHttpHeaders(request);
+        // DokuWiki token auth: https://www.dokuwiki.org/devel:authentication#token_auth
+        if (_apiToken != null && !_apiToken.isEmpty()) {
+            setRequestHeader("Authorization", "Bearer " + _apiToken);
+        }
         Log.d(TAG, "initHttpHeaders with cookies size: " + CookiesHolder.Instance().cookies.size());
         if (CookiesHolder.Instance().cookies.size() > 0) {
             StringBuilder commaSep = new StringBuilder();

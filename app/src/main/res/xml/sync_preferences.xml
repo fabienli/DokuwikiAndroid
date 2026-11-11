@@ -19,6 +19,11 @@
         app:maxLines="1"
         app:singleLine="true"
         app:title="Password" />
+    <EditTextPreference
+        app:key="apitoken"
+        app:maxLines="1"
+        app:singleLine="true"
+        app:title="API token (optional, replaces user/password)" />
 
     <SwitchPreference
         app:defaultValue="false"
