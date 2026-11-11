@@ -2,6 +2,9 @@ package com.fabienli.dokuwiki.tools;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class WikiUtilsUT {
     /**
      * Test default URL type
@@ -320,4 +323,13 @@ public class WikiUtilsUT {
         assert (newText.cursorPosition == NEW_POSITION);
     }
 
+
+    @Test
+    public void isUnencryptedUrl_detectsHttp() {
+        assertTrue(WikiUtils.isUnencryptedUrl("http://wiki.local/lib/exe/xmlrpc.php"));
+        assertTrue(WikiUtils.isUnencryptedUrl(" HTTP://wiki.local/lib/exe/xmlrpc.php"));
+        assertFalse(WikiUtils.isUnencryptedUrl("https://wiki.local/lib/exe/xmlrpc.php"));
+        assertFalse(WikiUtils.isUnencryptedUrl(""));
+        assertFalse(WikiUtils.isUnencryptedUrl(null));
+    }
 }

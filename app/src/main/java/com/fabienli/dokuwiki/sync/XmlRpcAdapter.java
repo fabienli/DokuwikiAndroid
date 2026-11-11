@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.fabienli.dokuwiki.R;
 import com.fabienli.dokuwiki.tools.Logs;
+import com.fabienli.dokuwiki.tools.WikiUtils;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.apache.xmlrpc.XmlRpcException;
@@ -212,6 +213,9 @@ public class XmlRpcAdapter {
         if(useTokenAuth()) {
             // the token is sent with every request, no login call nor cookies needed
             if(!_tokenSessionInitialized) {
+                if(WikiUtils.isUnencryptedUrl(_urlserver)) {
+                    Logs.getInstance().add("Warning: API token sent unencrypted, server URL uses http");
+                }
                 updateThrottlingLimit();
                 _tokenSessionInitialized = updateNewApiVersion();
             }

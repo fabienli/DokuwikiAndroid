@@ -101,6 +101,7 @@
 
     <!-- Settings for Data & Sync -->
     <string name="pref_header_data_sync">Synchronisation</string>
+    <string name="pref_apitoken_http_warning">Warning: the server URL uses http, the token is sent unencrypted. Use https outside of testing.</string>
 
 
     <string name="pref_header_dev">Development</string>

@@ -1,10 +1,12 @@
 package com.fabienli.dokuwiki;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.widget.EditText;
 
 import com.fabienli.dokuwiki.tools.InsetsUtils;
+import com.fabienli.dokuwiki.tools.WikiUtils;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -100,13 +102,34 @@ public class SettingsActivity extends AppCompatActivity implements
         }
     }
 
-    public static class SyncFragment extends PreferenceFragmentCompat {
+    public static class SyncFragment extends PreferenceFragmentCompat implements
+            SharedPreferences.OnSharedPreferenceChangeListener {
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.sync_preferences, rootKey);
             hideSecretValue("password");
             hideSecretValue("apitoken");
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+        }
+
+        @Override
+        public void onPause() {
+            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+            super.onPause();
+        }
+
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            // the token summary carries the http warning, refresh it when the URL changes
+            if ("serverurl".equals(key)) {
+                hideSecretValue("apitoken");
+            }
         }
 
         private void hideSecretValue(final String key) {
@@ -125,7 +148,7 @@ public class SettingsActivity extends AppCompatActivity implements
                         if (getPassword.equals("not set")) {
                             return getPassword;
                         } else {
-                            return (setAsterisks(getPassword.length()));
+                            return secretSummary(key, getPassword.length());
                         }
                     }
                 });
@@ -139,13 +162,22 @@ public class SettingsActivity extends AppCompatActivity implements
                                 preference.setSummaryProvider(new Preference.SummaryProvider() {
                                     @Override
                                     public CharSequence provideSummary(Preference preference) {
-                                        return setAsterisks(editText.getText().toString().length());
+                                        return secretSummary(key, editText.getText().toString().length());
                                     }
                                 });
                             }
                         });
             }
         }
+        private CharSequence secretSummary(String key, int length) {
+            String summary = setAsterisks(length);
+            String serverUrl = PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("serverurl", "");
+            if ("apitoken".equals(key) && length > 0 && WikiUtils.isUnencryptedUrl(serverUrl)) {
+                summary += "\n" + getString(R.string.pref_apitoken_http_warning);
+            }
+            return summary;
+        }
+
         //return the password in asterisks
         private String setAsterisks(int length) {
             StringBuilder sb = new StringBuilder();

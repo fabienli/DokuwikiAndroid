@@ -104,4 +104,8 @@ public class WikiUtils {
         // nothing updated, return null object
         return null;
     }
+
+    public static boolean isUnencryptedUrl(String url) {
+        return url != null && url.trim().toLowerCase(java.util.Locale.ROOT).startsWith("http://");
+    }
 }
