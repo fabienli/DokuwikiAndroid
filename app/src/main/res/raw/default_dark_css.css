@@ -4,8 +4,9 @@ body {
  background:black;
 }
 body {
- font:normal 87.5%/1.4 Arial,sans-serif;
+ font:normal 100%/1.5 Arial,sans-serif;
  -webkit-text-size-adjust:100%;
+ word-wrap:break-word;
 }
 h1,
 h2,
@@ -51,5 +52,40 @@ h6 {
  margin:0 0 1.333em;
 }
 a:link {
- color: #0000BB;
+ color:#8ab4f8;
+}
+a:visited {
+ color:#c58af9;
+}
+
+/* ---- mobile layout: nothing should be wider than the screen ---- */
+img {
+ max-width:100%;
+ height:auto;
+}
+div.table {
+ overflow-x:auto;
+}
+table.inline {
+ border-collapse:collapse;
+}
+table.inline th,
+table.inline td {
+ border:1px solid #444;
+ padding:.4em .6em;
+}
+pre {
+ overflow-x:auto;
+ padding:.5em;
+ background:#1c1c1c;
+}
+/* ---- touch targets ---- */
+/* vertical padding on an inline link enlarges the tap area without moving the text */
+a {
+ padding:.3em 0;
+}
+/* links in lists (page list, search results, wiki indexes): 48px high rows */
+li a {
+ display:inline-block;
+ padding:.75em 0;
 }
