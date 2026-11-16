@@ -28,6 +28,9 @@ public class UrlConverter {
     public static String WIKIMEDIALINKPATTERN_NICEURL_BASEREPLACE = "href=\""+WIKIBASEPATTERN+"?/(lib/exe/fetch.php|_media)/";
     public static String WIKIMEDIALINKPATTERN_NICEURL = WIKIMEDIALINKPATTERN_NICEURL_BASEREPLACE+"(\\S+)\"";
     public static String WIKIMEDIAMANAGERURL = "http://dokuwiki_media_manager/?";
+    // stylesheet used when the "css_style" preference has never been saved;
+    // must be the name of a file in res/raw and the defaultValue in general_preferences.xml
+    public static final String DEFAULT_CSS_FILE = "default_css.css";
     //TODO: handle link detail to media manager
     // format is: /lib/exe/detail.php?(\\S+)
     // nice url format is: /(lib/exe/detail.php|_detail)/(\\S+)
