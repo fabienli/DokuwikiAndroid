@@ -4,10 +4,66 @@ import android.util.Log;
 
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class UrlConverterUnitTest {
+    /**
+     * Unit tests run from the app module directory; also accept the repository root
+     */
+    private static File mainSourceFile(String relativePath){
+        File f = new File("src/main/" + relativePath);
+        if(!f.exists())
+            f = new File("app/src/main/" + relativePath);
+        return f;
+    }
+
+    /**
+     * The default stylesheet must be a file that is really shipped in res/raw,
+     * otherwise pages are displayed unstyled until a style is picked in the settings
+     */
+    @Test
+    public void UrlConverter_defaultCss_existsInRawResources(){
+        File cssFile = mainSourceFile("res/raw/" + UrlConverter.DEFAULT_CSS_FILE);
+        assert(cssFile.isFile());
+    }
+
+    /**
+     * The default used in code must be the default declared for the "css_style" preference
+     */
+    @Test
+    public void UrlConverter_defaultCss_matchesPreferenceDefault() throws IOException {
+        File prefFile = mainSourceFile("res/xml/general_preferences.xml");
+        String prefXml = new String(Files.readAllBytes(prefFile.toPath()), StandardCharsets.UTF_8);
+        assert(prefXml.contains("app:defaultValue=\"" + UrlConverter.DEFAULT_CSS_FILE + "\""));
+    }
+
+    /**
+     * When the stylesheet is present in the cache dir, it is embedded in the page
+     */
+    @Test
+    public void UrlConverter_htmlConversion_embedsDefaultCss() throws IOException {
+        File cacheDir = Files.createTempDirectory("dokuwiki_css").toFile();
+        File cssFile = new File(cacheDir, UrlConverter.DEFAULT_CSS_FILE);
+        FileOutputStream fos = new FileOutputStream(cssFile);
+        fos.write("body { color:#331; }".getBytes(StandardCharsets.UTF_8));
+        fos.close();
+
+        UrlConverter urlConverter = new UrlConverter(cacheDir.getAbsolutePath(), UrlConverter.DEFAULT_CSS_FILE);
+        String newContent = urlConverter.getHtmlContentConverted("<p>text</p>");
+
+        assert(newContent.contains("<style>body { color:#331; }</style>"));
+        assert(!newContent.contains("rel=\"stylesheet\""));
+
+        cssFile.delete();
+        cacheDir.delete();
+    }
+
     /**
      * Test the create page link conversions, simple pagename
      */

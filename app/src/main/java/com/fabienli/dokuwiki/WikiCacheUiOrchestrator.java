@@ -283,7 +283,7 @@ public class WikiCacheUiOrchestrator {
         if(_webView != null) {
             _webView.getSettings().setAllowFileAccess(true);
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-            String cssStyle = settings.getString("css_style", "default_css");
+            String cssStyle = settings.getString("css_style", UrlConverter.DEFAULT_CSS_FILE);
             UrlConverter urlConverter = new UrlConverter(context.getCacheDir().getAbsolutePath(), cssStyle);
             String html = urlConverter.getHtmlContentConverted(iPageData);
             for(UrlConverter.ImageRefData img : urlConverter._imageList){
