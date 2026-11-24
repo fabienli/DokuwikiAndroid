@@ -2,10 +2,47 @@ package com.fabienli.dokuwiki.tools;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class WikiUtilsUT {
+    /**
+     * Toolbar titles for page ids
+     */
+    @Test
+    public void test_pageTitle_rootPage(){
+        assertEquals("wiki", WikiUtils.getPageTitle("wiki"));
+    }
+
+    @Test
+    public void test_pageTitle_rootStartPage(){
+        assertEquals("start", WikiUtils.getPageTitle("start"));
+    }
+
+    @Test
+    public void test_pageTitle_pageInNamespace(){
+        assertEquals("vpn setup", WikiUtils.getPageTitle("infra:network:vpn_setup"));
+    }
+
+    @Test
+    public void test_pageTitle_namespaceStartPage(){
+        assertEquals("network", WikiUtils.getPageTitle("infra:network:start"));
+    }
+
+    @Test
+    public void test_pageTitle_leadingAndTrailingColons(){
+        assertEquals("vpn", WikiUtils.getPageTitle(":infra:vpn"));
+        assertEquals("infra", WikiUtils.getPageTitle("infra:"));
+    }
+
+    @Test
+    public void test_pageTitle_emptyOrNull(){
+        assertEquals("", WikiUtils.getPageTitle(""));
+        assertEquals(":", WikiUtils.getPageTitle(":"));
+        assertEquals("", WikiUtils.getPageTitle(null));
+    }
+
     /**
      * Test default URL type
      */
