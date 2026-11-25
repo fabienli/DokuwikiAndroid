@@ -179,13 +179,13 @@ public class WikiCacheUiOrchestrator {
     }
 
     /**
-     * The toolbar shows the page's title (its first heading) with the page id below it,
-     * or only the page id while the page is loading or when it has no heading
+     * The toolbar shows the page's title (its first heading) with the page id below it;
+     * while the page is loading or when it has no heading, the title is built from the page id
      */
     protected void setWikiPageTitle(String pagename, String pageHtml){
         String title = WikiUtils.getPageTitle(pageHtml);
         if(title == null)
-            title = pagename;
+            title = WikiUtils.getPageTitleFromId(pagename);
         String subtitle = title.equals(pagename) ? null : pagename;
         setScreenTitle(title, subtitle);
     }
