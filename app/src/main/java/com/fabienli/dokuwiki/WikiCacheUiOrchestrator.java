@@ -176,7 +176,12 @@ public class WikiCacheUiOrchestrator {
     }
 
     protected void setWikiPageTitle(String pagename){
-        String title = WikiUtils.getPageTitle(pagename);
+        String startPageName = WikiUtils.DEFAULT_START_PAGE;
+        if(context != null){
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+            startPageName = settings.getString("startpage", WikiUtils.DEFAULT_START_PAGE);
+        }
+        String title = WikiUtils.getPageTitle(pagename, startPageName);
         // the full page id is useful to know where we are, unless it says the same as the title
         String subtitle = title.equals(pagename) ? null : pagename;
         setScreenTitle(title, subtitle);

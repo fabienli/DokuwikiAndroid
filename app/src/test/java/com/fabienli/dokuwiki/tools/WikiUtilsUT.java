@@ -43,6 +43,24 @@ public class WikiUtilsUT {
         assertEquals("", WikiUtils.getPageTitle(null));
     }
 
+    @Test
+    public void test_pageTitle_customStartPageName(){
+        assertEquals("network", WikiUtils.getPageTitle("infra:network:home", "home"));
+        assertEquals("start", WikiUtils.getPageTitle("infra:network:start", "home"));
+    }
+
+    @Test
+    public void test_pageTitle_startPageNameWithNamespace(){
+        assertEquals("network", WikiUtils.getPageTitle("infra:network:home", "wiki:home"));
+        assertEquals("network", WikiUtils.getPageTitle("infra:network:home", ":home:"));
+    }
+
+    @Test
+    public void test_pageTitle_emptyStartPageNameUsesDefault(){
+        assertEquals("network", WikiUtils.getPageTitle("infra:network:start", ""));
+        assertEquals("network", WikiUtils.getPageTitle("infra:network:start", null));
+    }
+
     /**
      * Test default URL type
      */

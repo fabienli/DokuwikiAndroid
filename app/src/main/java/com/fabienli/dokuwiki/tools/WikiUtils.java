@@ -7,28 +7,43 @@ import java.util.regex.Pattern;
 
 public class WikiUtils {
     // name of the default page of a namespace in DokuWiki's default configuration
-    static final String NAMESPACE_START_PAGE = "start";
+    public static final String DEFAULT_START_PAGE = "start";
+
+    static public String getPageTitle(String pageId){
+        return getPageTitle(pageId, DEFAULT_START_PAGE);
+    }
 
     /**
      * Short, readable title for a page id, to be shown in the toolbar:
      * - "network:vpn_setup" gives "vpn setup"
      * - the start page of a namespace is named after its namespace: "network:start" gives "network"
+     * startPageName is the start page's name from the settings; only its last part is used,
+     * as DokuWiki uses the same page name as start page in every namespace
      */
-    static public String getPageTitle(String pageId){
+    static public String getPageTitle(String pageId, String startPageName){
         if(pageId == null)
             return "";
-        String id = pageId.trim();
-        while(id.startsWith(":"))
-            id = id.substring(1);
-        while(id.endsWith(":"))
-            id = id.substring(0, id.length()-1);
+        String id = trimColons(pageId);
         if(id.isEmpty())
             return pageId;
+        String startName = startPageName == null ? "" : trimColons(startPageName);
+        if(startName.isEmpty())
+            startName = DEFAULT_START_PAGE;
+        startName = startName.substring(startName.lastIndexOf(':')+1);
         String[] parts = id.split(":");
         String name = parts[parts.length-1];
-        if(name.equals(NAMESPACE_START_PAGE) && parts.length > 1)
+        if(name.equals(startName) && parts.length > 1)
             name = parts[parts.length-2];
         return name.replace('_', ' ');
+    }
+
+    static private String trimColons(String s){
+        String r = s.trim();
+        while(r.startsWith(":"))
+            r = r.substring(1);
+        while(r.endsWith(":"))
+            r = r.substring(0, r.length()-1);
+        return r;
     }
 
     static public String convertBaseUrlToMainWikiUrl(String syncUrl){
