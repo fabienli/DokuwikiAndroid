@@ -30,6 +30,23 @@ public class WikiUtilsUT {
     }
 
     @Test
+    public void test_pageTitle_namedEntities(){
+        assertEquals("Licensing \u2014 Copyright \u00A9 2026",
+                WikiUtils.getPageTitle("<h1>Licensing &mdash; Copyright &copy; 2026</h1>"));
+        assertEquals("&unknown; stays", WikiUtils.getPageTitle("<h1>&unknown; stays</h1>"));
+    }
+
+    @Test
+    public void test_pageTitle_escapedEntityIsDecodedOnce(){
+        assertEquals("&lt; and &#38;", WikiUtils.getPageTitle("<h1>&amp;lt; and &amp;#38;</h1>"));
+    }
+
+    @Test
+    public void test_pageTitle_invalidCodePoint(){
+        assertEquals("Release \uFFFD \uFFFD", WikiUtils.getPageTitle("<h1>Release &#x110000; &#99999999999;</h1>"));
+    }
+
+    @Test
     public void test_pageTitle_noHeading(){
         assertNull(WikiUtils.getPageTitle("<p>no heading here</p>"));
         assertNull(WikiUtils.getPageTitle("<h1> </h1>"));

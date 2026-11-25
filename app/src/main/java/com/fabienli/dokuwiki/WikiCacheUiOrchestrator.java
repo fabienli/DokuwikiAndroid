@@ -133,14 +133,17 @@ public class WikiCacheUiOrchestrator {
 
     public void forceDownloadPageHTMLforDisplay(WebView webview) {
         this._webView = webview;
+        final String pagename = _currentPageName;
         PageHtmlRetrieveForceDownload pageHtmlRetrieveForceDownload = new PageHtmlRetrieveForceDownload(_db, new XmlRpcAdapter(context));
-        pageHtmlRetrieveForceDownload.retrievePageAsync(_currentPageName, new PageHtmlRetrieveCallback() {
+        pageHtmlRetrieveForceDownload.retrievePageAsync(pagename, new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content){
                 PageTextRetrieve pageTextRetrieve = new PageTextRetrieveForceDownload(_db, new XmlRpcAdapter(context));
-                pageTextRetrieve.retrievePageAsync(_currentPageName, new PageHtmlRetrieveCallback() {
+                pageTextRetrieve.retrievePageAsync(pagename, new PageHtmlRetrieveCallback() {
                     @Override
                     public void pageRetrieved(String content2) {
+                        if(pagename != null && pagename.equals(_currentPageName))
+                            setWikiPageTitle(pagename, content);
                         loadPage(content);
                     }
                 });
