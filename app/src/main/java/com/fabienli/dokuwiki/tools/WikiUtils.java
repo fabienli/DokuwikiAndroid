@@ -6,6 +6,46 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class WikiUtils {
+    // name of the default page of a namespace in DokuWiki's default configuration
+    public static final String DEFAULT_START_PAGE = "start";
+
+    static public String getPageTitle(String pageId){
+        return getPageTitle(pageId, DEFAULT_START_PAGE);
+    }
+
+    /**
+     * Short, readable title for a page id, to be shown in the toolbar:
+     * - "network:vpn_setup" gives "vpn setup"
+     * - the start page of a namespace is named after its namespace: "network:start" gives "network"
+     * startPageName is the start page's name from the settings; it is used only when it is a
+     * plain name, as the setting can also hold a full page id (the page opened at launch)
+     */
+    static public String getPageTitle(String pageId, String startPageName){
+        if(pageId == null)
+            return "";
+        String id = trimColons(pageId);
+        if(id.isEmpty())
+            return pageId;
+        String startName = startPageName == null ? "" : trimColons(startPageName);
+        // a page id with a namespace is the page opened at launch, not DokuWiki's start page name
+        if(startName.isEmpty() || startName.contains(":"))
+            startName = DEFAULT_START_PAGE;
+        String[] parts = id.split(":");
+        String name = parts[parts.length-1];
+        if(name.equals(startName) && parts.length > 1)
+            name = parts[parts.length-2];
+        return name.replace('_', ' ');
+    }
+
+    static private String trimColons(String s){
+        String r = s.trim();
+        while(r.startsWith(":"))
+            r = r.substring(1);
+        while(r.endsWith(":"))
+            r = r.substring(0, r.length()-1);
+        return r;
+    }
+
     static public String convertBaseUrlToMainWikiUrl(String syncUrl){
         String baseurl = convertBaseUrlToRootUrl(syncUrl);
         // add default main php script

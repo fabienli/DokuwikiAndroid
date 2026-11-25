@@ -123,4 +123,12 @@
     <string name="title_activity_edit">EditActivity</string>
     <string name="title_activity_settings2">Settings</string>
 
+    <!-- titles shown in the main screen's toolbar -->
+    <string name="title_all_pages">All pages</string>
+    <string name="title_search_results">Search: %1$s</string>
+    <string name="title_logs">Logs</string>
+    <string name="title_sync_actions">Sync actions</string>
+    <string name="title_create_page">Create page</string>
+    <string name="title_media_manager">Media manager</string>
+
 </resources>

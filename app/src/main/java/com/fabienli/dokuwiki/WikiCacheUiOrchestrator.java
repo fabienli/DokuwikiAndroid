@@ -12,6 +12,7 @@ import com.fabienli.dokuwiki.db.AppDatabase;
 import com.fabienli.dokuwiki.sync.StaticDownloader;
 import com.fabienli.dokuwiki.sync.XmlRpcAdapter;
 import com.fabienli.dokuwiki.tools.Logs;
+import com.fabienli.dokuwiki.tools.WikiUtils;
 import com.fabienli.dokuwiki.usecase.ActionListRetrieve;
 import com.fabienli.dokuwiki.usecase.MediaImport;
 import com.fabienli.dokuwiki.usecase.MediaRetrieve;
@@ -154,11 +155,44 @@ public class WikiCacheUiOrchestrator {
 
     }
 
+    /**
+     * Show what is displayed in the main screen's toolbar,
+     * so the user always knows which page they are on
+     */
+    protected void setScreenTitle(String title, String subtitle){
+        if(context instanceof MainActivity){
+            MainActivity activity = (MainActivity)context;
+            activity.setTitle(title);
+            if(activity.getSupportActionBar() != null){
+                activity.getSupportActionBar().setSubtitle(subtitle);
+            }
+        }
+    }
+
+    protected void setScreenTitle(int titleResId, Object... formatArgs){
+        if(context != null){
+            setScreenTitle(context.getString(titleResId, formatArgs), null);
+        }
+    }
+
+    protected void setWikiPageTitle(String pagename){
+        String startPageName = WikiUtils.DEFAULT_START_PAGE;
+        if(context != null){
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+            startPageName = settings.getString("startpage", WikiUtils.DEFAULT_START_PAGE);
+        }
+        String title = WikiUtils.getPageTitle(pagename, startPageName);
+        // the full page id is useful to know where we are, unless it says the same as the title
+        String subtitle = title.equals(pagename) ? null : pagename;
+        setScreenTitle(title, subtitle);
+    }
+
     public void retrievePageHTMLforDisplay(String pagename, final WebView webview){
         this._webView = webview;
         _currentPageName = pagename;
         Log.d(TAG, "Requested page: "+pagename);
         addPageToHistory(pagename);
+        setWikiPageTitle(pagename);
         PageHtmlRetrieve aPageHtmlRetrieve = new PageHtmlRetrieve(_db, new XmlRpcAdapter(context));
         aPageHtmlRetrieve.retrievePageAsync(pagename, new PageHtmlRetrieveCallback() {
             @Override
@@ -201,6 +235,7 @@ public class WikiCacheUiOrchestrator {
     public void displayPageListHtml(WebView webview) {
         this._webView = webview;
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_PAGES_LIST);
+        setScreenTitle(R.string.title_all_pages);
         PageListRetrieve pageListRetrieve = new PageListRetrieve(_db);
         pageListRetrieve.getPageListAsync(new PageHtmlRetrieveCallback() {
             @Override
@@ -215,6 +250,7 @@ public class WikiCacheUiOrchestrator {
     public void retrieveSearchResultsforDisplay(String searchData, WebView webview) {
         this._webView = webview;
         addPageToHistory(SEARCH_QUERY + searchData);
+        setScreenTitle(R.string.title_search_results, searchData);
         SearchWikiListRetrieve searchWikiResultPage = new SearchWikiListRetrieve(_db);
         searchWikiResultPage.setSearchData(searchData);
         searchWikiResultPage.getPageResultsListAsync(new PageHtmlRetrieveCallback() {
@@ -232,6 +268,7 @@ public class WikiCacheUiOrchestrator {
 
     public String getLogsHtml() {
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_LOGS);
+        setScreenTitle(R.string.title_logs);
         String unencodedHtml = "<html><body><ul>";
         Logs.getInstance().purgeToMax(); // ensure not too many items
         for (String a : Logs.getInstance()._data) {
@@ -382,6 +419,7 @@ public class WikiCacheUiOrchestrator {
         Logs.getInstance().add("Show the list of SyncAction from local db");
         _webView = webView;
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_ACTION_LIST);
+        setScreenTitle(R.string.title_sync_actions);
         ActionListRetrieve actionListRetrieve = new ActionListRetrieve(_db);
         actionListRetrieve.getSyncActionListAsync(new PageHtmlRetrieveCallback() {
             @Override
@@ -395,6 +433,7 @@ public class WikiCacheUiOrchestrator {
         Logs.getInstance().add("Show the first page to create a new page");
         _webView = webView;
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_CREATE_PAGE);
+        setScreenTitle(R.string.title_create_page);
         StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(_db, context.getCacheDir().getAbsolutePath());
         staticPagesDisplay.getCreatePageHtmlAsync(new PageHtmlRetrieveCallback() {
             @Override
@@ -408,6 +447,7 @@ public class WikiCacheUiOrchestrator {
         Logs.getInstance().add("Show the first page to handle medias");
         _webView = webView;
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_MEDIA_MANAGER);
+        setScreenTitle(R.string.title_media_manager);
         StaticMediaManagerDisplay staticPagesDisplay = new StaticMediaManagerDisplay(_db, context.getCacheDir().getAbsolutePath());
         staticPagesDisplay.setMediaManagerParams(args);
         staticPagesDisplay.getMediaPageHtmlAsync(new PageHtmlRetrieveCallback() {
