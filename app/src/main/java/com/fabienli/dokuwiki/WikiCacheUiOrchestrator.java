@@ -52,6 +52,8 @@ public class WikiCacheUiOrchestrator {
     protected AppDatabase _db;
     // ongoing status
     public String _currentPageName = "";
+    // incremented each time a screen is requested, so that late async results of a previous one are ignored
+    protected int _displayRequestId = 0;
     // Status on current Search
     public boolean _isSearchDone = false;
     // UI access
@@ -131,9 +133,22 @@ public class WikiCacheUiOrchestrator {
         });
     }
 
+    /**
+     * To be called when a new screen is requested: returns the id to give to isCurrentDisplay()
+     * once its async result is ready
+     */
+    protected int newDisplayRequest(){
+        return ++_displayRequestId;
+    }
+
+    protected boolean isCurrentDisplay(int displayRequestId){
+        return displayRequestId == _displayRequestId;
+    }
+
     public void forceDownloadPageHTMLforDisplay(WebView webview) {
         this._webView = webview;
         final String pagename = _currentPageName;
+        final int displayRequestId = newDisplayRequest();
         PageHtmlRetrieveForceDownload pageHtmlRetrieveForceDownload = new PageHtmlRetrieveForceDownload(_db, new XmlRpcAdapter(context));
         pageHtmlRetrieveForceDownload.retrievePageAsync(pagename, new PageHtmlRetrieveCallback() {
             @Override
@@ -142,8 +157,10 @@ public class WikiCacheUiOrchestrator {
                 pageTextRetrieve.retrievePageAsync(pagename, new PageHtmlRetrieveCallback() {
                     @Override
                     public void pageRetrieved(String content2) {
-                        if(pagename != null && pagename.equals(_currentPageName))
-                            setWikiPageTitle(pagename, content);
+                        // another screen may have been requested in the meantime
+                        if(!isCurrentDisplay(displayRequestId))
+                            return;
+                        setWikiPageTitle(pagename, content);
                         loadPage(content);
                     }
                 });
@@ -196,13 +213,15 @@ public class WikiCacheUiOrchestrator {
         Log.d(TAG, "Requested page: "+pagename);
         addPageToHistory(pagename);
         setWikiPageTitle(pagename, null);
+        final int displayRequestId = newDisplayRequest();
         PageHtmlRetrieve aPageHtmlRetrieve = new PageHtmlRetrieve(_db, new XmlRpcAdapter(context));
         aPageHtmlRetrieve.retrievePageAsync(pagename, new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content){
-                // another page may have been requested in the meantime
-                if(pagename.equals(_currentPageName))
-                    setWikiPageTitle(pagename, content);
+                // another screen may have been requested in the meantime
+                if(!isCurrentDisplay(displayRequestId))
+                    return;
+                setWikiPageTitle(pagename, content);
                 loadPage(content);
             }
         });
@@ -242,11 +261,13 @@ public class WikiCacheUiOrchestrator {
         this._webView = webview;
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_PAGES_LIST);
         setScreenTitle(R.string.title_all_pages);
+        final int displayRequestId = newDisplayRequest();
         PageListRetrieve pageListRetrieve = new PageListRetrieve(_db);
         pageListRetrieve.getPageListAsync(new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content){
-                loadPage(content);
+                if(isCurrentDisplay(displayRequestId))
+                    loadPage(content);
             }
         });
         // workaround to avoid intermediate error page
@@ -257,12 +278,14 @@ public class WikiCacheUiOrchestrator {
         this._webView = webview;
         addPageToHistory(SEARCH_QUERY + searchData);
         setScreenTitle(R.string.title_search_results, searchData);
+        final int displayRequestId = newDisplayRequest();
         SearchWikiListRetrieve searchWikiResultPage = new SearchWikiListRetrieve(_db);
         searchWikiResultPage.setSearchData(searchData);
         searchWikiResultPage.getPageResultsListAsync(new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content){
-                loadPage(content);
+                if(isCurrentDisplay(displayRequestId))
+                    loadPage(content);
                 ((MainActivity)context).enableSearchButton(true);
                 // we block further random popup of the search box with a reset search indicators:
                 ((MainActivity)context).preventSearch();
@@ -275,6 +298,7 @@ public class WikiCacheUiOrchestrator {
     public String getLogsHtml() {
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_LOGS);
         setScreenTitle(R.string.title_logs);
+        newDisplayRequest();
         String unencodedHtml = "<html><body><ul>";
         Logs.getInstance().purgeToMax(); // ensure not too many items
         for (String a : Logs.getInstance()._data) {
@@ -426,11 +450,13 @@ public class WikiCacheUiOrchestrator {
         _webView = webView;
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_ACTION_LIST);
         setScreenTitle(R.string.title_sync_actions);
+        final int displayRequestId = newDisplayRequest();
         ActionListRetrieve actionListRetrieve = new ActionListRetrieve(_db);
         actionListRetrieve.getSyncActionListAsync(new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content) {
-                loadPage(content);
+                if(isCurrentDisplay(displayRequestId))
+                    loadPage(content);
             }
         });
     }
@@ -440,11 +466,13 @@ public class WikiCacheUiOrchestrator {
         _webView = webView;
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_CREATE_PAGE);
         setScreenTitle(R.string.title_create_page);
+        final int displayRequestId = newDisplayRequest();
         StaticPagesDisplay staticPagesDisplay = new StaticPagesDisplay(_db, context.getCacheDir().getAbsolutePath());
         staticPagesDisplay.getCreatePageHtmlAsync(new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content) {
-                loadPage(content);
+                if(isCurrentDisplay(displayRequestId))
+                    loadPage(content);
             }
         });
     }
@@ -454,12 +482,14 @@ public class WikiCacheUiOrchestrator {
         _webView = webView;
         addPageToHistory(APP_INTERNAL_PAGE_PREFIX + PAGE_MEDIA_MANAGER);
         setScreenTitle(R.string.title_media_manager);
+        final int displayRequestId = newDisplayRequest();
         StaticMediaManagerDisplay staticPagesDisplay = new StaticMediaManagerDisplay(_db, context.getCacheDir().getAbsolutePath());
         staticPagesDisplay.setMediaManagerParams(args);
         staticPagesDisplay.getMediaPageHtmlAsync(new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content) {
-                loadPage(content);
+                if(isCurrentDisplay(displayRequestId))
+                    loadPage(content);
             }
         });
     }
