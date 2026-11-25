@@ -50,8 +50,11 @@ public class WikiUtilsUT {
     }
 
     @Test
-    public void test_pageTitle_startPageNameWithNamespace(){
-        assertEquals("network", WikiUtils.getPageTitle("infra:network:home", "wiki:home"));
+    public void test_pageTitle_startPageIdWithNamespaceUsesDefault(){
+        // a page id is the page opened at launch, not the start page name used in every namespace
+        assertEquals("home", WikiUtils.getPageTitle("infra:network:home", "wiki:home"));
+        assertEquals("network", WikiUtils.getPageTitle("infra:network:start", "wiki:home"));
+        // leading/trailing colons alone don't make it a page id
         assertEquals("network", WikiUtils.getPageTitle("infra:network:home", ":home:"));
     }
 

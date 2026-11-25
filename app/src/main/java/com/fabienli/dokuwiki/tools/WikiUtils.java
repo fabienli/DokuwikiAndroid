@@ -17,8 +17,8 @@ public class WikiUtils {
      * Short, readable title for a page id, to be shown in the toolbar:
      * - "network:vpn_setup" gives "vpn setup"
      * - the start page of a namespace is named after its namespace: "network:start" gives "network"
-     * startPageName is the start page's name from the settings; only its last part is used,
-     * as DokuWiki uses the same page name as start page in every namespace
+     * startPageName is the start page's name from the settings; it is used only when it is a
+     * plain name, as the setting can also hold a full page id (the page opened at launch)
      */
     static public String getPageTitle(String pageId, String startPageName){
         if(pageId == null)
@@ -27,9 +27,9 @@ public class WikiUtils {
         if(id.isEmpty())
             return pageId;
         String startName = startPageName == null ? "" : trimColons(startPageName);
-        if(startName.isEmpty())
+        // a page id with a namespace is the page opened at launch, not DokuWiki's start page name
+        if(startName.isEmpty() || startName.contains(":"))
             startName = DEFAULT_START_PAGE;
-        startName = startName.substring(startName.lastIndexOf(':')+1);
         String[] parts = id.split(":");
         String name = parts[parts.length-1];
         if(name.equals(startName) && parts.length > 1)
