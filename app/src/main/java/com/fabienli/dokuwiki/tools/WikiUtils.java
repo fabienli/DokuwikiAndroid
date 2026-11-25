@@ -45,6 +45,31 @@ public class WikiUtils {
         return title.isEmpty() ? null : title;
     }
 
+    // name of the default page of a namespace in DokuWiki's default configuration
+    static final String NAMESPACE_START_PAGE = "start";
+
+    /**
+     * Title built from a page id, for pages without heading:
+     * - "infra:network:vpn_setup" gives "vpn setup"
+     * - the start page of a namespace is named after its namespace: "infra:network:start" gives "network"
+     */
+    static public String getPageTitleFromId(String pageId){
+        if(pageId == null)
+            return "";
+        String id = pageId.trim();
+        while(id.startsWith(":"))
+            id = id.substring(1);
+        while(id.endsWith(":"))
+            id = id.substring(0, id.length()-1);
+        if(id.isEmpty())
+            return pageId;
+        String[] parts = id.split(":");
+        String name = parts[parts.length-1];
+        if(name.equals(NAMESPACE_START_PAGE) && parts.length > 1)
+            name = parts[parts.length-2];
+        return name.replace('_', ' ');
+    }
+
     /**
      * Decodes numeric and common named character references in one pass,
      * so an escaped reference like "&amp;lt;" gives "&lt;" and not "<"

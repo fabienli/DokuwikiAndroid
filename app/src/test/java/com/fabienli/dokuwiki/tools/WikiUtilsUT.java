@@ -46,6 +46,39 @@ public class WikiUtilsUT {
         assertEquals("Release \uFFFD \uFFFD", WikiUtils.getPageTitle("<h1>Release &#x110000; &#99999999999;</h1>"));
     }
 
+    /**
+     * Titles built from the page id, for pages without heading
+     */
+    @Test
+    public void test_pageTitleFromId_pageInNamespace(){
+        assertEquals("home", WikiUtils.getPageTitleFromId("infra:network:home"));
+        assertEquals("vpn setup", WikiUtils.getPageTitleFromId("infra:network:vpn_setup"));
+    }
+
+    @Test
+    public void test_pageTitleFromId_namespaceStartPage(){
+        assertEquals("network", WikiUtils.getPageTitleFromId("infra:network:start"));
+    }
+
+    @Test
+    public void test_pageTitleFromId_rootPages(){
+        assertEquals("wiki", WikiUtils.getPageTitleFromId("wiki"));
+        assertEquals("start", WikiUtils.getPageTitleFromId("start"));
+    }
+
+    @Test
+    public void test_pageTitleFromId_leadingAndTrailingColons(){
+        assertEquals("vpn", WikiUtils.getPageTitleFromId(":infra:vpn"));
+        assertEquals("infra", WikiUtils.getPageTitleFromId("infra:"));
+    }
+
+    @Test
+    public void test_pageTitleFromId_emptyOrNull(){
+        assertEquals("", WikiUtils.getPageTitleFromId(""));
+        assertEquals(":", WikiUtils.getPageTitleFromId(":"));
+        assertEquals("", WikiUtils.getPageTitleFromId(null));
+    }
+
     @Test
     public void test_pageTitle_noHeading(){
         assertNull(WikiUtils.getPageTitle("<p>no heading here</p>"));
