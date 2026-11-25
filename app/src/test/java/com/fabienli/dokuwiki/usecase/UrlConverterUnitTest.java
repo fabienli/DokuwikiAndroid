@@ -459,6 +459,26 @@ public class UrlConverterUnitTest {
         assert(urlConverter._imageList.get(0).imageFilePath.equals("notes/test.pdf"));
     }
 
+    @Test
+    public void UrlConverter_niceUrl_absoluteRevisionLinkUnchanged(){
+        String newContent = convertNiceUrl(NICEURL_SERVER, "<a href=\"https://my.server/wiki/topic/home?rev=123\">old</a>");
+        assert(newContent.contains("href=\"https://my.server/wiki/topic/home?rev=123\""));
+    }
+
+    @Test
+    public void UrlConverter_niceUrl_relativeLinkWithQuery(){
+        String newContent = convertNiceUrl(NICEURL_SERVER, "<a href=\"/wiki/topic/home?rev=123\">old</a>");
+        assert(newContent.contains("href=\"" + UrlConverter.WIKILINKURL + "topic:home?rev=123\""));
+        assertPageName(UrlConverter.WIKILINKURL + "topic:home?rev=123", "topic:home");
+    }
+
+    @Test
+    public void UrlConverter_niceUrl_mediaLinkOutsideCacheNotDownloaded(){
+        UrlConverter urlConverter = new UrlConverter("/cache/dir/", "default_css.css", NICEURL_SERVER);
+        urlConverter.getHtmlContentConverted("<a href=\"/wiki/_media/../../files/evil.so\">doc</a>");
+        assert(urlConverter._imageList.isEmpty());
+    }
+
     private static void assertPageName(String url, String expected){
         assert(UrlConverter.getPageName(url).equals(expected));
     }

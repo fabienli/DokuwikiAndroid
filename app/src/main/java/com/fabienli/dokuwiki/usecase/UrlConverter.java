@@ -57,9 +57,9 @@ public class UrlConverter {
     public UrlConverter(String cacheDir, String cssFile, String serverUrl){
         this(cacheDir, cssFile);
         if(serverUrl != null && serverUrl.length() > 0) {
-            _niceUrlPagePattern = Pattern.compile("href=\"(?:" + Pattern.quote(WikiUtils.getWikiHostUrl(serverUrl)) + ")?"
+            _niceUrlPagePattern = Pattern.compile("href=\"(" + Pattern.quote(WikiUtils.getWikiHostUrl(serverUrl)) + ")?"
                     + Pattern.quote(WikiUtils.getWikiBasePath(serverUrl)) + "/(?:doku\\.php/)?"
-                    + "(?!(?:lib|_media|_detail|_export)/|(?:doku|feed)\\.php)([^\"?#/][^\"?#]*)",
+                    + "(?!(?:lib|_media|_detail|_export)/|(?:doku|feed)\\.php)([^\"?#/][^\"?#]*)(\\?)?",
                     Pattern.CASE_INSENSITIVE);
         }
     }
@@ -75,8 +75,12 @@ public class UrlConverter {
         Matcher m = _niceUrlPagePattern.matcher(html);
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
-            Log.d(TAG, "Found nice url page link: "+m.group(1));
-            m.appendReplacement(sb, Matcher.quoteReplacement("href=\"" + WIKILINKURL + niceUrlIdToWikiId(m.group(1))));
+            Log.d(TAG, "Found nice url page link: "+m.group(2));
+            // absolute links with a query (e.g. ?rev=) are left to the browser, as the app only shows the current page
+            if(m.group(1) != null && m.group(3) != null)
+                continue;
+            m.appendReplacement(sb, Matcher.quoteReplacement("href=\"" + WIKILINKURL + niceUrlIdToWikiId(m.group(2))
+                    + (m.group(3) != null ? m.group(3) : "")));
         }
         m.appendTail(sb);
         return sb.toString();
@@ -250,7 +254,9 @@ public class UrlConverter {
                 imageData.height = 0;
                 imageData.id = niceUrlIdToWikiId(m.group(3).split("\\?")[0].replaceAll("%3A", ":").replaceAll("%2F", "/"));
                 imageData.imageFilePath = imageData.id.replaceAll(":", "/");
-                _imageList.add(imageData);
+                // a valid media id has no ".." segment; never download outside of the cache dir
+                if(!imageData.imageFilePath.contains(".."))
+                    _imageList.add(imageData);
             }
 
         }
@@ -293,6 +299,10 @@ public class UrlConverter {
             result = url.replace(WIKILINKURL, "");
             if (result.contains("#")){
                 result = result.substring(0, result.indexOf("#"));
+            }
+            // a page id never contains '?': drop the query of nice URLs, e.g. "ns:page?rev=123"
+            if (result.contains("?")){
+                result = result.substring(0, result.indexOf("?"));
             }
         }
         else if(isCreatePageLink(url)) {
