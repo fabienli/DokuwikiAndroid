@@ -101,6 +101,26 @@ public class WikiUtils {
         return baseurl;
     }
 
+    private static final Pattern ROOT_URL_PATTERN = Pattern.compile("^(https?://[^/]+)(/.*)?$", Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Scheme and host (with port) of the wiki, e.g. "https://www.mywiki.com"
+     */
+    static public String getWikiHostUrl(String syncUrl){
+        Matcher m = ROOT_URL_PATTERN.matcher(convertBaseUrlToRootUrl(syncUrl));
+        return m.matches() ? m.group(1) : "";
+    }
+
+    /**
+     * Path of the wiki on its server, without ending slash, e.g. "/dokuwiki", or "" when at the server root
+     */
+    static public String getWikiBasePath(String syncUrl){
+        Matcher m = ROOT_URL_PATTERN.matcher(convertBaseUrlToRootUrl(syncUrl));
+        if(!m.matches() || m.group(2) == null)
+            return "";
+        return m.group(2).replaceAll("/+$", "");
+    }
+
     static public class EditedText {
         public String text;
         public int cursorPosition;
