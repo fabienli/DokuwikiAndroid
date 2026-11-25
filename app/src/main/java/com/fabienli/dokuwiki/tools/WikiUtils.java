@@ -2,48 +2,82 @@ package com.fabienli.dokuwiki.tools;
 
 import android.text.Editable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class WikiUtils {
-    // name of the default page of a namespace in DokuWiki's default configuration
-    public static final String DEFAULT_START_PAGE = "start";
-
-    static public String getPageTitle(String pageId){
-        return getPageTitle(pageId, DEFAULT_START_PAGE);
+    private static final Pattern HEADING_PATTERN =
+            Pattern.compile("<h[1-6]\\b[^>]*>(.*?)</h[1-6]>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    private static final Pattern HTML_TAG_PATTERN = Pattern.compile("<[^>]*>");
+    private static final Pattern ENTITY_PATTERN = Pattern.compile("&(?:#([xX]?)([0-9a-fA-F]+)|([a-zA-Z]+));");
+    // DokuWiki writes most characters as UTF-8; these are the named references it or plugins may still emit
+    private static final Map<String, String> NAMED_ENTITIES = new HashMap<>();
+    static {
+        String[][] entities = {
+                {"amp", "&"}, {"lt", "<"}, {"gt", ">"}, {"quot", "\""}, {"apos", "'"}, {"nbsp", " "},
+                {"copy", "\u00A9"}, {"reg", "\u00AE"}, {"trade", "\u2122"}, {"deg", "\u00B0"},
+                {"middot", "\u00B7"}, {"times", "\u00D7"}, {"divide", "\u00F7"}, {"euro", "\u20AC"},
+                {"ndash", "\u2013"}, {"mdash", "\u2014"}, {"hellip", "\u2026"},
+                {"lsquo", "\u2018"}, {"rsquo", "\u2019"}, {"sbquo", "\u201A"},
+                {"ldquo", "\u201C"}, {"rdquo", "\u201D"}, {"bdquo", "\u201E"},
+                {"laquo", "\u00AB"}, {"raquo", "\u00BB"},
+                {"larr", "\u2190"}, {"uarr", "\u2191"}, {"rarr", "\u2192"}, {"darr", "\u2193"}, {"harr", "\u2194"},
+                {"lArr", "\u21D0"}, {"rArr", "\u21D2"}, {"hArr", "\u21D4"},
+        };
+        for(String[] e : entities)
+            NAMED_ENTITIES.put(e[0], e[1]);
     }
 
     /**
-     * Short, readable title for a page id, to be shown in the toolbar:
-     * - "network:vpn_setup" gives "vpn setup"
-     * - the start page of a namespace is named after its namespace: "network:start" gives "network"
-     * startPageName is the start page's name from the settings; it is used only when it is a
-     * plain name, as the setting can also hold a full page id (the page opened at launch)
+     * Title of a page, as DokuWiki defines it: the text of its first heading.
+     * Returns null when the page html has no heading.
      */
-    static public String getPageTitle(String pageId, String startPageName){
-        if(pageId == null)
-            return "";
-        String id = trimColons(pageId);
-        if(id.isEmpty())
-            return pageId;
-        String startName = startPageName == null ? "" : trimColons(startPageName);
-        // a page id with a namespace is the page opened at launch, not DokuWiki's start page name
-        if(startName.isEmpty() || startName.contains(":"))
-            startName = DEFAULT_START_PAGE;
-        String[] parts = id.split(":");
-        String name = parts[parts.length-1];
-        if(name.equals(startName) && parts.length > 1)
-            name = parts[parts.length-2];
-        return name.replace('_', ' ');
+    static public String getPageTitle(String pageHtml){
+        if(pageHtml == null)
+            return null;
+        Matcher m = HEADING_PATTERN.matcher(pageHtml);
+        if(!m.find())
+            return null;
+        String title = HTML_TAG_PATTERN.matcher(m.group(1)).replaceAll("");
+        title = decodeHtmlEntities(title).replaceAll("\\s+", " ").trim();
+        return title.isEmpty() ? null : title;
     }
 
-    static private String trimColons(String s){
-        String r = s.trim();
-        while(r.startsWith(":"))
-            r = r.substring(1);
-        while(r.endsWith(":"))
-            r = r.substring(0, r.length()-1);
-        return r;
+    /**
+     * Decodes numeric and common named character references in one pass,
+     * so an escaped reference like "&amp;lt;" gives "&lt;" and not "<"
+     */
+    static String decodeHtmlEntities(String text){
+        Matcher m = ENTITY_PATTERN.matcher(text);
+        StringBuffer sb = new StringBuffer();
+        while(m.find()){
+            String decoded = m.group(0);
+            if(m.group(3) != null){
+                String named = NAMED_ENTITIES.get(m.group(3));
+                if(named != null)
+                    decoded = named;
+            }
+            else {
+                boolean isHex = !m.group(1).isEmpty();
+                String digits = m.group(2);
+                if(isHex || digits.matches("[0-9]+")){
+                    int codePoint;
+                    try {
+                        codePoint = Integer.parseInt(digits, isHex ? 16 : 10);
+                    } catch (NumberFormatException e) {
+                        codePoint = -1;
+                    }
+                    if(!Character.isValidCodePoint(codePoint))
+                        codePoint = 0xFFFD;
+                    decoded = new String(Character.toChars(codePoint));
+                }
+            }
+            m.appendReplacement(sb, Matcher.quoteReplacement(decoded));
+        }
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     static public String convertBaseUrlToMainWikiUrl(String syncUrl){

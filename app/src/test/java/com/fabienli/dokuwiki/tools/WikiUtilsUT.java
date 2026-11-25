@@ -4,64 +4,54 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class WikiUtilsUT {
     /**
-     * Toolbar titles for page ids
+     * Page titles, taken from the first heading of the page html
      */
     @Test
-    public void test_pageTitle_rootPage(){
-        assertEquals("wiki", WikiUtils.getPageTitle("wiki"));
+    public void test_pageTitle_firstHeading(){
+        String html = "\n<h1 class=\"sectionedit1\" id=\"vpn_setup\">VPN setup</h1>\n<div class=\"level1\">\n<p>text</p>\n</div>\n"
+                + "<h2 class=\"sectionedit2\" id=\"client\">Client</h2>\n";
+        assertEquals("VPN setup", WikiUtils.getPageTitle(html));
     }
 
     @Test
-    public void test_pageTitle_rootStartPage(){
-        assertEquals("start", WikiUtils.getPageTitle("start"));
+    public void test_pageTitle_firstHeadingIsNotH1(){
+        assertEquals("Client", WikiUtils.getPageTitle("<p>intro</p><h3 id=\"client\">Client</h3><h1>Later</h1>"));
     }
 
     @Test
-    public void test_pageTitle_pageInNamespace(){
-        assertEquals("vpn setup", WikiUtils.getPageTitle("infra:network:vpn_setup"));
+    public void test_pageTitle_innerTagsAndEntities(){
+        assertEquals("Tom & Jerry's <page> é",
+                WikiUtils.getPageTitle("<H2 id=\"x\"><a name=\"x\">Tom &amp; Jerry&#039;s</a> &lt;page&gt;\n&#xE9;</H2>"));
     }
 
     @Test
-    public void test_pageTitle_namespaceStartPage(){
-        assertEquals("network", WikiUtils.getPageTitle("infra:network:start"));
+    public void test_pageTitle_namedEntities(){
+        assertEquals("Licensing \u2014 Copyright \u00A9 2026",
+                WikiUtils.getPageTitle("<h1>Licensing &mdash; Copyright &copy; 2026</h1>"));
+        assertEquals("&unknown; stays", WikiUtils.getPageTitle("<h1>&unknown; stays</h1>"));
     }
 
     @Test
-    public void test_pageTitle_leadingAndTrailingColons(){
-        assertEquals("vpn", WikiUtils.getPageTitle(":infra:vpn"));
-        assertEquals("infra", WikiUtils.getPageTitle("infra:"));
+    public void test_pageTitle_escapedEntityIsDecodedOnce(){
+        assertEquals("&lt; and &#38;", WikiUtils.getPageTitle("<h1>&amp;lt; and &amp;#38;</h1>"));
     }
 
     @Test
-    public void test_pageTitle_emptyOrNull(){
-        assertEquals("", WikiUtils.getPageTitle(""));
-        assertEquals(":", WikiUtils.getPageTitle(":"));
-        assertEquals("", WikiUtils.getPageTitle(null));
+    public void test_pageTitle_invalidCodePoint(){
+        assertEquals("Release \uFFFD \uFFFD", WikiUtils.getPageTitle("<h1>Release &#x110000; &#99999999999;</h1>"));
     }
 
     @Test
-    public void test_pageTitle_customStartPageName(){
-        assertEquals("network", WikiUtils.getPageTitle("infra:network:home", "home"));
-        assertEquals("start", WikiUtils.getPageTitle("infra:network:start", "home"));
-    }
-
-    @Test
-    public void test_pageTitle_startPageIdWithNamespaceUsesDefault(){
-        // a page id is the page opened at launch, not the start page name used in every namespace
-        assertEquals("home", WikiUtils.getPageTitle("infra:network:home", "wiki:home"));
-        assertEquals("network", WikiUtils.getPageTitle("infra:network:start", "wiki:home"));
-        // leading/trailing colons alone don't make it a page id
-        assertEquals("network", WikiUtils.getPageTitle("infra:network:home", ":home:"));
-    }
-
-    @Test
-    public void test_pageTitle_emptyStartPageNameUsesDefault(){
-        assertEquals("network", WikiUtils.getPageTitle("infra:network:start", ""));
-        assertEquals("network", WikiUtils.getPageTitle("infra:network:start", null));
+    public void test_pageTitle_noHeading(){
+        assertNull(WikiUtils.getPageTitle("<p>no heading here</p>"));
+        assertNull(WikiUtils.getPageTitle("<h1> </h1>"));
+        assertNull(WikiUtils.getPageTitle(""));
+        assertNull(WikiUtils.getPageTitle(null));
     }
 
     /**
