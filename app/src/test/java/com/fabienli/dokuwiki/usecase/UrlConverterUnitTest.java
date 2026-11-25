@@ -479,6 +479,14 @@ public class UrlConverterUnitTest {
         assert(urlConverter._imageList.isEmpty());
     }
 
+    @Test
+    public void UrlConverter_niceUrl_mediaLinkWithDoubleDotInName(){
+        UrlConverter urlConverter = new UrlConverter("/cache/dir/", "default_css.css", NICEURL_SERVER);
+        urlConverter.getHtmlContentConverted("<a href=\"/wiki/_media/notes/report..draft.pdf\">doc</a>");
+        assert(urlConverter._imageList.size() == 1);
+        assert(urlConverter._imageList.get(0).imageFilePath.equals("notes/report..draft.pdf"));
+    }
+
     private static void assertPageName(String url, String expected){
         assert(UrlConverter.getPageName(url).equals(expected));
     }

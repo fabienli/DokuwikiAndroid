@@ -255,7 +255,7 @@ public class UrlConverter {
                 imageData.id = niceUrlIdToWikiId(m.group(3).split("\\?")[0].replaceAll("%3A", ":").replaceAll("%2F", "/"));
                 imageData.imageFilePath = imageData.id.replaceAll(":", "/");
                 // a valid media id has no ".." segment; never download outside of the cache dir
-                if(!imageData.imageFilePath.contains(".."))
+                if(!("/" + imageData.imageFilePath + "/").contains("/../"))
                     _imageList.add(imageData);
             }
 
