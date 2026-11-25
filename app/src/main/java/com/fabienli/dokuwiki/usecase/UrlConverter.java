@@ -3,6 +3,8 @@ package com.fabienli.dokuwiki.usecase;
 import android.os.Build;
 import android.util.Log;
 
+import com.fabienli.dokuwiki.tools.WikiUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,12 +40,46 @@ public class UrlConverter {
     public List<ImageRefData> _imageList;
     public List<String> _staticImageList;
     protected String _cssFile;
+    // links to pages with nice URLs, e.g. href="/wiki/ns/page" or href="/wiki/doku.php/ns:page"; null if the wiki URL is unknown
+    protected Pattern _niceUrlPagePattern = null;
 
     public UrlConverter(String cacheDir, String cssFile){
         _cacheDir = cacheDir;
         _imageList = new ArrayList<>();
         _staticImageList = new ArrayList<>();
         _cssFile = cssFile;
+    }
+
+    /**
+     * @param serverUrl the sync URL of the wiki, used to know which part of a nice URL is the wiki path
+     *                  and which part is the page id (with its namespaces)
+     */
+    public UrlConverter(String cacheDir, String cssFile, String serverUrl){
+        this(cacheDir, cssFile);
+        if(serverUrl != null && serverUrl.length() > 0) {
+            _niceUrlPagePattern = Pattern.compile("href=\"(?:" + Pattern.quote(WikiUtils.getWikiHostUrl(serverUrl)) + ")?"
+                    + Pattern.quote(WikiUtils.getWikiBasePath(serverUrl)) + "/(?:doku\\.php/)?"
+                    + "(?!(?:lib|_media|_detail|_export)/|(?:doku|feed)\\.php)([^\"?#/][^\"?#]*)",
+                    Pattern.CASE_INSENSITIVE);
+        }
+    }
+
+    /**
+     * With the "useslash" option, namespaces are separated by '/' in nice URLs; a page id never contains a '/'
+     */
+    protected static String niceUrlIdToWikiId(String niceUrlId){
+        return niceUrlId.replace("/", ":");
+    }
+
+    protected String convertNiceUrlPageLinks(String html){
+        Matcher m = _niceUrlPagePattern.matcher(html);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            Log.d(TAG, "Found nice url page link: "+m.group(1));
+            m.appendReplacement(sb, Matcher.quoteReplacement("href=\"" + WIKILINKURL + niceUrlIdToWikiId(m.group(1))));
+        }
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     public static boolean isPluginActionOnline(String url) {
@@ -151,6 +187,7 @@ public class UrlConverter {
                     }
                 }
             }
+            imageData.id = niceUrlIdToWikiId(imageData.id);
             Log.d(TAG, "Found image nice url: "+imageData.toString());
             String replacementString = m.group().replace("?","\\?");
             if(imageData.id.startsWith("http%3A%2F%2F") || imageData.id.startsWith("https%3A%2F%2F"))
@@ -208,6 +245,12 @@ public class UrlConverter {
             {
                 String localFilename = m.group(3).replaceAll("%3A", ":").replaceAll(":", "/").replaceAll("%2F", "/");
                 html = html.replaceAll(replacementString, "href=\"file://" + _cacheDir + "/" + localFilename+"\"");
+                ImageRefData imageData = new ImageRefData();
+                imageData.width = 0;
+                imageData.height = 0;
+                imageData.id = niceUrlIdToWikiId(m.group(3).split("\\?")[0].replaceAll("%3A", ":").replaceAll("%2F", "/"));
+                imageData.imageFilePath = imageData.id.replaceAll(":", "/");
+                _imageList.add(imageData);
             }
 
         }
@@ -225,6 +268,8 @@ public class UrlConverter {
         }
 
         html = html.replaceAll(WIKILINKPATTERN, "href=\""+WIKILINKURL);
+        if(_niceUrlPagePattern != null)
+            html = convertNiceUrlPageLinks(html);
         html = html.replaceAll(WIKILINKPATTERN_NICEURL, "href=\""+WIKILINKURL);
 
         html = addHeaders(html);

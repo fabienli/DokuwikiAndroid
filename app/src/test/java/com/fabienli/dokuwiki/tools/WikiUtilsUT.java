@@ -380,4 +380,17 @@ public class WikiUtilsUT {
         assertFalse(WikiUtils.isUnencryptedUrl(""));
         assertFalse(WikiUtils.isUnencryptedUrl(null));
     }
+
+    @Test
+    public void test_wikiBasePath(){
+        assertEquals("/dokuwiki", WikiUtils.getWikiBasePath("https://www.mywiki.com/dokuwiki/lib/exe/xmlrpc.php"));
+        assertEquals("", WikiUtils.getWikiBasePath("https://www.mywiki.com/lib/exe/jsonrpc.php"));
+        assertEquals("", WikiUtils.getWikiBasePath("www.mywiki.com/lib/exe/xmlrpc.php"));
+    }
+
+    @Test
+    public void test_wikiHostUrl(){
+        assertEquals("https://www.mywiki.com:8443", WikiUtils.getWikiHostUrl("https://www.mywiki.com:8443/dokuwiki/lib/exe/xmlrpc.php"));
+        assertEquals("http://www.mywiki.com", WikiUtils.getWikiHostUrl("www.mywiki.com/lib/exe/xmlrpc.php"));
+    }
 }

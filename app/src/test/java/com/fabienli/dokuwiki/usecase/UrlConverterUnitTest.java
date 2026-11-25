@@ -383,4 +383,83 @@ public class UrlConverterUnitTest {
         System.out.println("output: "+newContent);
         assert(newContent.contains("<a href=\"file:///cache/dir//notes/test.pdf\" />"));
     }
+
+    private static final String NICEURL_SERVER = "https://my.server/wiki/lib/exe/xmlrpc.php";
+
+    private static String convertNiceUrl(String serverUrl, String htmlContent){
+        UrlConverter urlConverter = new UrlConverter("/cache/dir/", "default_css.css", serverUrl);
+        return urlConverter.getHtmlContentConverted(htmlContent);
+    }
+
+    /**
+     * Nice URLs with the "useslash" option: namespaces are kept and not taken as the wiki path
+     */
+    @Test
+    public void UrlConverter_niceUrl_useslash_keepsNamespaces(){
+        String newContent = convertNiceUrl(NICEURL_SERVER, "<a href=\"/wiki/topic/home\" class=\"wikilink1\">home</a>");
+        assert(newContent.contains("href=\"" + UrlConverter.WIKILINKURL + "topic:home\""));
+    }
+
+    @Test
+    public void UrlConverter_niceUrl_colonSeparator(){
+        String newContent = convertNiceUrl(NICEURL_SERVER, "<a href=\"/wiki/topic:sub:home\">home</a>");
+        assert(newContent.contains("href=\"" + UrlConverter.WIKILINKURL + "topic:sub:home\""));
+    }
+
+    @Test
+    public void UrlConverter_niceUrl_wikiAtServerRoot(){
+        String newContent = convertNiceUrl("https://wiki.xyz.com/lib/exe/xmlrpc.php", "<a href=\"/topic/sub/home\">home</a>");
+        assert(newContent.contains("href=\"" + UrlConverter.WIKILINKURL + "topic:sub:home\""));
+    }
+
+    /**
+     * Rewrite done by DokuWiki itself (userewrite=2): /doku.php/ns/page
+     */
+    @Test
+    public void UrlConverter_niceUrl_dokuPhpRewrite_keepsAnchor(){
+        String newContent = convertNiceUrl(NICEURL_SERVER, "<a href=\"/wiki/doku.php/topic/home#section\">home</a>");
+        assert(newContent.contains("href=\"" + UrlConverter.WIKILINKURL + "topic:home#section\""));
+        assertPageName(UrlConverter.WIKILINKURL + "topic:home#section", "topic:home");
+    }
+
+    @Test
+    public void UrlConverter_niceUrl_absoluteUrl(){
+        String newContent = convertNiceUrl(NICEURL_SERVER, "<a href=\"https://my.server/wiki/topic/home\">home</a>");
+        assert(newContent.contains("href=\"" + UrlConverter.WIKILINKURL + "topic:home\""));
+    }
+
+    @Test
+    public void UrlConverter_niceUrl_externalLinkUnchanged(){
+        String newContent = convertNiceUrl(NICEURL_SERVER, "<a href=\"https://other.server/wiki/topic/home\">home</a>");
+        assert(newContent.contains("href=\"https://other.server/wiki/topic/home\""));
+    }
+
+    @Test
+    public void UrlConverter_niceUrl_defaultLinksStillWork(){
+        String newContent = convertNiceUrl(NICEURL_SERVER, "<a href=\"/wiki/doku.php?id=topic:home\">home</a>");
+        assert(newContent.contains("href=\"" + UrlConverter.WIKILINKURL + "topic:home\""));
+    }
+
+    @Test
+    public void UrlConverter_niceUrl_useslash_media(){
+        UrlConverter urlConverter = new UrlConverter("/cache/dir/", "default_css.css", NICEURL_SERVER);
+        String newContent = urlConverter.getHtmlContentConverted("<img src=\"/wiki/_media/topic/image3.png?w=200&amp;tok=8712f5\" />");
+        assert(newContent.contains("<img src=\"/cache/dir//topic/image3.png_200_\" />"));
+        assert(urlConverter._imageList.size() == 1);
+        assert(urlConverter._imageList.get(0).id.equals("topic:image3.png"));
+    }
+
+    @Test
+    public void UrlConverter_niceUrl_useslash_mediaLink(){
+        UrlConverter urlConverter = new UrlConverter("/cache/dir/", "default_css.css", NICEURL_SERVER);
+        String newContent = urlConverter.getHtmlContentConverted("<a href=\"/wiki/_media/notes/test.pdf\" class=\"media\">doc</a>");
+        assert(newContent.contains("<a href=\"file:///cache/dir//notes/test.pdf\""));
+        assert(urlConverter._imageList.size() == 1);
+        assert(urlConverter._imageList.get(0).id.equals("notes:test.pdf"));
+        assert(urlConverter._imageList.get(0).imageFilePath.equals("notes/test.pdf"));
+    }
+
+    private static void assertPageName(String url, String expected){
+        assert(UrlConverter.getPageName(url).equals(expected));
+    }
 }
