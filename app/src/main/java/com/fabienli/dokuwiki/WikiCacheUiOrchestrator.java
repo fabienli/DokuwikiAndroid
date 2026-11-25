@@ -175,14 +175,14 @@ public class WikiCacheUiOrchestrator {
         }
     }
 
-    protected void setWikiPageTitle(String pagename){
-        String startPageName = WikiUtils.DEFAULT_START_PAGE;
-        if(context != null){
-            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-            startPageName = settings.getString("startpage", WikiUtils.DEFAULT_START_PAGE);
-        }
-        String title = WikiUtils.getPageTitle(pagename, startPageName);
-        // the full page id is useful to know where we are, unless it says the same as the title
+    /**
+     * The toolbar shows the page's title (its first heading) with the page id below it,
+     * or only the page id while the page is loading or when it has no heading
+     */
+    protected void setWikiPageTitle(String pagename, String pageHtml){
+        String title = WikiUtils.getPageTitle(pageHtml);
+        if(title == null)
+            title = pagename;
         String subtitle = title.equals(pagename) ? null : pagename;
         setScreenTitle(title, subtitle);
     }
@@ -192,11 +192,14 @@ public class WikiCacheUiOrchestrator {
         _currentPageName = pagename;
         Log.d(TAG, "Requested page: "+pagename);
         addPageToHistory(pagename);
-        setWikiPageTitle(pagename);
+        setWikiPageTitle(pagename, null);
         PageHtmlRetrieve aPageHtmlRetrieve = new PageHtmlRetrieve(_db, new XmlRpcAdapter(context));
         aPageHtmlRetrieve.retrievePageAsync(pagename, new PageHtmlRetrieveCallback() {
             @Override
             public void pageRetrieved(String content){
+                // another page may have been requested in the meantime
+                if(pagename.equals(_currentPageName))
+                    setWikiPageTitle(pagename, content);
                 loadPage(content);
             }
         });

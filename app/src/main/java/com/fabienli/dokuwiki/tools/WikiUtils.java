@@ -6,44 +6,47 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class WikiUtils {
-    // name of the default page of a namespace in DokuWiki's default configuration
-    public static final String DEFAULT_START_PAGE = "start";
-
-    static public String getPageTitle(String pageId){
-        return getPageTitle(pageId, DEFAULT_START_PAGE);
-    }
+    private static final Pattern HEADING_PATTERN =
+            Pattern.compile("<h[1-6]\\b[^>]*>(.*?)</h[1-6]>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    private static final Pattern HTML_TAG_PATTERN = Pattern.compile("<[^>]*>");
+    private static final Pattern NUMERIC_ENTITY_PATTERN = Pattern.compile("&#(x?)([0-9a-fA-F]+);");
 
     /**
-     * Short, readable title for a page id, to be shown in the toolbar:
-     * - "network:vpn_setup" gives "vpn setup"
-     * - the start page of a namespace is named after its namespace: "network:start" gives "network"
-     * startPageName is the start page's name from the settings; it is used only when it is a
-     * plain name, as the setting can also hold a full page id (the page opened at launch)
+     * Title of a page, as DokuWiki defines it: the text of its first heading.
+     * Returns null when the page html has no heading.
      */
-    static public String getPageTitle(String pageId, String startPageName){
-        if(pageId == null)
-            return "";
-        String id = trimColons(pageId);
-        if(id.isEmpty())
-            return pageId;
-        String startName = startPageName == null ? "" : trimColons(startPageName);
-        // a page id with a namespace is the page opened at launch, not DokuWiki's start page name
-        if(startName.isEmpty() || startName.contains(":"))
-            startName = DEFAULT_START_PAGE;
-        String[] parts = id.split(":");
-        String name = parts[parts.length-1];
-        if(name.equals(startName) && parts.length > 1)
-            name = parts[parts.length-2];
-        return name.replace('_', ' ');
+    static public String getPageTitle(String pageHtml){
+        if(pageHtml == null)
+            return null;
+        Matcher m = HEADING_PATTERN.matcher(pageHtml);
+        if(!m.find())
+            return null;
+        String title = HTML_TAG_PATTERN.matcher(m.group(1)).replaceAll("");
+        title = decodeHtmlEntities(title).replaceAll("\\s+", " ").trim();
+        return title.isEmpty() ? null : title;
     }
 
-    static private String trimColons(String s){
-        String r = s.trim();
-        while(r.startsWith(":"))
-            r = r.substring(1);
-        while(r.endsWith(":"))
-            r = r.substring(0, r.length()-1);
-        return r;
+    static String decodeHtmlEntities(String text){
+        Matcher m = NUMERIC_ENTITY_PATTERN.matcher(text);
+        StringBuffer sb = new StringBuffer();
+        while(m.find()){
+            int codePoint;
+            try {
+                codePoint = Integer.parseInt(m.group(2), m.group(1).isEmpty() ? 10 : 16);
+            } catch (NumberFormatException e) {
+                m.appendReplacement(sb, Matcher.quoteReplacement(m.group(0)));
+                continue;
+            }
+            m.appendReplacement(sb, Matcher.quoteReplacement(new String(Character.toChars(codePoint))));
+        }
+        m.appendTail(sb);
+        return sb.toString()
+                .replace("&nbsp;", " ")
+                .replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&quot;", "\"")
+                .replace("&apos;", "'")
+                .replace("&amp;", "&");
     }
 
     static public String convertBaseUrlToMainWikiUrl(String syncUrl){
