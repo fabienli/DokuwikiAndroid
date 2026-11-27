@@ -32,6 +32,7 @@ import com.google.android.material.navigation.NavigationView;
 import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -53,6 +54,7 @@ import android.Manifest;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private WebView _webView;
+    private SwipeRefreshLayout _swipeRefresh;
     protected Context context;
     private final int SELECT_PHOTO = 1;
     protected String _ongoingSearch = "";
@@ -108,6 +110,11 @@ public class MainActivity extends AppCompatActivity
         webSettings.setSupportZoom(true);
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
+
+        // pull down at the top of the page to refresh it
+        _swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
+        _swipeRefresh.setOnRefreshListener(() ->
+                WikiCacheUiOrchestrator.instance(this).refreshPage(() -> _swipeRefresh.setRefreshing(false)));
 
         // Get the intent, verify the action and get the query
         Intent intentSearch = getIntent();
