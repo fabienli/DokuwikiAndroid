@@ -191,6 +191,14 @@ public class WikiCacheUiOrchestrator {
     }
 
     public void retrievePageHTMLforDisplay(String pagename, final WebView webview){
+        retrievePageHTMLforDisplay(pagename, webview, null);
+    }
+
+    /**
+     * @param onRetrieved run on the UI thread once the page content has been
+     *                    retrieved and handed to the WebView; may be null
+     */
+    public void retrievePageHTMLforDisplay(String pagename, final WebView webview, final Runnable onRetrieved){
         this._webView = webview;
         _currentPageName = pagename;
         Log.d(TAG, "Requested page: "+pagename);
@@ -204,6 +212,8 @@ public class WikiCacheUiOrchestrator {
                 if(pagename.equals(_currentPageName))
                     setWikiPageTitle(pagename, content);
                 loadPage(content);
+                if(onRetrieved != null)
+                    onRetrieved.run();
             }
         });
         // workaround to avoid intermediate error page
@@ -370,11 +380,21 @@ public class WikiCacheUiOrchestrator {
     }
 
     public void refreshPage() {
+        refreshPage(null);
+    }
+
+    /**
+     * @param onDone run on the UI thread once the refresh has finished, or
+     *               straight away if there is nothing to refresh; may be null
+     */
+    public void refreshPage(Runnable onDone) {
         Log.d(TAG, "refreshing the page");
         //_webView.clearView();
         //_webView.reload();
         if(! _pageHistory.empty())
-            retrievePageHTMLforDisplay(_pageHistory.lastElement(), this._webView);
+            retrievePageHTMLforDisplay(_pageHistory.lastElement(), this._webView, onDone);
+        else if(onDone != null)
+            onDone.run();
     }
 
     public boolean showLastHistory(WebView webView) {
